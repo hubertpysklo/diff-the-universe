@@ -111,11 +111,6 @@ ${allowedContextIds.map(id => {
 
 Rules:
 - First decide WHAT you want to communicate based on your role and goals
-- Then choose the MOST APPROPRIATE space for that content:
-  * Match the space's purpose (from its name/type) to your message topic
-  * Consider who needs to see this (which spaces have relevant members)
-  * Follow-ups should stay in the same context
-- Balance between responding to existing activity and starting new conversations
 - Don't always post to the most active space - distribute conversations naturally
 - Provide all required parameters for your chosen action
 - Use actual IDs from the contexts you belong to
@@ -139,7 +134,7 @@ Your ID: ${actor.id}
                 schema: turnSchema,
                 temperature: 0.7,
             });
-            const res = await withTimeout(gen as any, 30000);
+            const res = await withTimeout(gen as any, 45000);
             obj = (res as any).object as z.infer<typeof turnSchema>;
             console.log(`  DEBUG: LLM returned:`, JSON.stringify(obj));
         } catch (err) {
@@ -328,7 +323,8 @@ Your ID: ${actor.id}
     }
 
     private buildContext(actorId: string): string {
-        const visible = this.events.filter(e => e.visibility.includes(actorId)).slice(-20);
+        // Show more history to prevent repetition
+        const visible = this.events.filter(e => e.visibility.includes(actorId)).slice(-50);
         console.log(`  DEBUG: Building context for ${actorId}. Found ${visible.length} visible events out of ${this.events.length} total`);
 
         const byCtx = new Map<string, CanonicalEvent[]>();
@@ -365,18 +361,12 @@ Your ID: ${actor.id}
             const name = (ctx?.data as any)?.name ?? ctxId;
             s += `In ${name}:\n`;
 
-            // Prioritize showing the actor's own recent messages to prevent repetition
-            const myMessages = evs.filter(e => e.actorId === actorId).slice(-2);
-            const otherMessages = evs.filter(e => e.actorId !== actorId).slice(-5);
-            const toShow = [...myMessages, ...otherMessages].sort((a, b) =>
-                a.timestamp.getTime() - b.timestamp.getTime()
-            ).slice(-7);
-
-            for (const e of toShow) {
+            // Show all events from this context (already limited by the initial slice)
+            for (const e of evs) {
                 const who = this.universe.agents.find(a => a.id === e.actorId)?.name ?? e.actorId;
                 const isMe = e.actorId === actorId ? ' (you)' : '';
-                // Show first 150 chars of content to avoid truncation
-                const content = e.content ? e.content.substring(0, 150) + (e.content.length > 150 ? '...' : '') : e.action;
+                // Show enough content to preserve meaning
+                const content = e.content ? e.content.substring(0, 250) + (e.content.length > 250 ? '...' : '') : e.action;
                 s += `- ${who}${isMe}: ${content}\n`;
             }
             s += "\n";

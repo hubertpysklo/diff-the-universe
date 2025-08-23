@@ -15,6 +15,9 @@ export const initializeUniverse = async (
    - Each agent needs a name, role, personality traits
    - System prompts should focus on personality, behavior, and communication style
    - DO NOT list specific action names in prompts (they will be injected at runtime)
+   - IMPORTANT: Make agents proactive - they should initiate new discussions relevant to their role, not just respond
+   - Include phrases like "proactively shares", "initiates discussions about", "starts conversations on" depending on the agent's role in the universe
+   - Agents should naturally post in spaces matching their expertise
    - Assign selection probabilities based on activity level
    
 2. INITIAL SPACES: Bootstrap environments where interactions can begin
