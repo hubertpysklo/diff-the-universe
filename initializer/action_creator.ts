@@ -23,11 +23,19 @@ Key principles:
 - Spaces are organizational boundaries (channels, threads, documents, projects)
 - Visibility rules determine who sees what based on memberships, permissions, or recipients
 
-Analyze the schema to find:
+Analyze the schema to find AGENT-LEVEL ACTIONS:
 - Communication patterns (messages, emails, comments)
 - Organizational structures (channels, groups, teams, projects)
 - Permission systems (membership tables, access control)
 - Content creation (documents, posts, tasks)
+
+EXCLUDE system/admin actions like:
+- User registration, authentication, account creation
+- Workspace/organization creation
+- System configuration
+- Database migrations or setup
+
+Focus on actions that regular users/agents would perform day-to-day.
 
 For each action, determine:
 - What parameters it needs (actor, content, target)
@@ -75,6 +83,7 @@ async function testActionSpaceGeneration() {
     // 3. Map generated events to SQL operations
 }
 
-(async () => {
-    await testActionSpaceGeneration()
-})()
+// Commented out - this was running automatically and confusing the logs
+// (async () => {
+//     await testActionSpaceGeneration()
+// })()

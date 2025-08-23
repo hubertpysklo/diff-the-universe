@@ -15,6 +15,7 @@ async function main() {
 
         console.log('→ Deriving action space from schema...');
         const actionSpace = await analyzeSchemaForActionSpace(snapshot);
+        console.log('Discovered actions:', actionSpace.actions.map(a => a.name).join(', '));
 
         console.log('→ Initializing universe...');
         const universe = await initializeUniverse(actionSpace, userRequest);

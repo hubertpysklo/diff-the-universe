@@ -13,7 +13,8 @@ export const initializeUniverse = async (
         
 1. AGENTS: Personalities who will interact in this universe
    - Each agent needs a name, role, personality traits
-   - Their system prompt should reference available actions
+   - System prompts should focus on personality, behavior, and communication style
+   - DO NOT list specific action names in prompts (they will be injected at runtime)
    - Assign selection probabilities based on activity level
    
 2. INITIAL SPACES: Bootstrap environments where interactions can begin
@@ -25,13 +26,16 @@ export const initializeUniverse = async (
 
         prompt: `Create a universe for: "${userRequest}"
         
-Available actions: ${JSON.stringify(actionSpace.actions)}
-Space types: ${JSON.stringify(actionSpace.spaceTypes)}
+Space types available: ${JSON.stringify(actionSpace.spaceTypes.map(st => st.name))}
 
 Generate:
-- 5 agents with diverse personalities fitting an AI startup
+- 5 agents with diverse personalities fitting the request
 - Initial spaces (at minimum a general/common space)
-- Membership assignments`,
+- Membership assignments
+
+IMPORTANT: Agent system prompts should describe personality, role, and behavior patterns ONLY.
+Do NOT include action names or instructions about specific actions in agent prompts.
+Actions will be injected automatically at runtime from the schema.`,
 
         schema: universeStateSchema,
         temperature: 0.7,
