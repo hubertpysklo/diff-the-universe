@@ -7,7 +7,13 @@ export const actionSpaceSchema = z.object({
         requiredParams: z.array(z.string()),
         createsEntity: z.string(),
         visibilityRule: z.string(),
-        canCreateSpace: z.boolean()
+        canCreateSpace: z.boolean().default(false),
+        spaceParameter: z.string().optional(),
+        visibilityComputation: z.union([
+            z.object({ method: z.literal('space_members'), spaceField: z.string() }),
+            z.object({ method: z.literal('explicit_recipients'), recipientFields: z.array(z.string()).min(1) }),
+            z.object({ method: z.literal('everyone') })
+        ]).optional()
     })),
 
     spaceTypes: z.array(z.object({
@@ -55,6 +61,24 @@ export const universeStateSchema = z.object({
 
 export type UniverseState = z.infer<typeof universeStateSchema>;
 
+// Canonical, service-agnostic event shape the simulator emits
+export const canonicalEventSchema = z.object({
+    action: z.string(),
+    actorId: z.string(),
+    contextId: z.string().optional(),    // concrete context id (channel/doc/thread/account), if applicable
+    recipients: z.array(z.string()).optional(), // for point-to-point actions
+    parentId: z.string().optional(),      // reply/derivation anchor
+    content: z.string().optional(),
+    metadata: z.record(z.any()).optional()
+});
+
+export type CanonicalEvent = z.infer<typeof canonicalEventSchema> & {
+    id: string;
+    timestamp: Date;
+    visibility: string[];
+};
+
+// Legacy simulator Event (retained for compatibility inside simulator only)
 export const eventSchema = z.object({
     action: z.string().describe('Action name from action space'),
     parameters: z.record(z.any()).describe('Action parameters'),

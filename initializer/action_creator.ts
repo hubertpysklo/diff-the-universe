@@ -34,11 +34,11 @@ For each action, determine:
 - What entity it creates in the database
 - How visibility is determined (channel members, recipients, permissions)
 - Whether it can create new spaces
-
-For spaces, identify if they are:
-- Explicit: Have their own table (channels, projects, documents)
-- Implicit: Emerge from relationships (email threads from reply_to)
-- Derived: Computed from patterns (DM conversations from two-person visibility)`,
+- If visibility is space-based, specify which parameter holds the space id (spaceParameter)
+- Provide a structured visibilityComputation: one of
+  * { method: 'space_members', spaceField: '<param name>' }
+  * { method: 'explicit_recipients', recipientFields: ['to','cc','bcc'] }
+  * { method: 'everyone' }`,
 
         prompt: `Analyze this database schema and extract the complete action space:
 
@@ -52,7 +52,7 @@ Consider:
 - Junction tables often represent memberships or permissions
 - Tables with parent_id or reply_to suggest threading/hierarchy
 
-Generate a comprehensive action space that covers all interactions possible in this system.`,
+Generate a comprehensive action space that covers all interactions possible in this system, including spaceParameter and visibilityComputation for each action when applicable.`,
 
         schema: actionSpaceSchema,
         temperature: 0.2

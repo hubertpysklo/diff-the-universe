@@ -1,12 +1,26 @@
 import { generateObject } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
-import { type ActionSpace, type UniverseState, type Event, eventSchema } from './interfaces';
+import { type ActionSpace, type UniverseState, canonicalEventSchema, type CanonicalEvent } from './interfaces';
+
+// Simple timeout helper
+async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+    let timeoutHandle: NodeJS.Timeout;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => reject(new Error(`LLM timeout after ${ms}ms`)), ms);
+    });
+    try {
+        return await Promise.race([p, timeoutPromise]);
+    } finally {
+        // @ts-ignore
+        clearTimeout(timeoutHandle);
+    }
+}
 
 type Agent = UniverseState['agents'][number];
 
 class UniverseSimulator {
-    private events: Event[] = [];
+    private events: CanonicalEvent[] = [];
     private currentTime: Date;
     private spaceMembers: Map<string, Set<string>> = new Map();
 
@@ -20,7 +34,6 @@ class UniverseSimulator {
     }
 
     private initializeMemberships() {
-        // Set up initial space memberships
         for (const membership of this.universe.memberships) {
             if (!this.spaceMembers.has(membership.spaceId)) {
                 this.spaceMembers.set(membership.spaceId, new Set());
@@ -29,309 +42,257 @@ class UniverseSimulator {
         }
     }
 
-    async simulate(numEvents: number): Promise<Event[]> {
+    async simulate(numEvents: number): Promise<CanonicalEvent[]> {
         for (let i = 0; i < numEvents; i++) {
-            const event = await this.simulateNextEvent();
-            this.events.push(event);
-
-            // Handle space-creating actions
-            if (this.isSpaceCreatingAction(event)) {
-                this.handleSpaceCreation(event);
+            console.log(`→ turn ${i + 1}/${numEvents}`);
+            try {
+                const event = await this.simulateNextEvent();
+                this.events.push(event);
+                console.log(`  ✓ ${event.action} by ${event.actorId} in ${event.contextId ?? 'global'} (vis=${event.visibility.length})`);
+            } catch (err: any) {
+                console.error(`  ✗ turn ${i + 1} failed: ${err?.message || err}`);
+                // Continue to next turn
             }
-
-            // Advance time realistically
+            if (this.isContextCreatingAction(this.events[this.events.length - 1]!)) {
+                this.handleContextCreation(this.events[this.events.length - 1]!);
+            }
             this.advanceTime();
         }
-
         return this.events;
     }
 
-    private async simulateNextEvent(): Promise<Event> {
-        // 1. Select next actor (weighted by activity level)
+    private async simulateNextEvent(): Promise<CanonicalEvent> {
         const actor = this.selectActor();
-
-        // 2. Build context for this actor
         const context = this.buildContext(actor.id);
 
-        // 3. Generate action (ID-first targeting)
-        const generatedAction = await this.generateAction(actor, context);
+        // Allowed contexts for the actor
+        let allowedContextIds = Array.from(this.spaceMembers.entries())
+            .filter(([_, members]) => members.has(actor.id))
+            .map(([spaceId]) => spaceId);
+        if (allowedContextIds.length === 0) allowedContextIds = this.universe.initialSpaces.map(s => s.id);
 
-        // 4. Ensure action-space compatibility; remap if needed
-        const targetId = generatedAction.targetSpace;
-        const actionName = generatedAction.action;
-        if (targetId) {
-            const spaceType = this.universe.initialSpaces.find(s => s.id === targetId)?.type;
-            const supports = this.actionSpace.spaceTypes.find(t => t.name === spaceType)?.supportsActions ?? [];
-            if (!supports.includes(actionName)) {
-                // Pick first space the actor belongs to that supports this action
-                const candidateSpaceId = this.pickFirstSupportedSpace(actor.id, actionName);
-                if (candidateSpaceId) {
-                    generatedAction.targetSpace = candidateSpaceId;
+        // Dynamic schema: minimal intent only
+        const turnSchema = z.object({
+            action: z.enum(this.actionSpace.actions.map(a => a.name) as [string, ...string[]]),
+            content: z.string().optional()
+        });
+
+        const contextsDetail = allowedContextIds.map(id => {
+            const s = this.universe.initialSpaces.find(sp => sp.id === id);
+            return { id, name: (s?.data as any)?.name ?? id, type: s?.type ?? 'Context' };
+        });
+
+        let obj: z.infer<typeof turnSchema>;
+        try {
+            const gen = generateObject({
+                model: openai('gpt-5-mini'),
+                system: actor.systemPrompt,
+                prompt: `${context}
+
+Rules:
+- Pick an action fitting the intent based on recent activity
+- Do not emit IDs or recipients; the system will infer where and who sees it from memberships
+- If replying, keep it concise and coherent with the recent context
+
+Available contexts you belong to (for your awareness):
+${JSON.stringify(contextsDetail, null, 2)}
+`,
+                schema: turnSchema,
+                temperature: 0.7,
+            });
+            const res = await withTimeout(gen as any, 30000);
+            obj = (res as any).object as z.infer<typeof turnSchema>;
+        } catch (err) {
+            // Graceful fallback: pick a conversational action with 'message' if available
+            const conversational = this.actionSpace.actions.find(a => (a.requiredParams ?? []).includes('message'))?.name
+                ?? this.actionSpace.actions[0]?.name
+                ?? 'post_message';
+            obj = { action: conversational, content: '...' } as any;
+            console.warn(`  ! fallback action used due to error: ${(err as any)?.message || err}`);
+        }
+
+        // Infer contextId, recipients, parentId from action definition and memberships
+        const def = this.actionSpace.actions.find(a => a.name === obj.action);
+
+        // Choose context for space-based actions
+        let chosenContext: string | undefined;
+        const needsContext = def?.visibilityComputation?.method === 'space_members';
+        if (needsContext) {
+            // Prefer most recent visible context the actor belongs to; else first allowed
+            const recentCtx = this.pickRecentContextForActor(actor.id, allowedContextIds);
+            chosenContext = recentCtx ?? allowedContextIds[0];
+            // Validate support
+            if (chosenContext) {
+                const type = this.universe.initialSpaces.find(s => s.id === chosenContext)?.type;
+                const supports = this.actionSpace.spaceTypes.find(t => t.name === type)?.supportsActions ?? [];
+                if (!supports.includes(obj.action)) {
+                    const firstSupported = allowedContextIds.find(id => {
+                        const t = this.universe.initialSpaces.find(s => s.id === id)?.type;
+                        const sp = this.actionSpace.spaceTypes.find(tt => tt.name === t)?.supportsActions ?? [];
+                        return sp.includes(obj.action);
+                    });
+                    chosenContext = firstSupported ?? chosenContext;
                 }
             }
         }
 
-        // 5. Compute visibility
-        const visibility = this.computeVisibility(generatedAction, actor.id);
+        // If this is a reply action (parent_id required), bind to the latest visible event in that context
+        let parentId: string | undefined;
+        const requiresParent = (def?.requiredParams ?? []).includes('parent_id');
+        if (requiresParent) {
+            parentId = this.pickLatestVisibleEventId(actor.id, chosenContext);
+        }
 
-        // 6. Create full event
+        // If recipients-based visibility, pick recipients from peers (members in chosen context if any, else global minus actor)
+        let recipients: string[] | undefined;
+        const recipMethod = def?.visibilityComputation?.method === 'explicit_recipients';
+        if (recipMethod) {
+            const pool = chosenContext
+                ? Array.from(this.spaceMembers.get(chosenContext) ?? [])
+                : this.universe.agents.map(a => a.id);
+            recipients = pool.filter(id => id !== actor.id).slice(0, 2);
+            if (recipients.length === 0) recipients = undefined;
+        }
+
+        // Compute visibility
+        const visibility = this.inferVisibility({
+            action: obj.action,
+            actorId: actor.id,
+            contextId: chosenContext,
+            recipients,
+            parentId,
+            content: obj.content,
+            metadata: undefined
+        });
+
         return {
             id: `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             timestamp: new Date(this.currentTime),
-            actorId: actor.id,
-            visibility,
-            ...generatedAction
-        };
-    }
-
-    private pickFirstSupportedSpace(actorId: string, actionName: string): string | undefined {
-        for (const [spaceId, members] of this.spaceMembers.entries()) {
-            if (!members.has(actorId)) continue;
-            const spaceType = this.universe.initialSpaces.find(s => s.id === spaceId)?.type;
-            const supports = this.actionSpace.spaceTypes.find(t => t.name === spaceType)?.supportsActions ?? [];
-            if (supports.includes(actionName)) return spaceId;
-        }
-        return undefined;
-    }
-
-    private selectActor(): Agent {
-        // Weighted random selection based on activity level
-        const weights = this.universe.agents.map(a => a.activityLevel);
-        const totalWeight = weights.reduce((a, b) => a + b, 0);
-
-        let random = Math.random() * totalWeight;
-        for (let i = 0; i < this.universe.agents.length; i++) {
-            random -= weights[i];
-            if (random <= 0) {
-                return this.universe.agents[i];
-            }
-        }
-
-        return this.universe.agents[0]; // Fallback
-    }
-
-    private buildContext(actorId: string): string {
-        // Get events visible to this actor
-        const visibleEvents = this.events
-            .filter(e => e.visibility.includes(actorId))
-            .slice(-20); // Last 20 visible events
-
-        // Group by space for better context
-        const bySpace = new Map<string, Event[]>();
-        for (const event of visibleEvents) {
-            const space = event.targetSpace || 'general';
-            if (!bySpace.has(space)) {
-                bySpace.set(space, []);
-            }
-            bySpace.get(space)!.push(event);
-        }
-
-        // Format context
-        let context = "Recent activity you can see:\n\n";
-
-        for (const [spaceId, events] of bySpace) {
-            const spaceObj = this.universe.initialSpaces.find(s => s.id === spaceId);
-            const displayName = (spaceObj?.data as any)?.name ?? spaceId;
-            context += `In ${displayName}:\n`;
-            for (const event of events.slice(-5)) {
-                const agent = this.universe.agents.find(a => a.id === event.actorId);
-                context += `- ${agent?.name}: ${this.formatEvent(event)}\n`;
-            }
-            context += "\n";
-        }
-
-        // Add available spaces
-        const mySpaces = Array.from(this.spaceMembers.entries())
-            .filter(([_, members]) => members.has(actorId))
-            .map(([spaceId, _]) => {
-                const space = this.universe.initialSpaces.find(s => s.id === spaceId);
-                const spaceName = (space?.data as any)?.name as string | undefined;
-                return spaceName || spaceId;
-            });
-
-        context += `\nYou are in these spaces: ${mySpaces.join(', ')}\n`;
-
-        return context;
-    }
-
-    private async generateAction(actor: Agent, context: string): Promise<Omit<Event, 'id' | 'timestamp' | 'actorId' | 'visibility'>> {
-        // Build allowed action names
-        const actionNames = this.actionSpace.actions.map(a => a.name);
-
-        // Build allowed spaces for this actor (membership-based)
-        let allowedSpaceIds = Array.from(this.spaceMembers.entries())
-            .filter(([_, members]) => members.has(actor.id))
-            .map(([spaceId]) => spaceId);
-
-        if (allowedSpaceIds.length === 0) {
-            // Fallback to any known spaces
-            allowedSpaceIds = this.universe.initialSpaces.map(s => s.id);
-        }
-
-        // Dynamic per-turn schema: force action from enum and targetSpaceId from allowed IDs
-        const turnEventSchema = z.object({
-            action: z.enum(actionNames as [string, ...actionNames[]]),
-            parameters: z.record(z.any()).default({}),
-            targetSpaceId: z.enum(allowedSpaceIds as [string, ...string[]]),
-            content: z.string().optional(),
-            metadata: z.record(z.any()).optional()
-        });
-
-        // Provide AllowedSpaces to the model with both id and display name
-        const allowedSpacesDetail = allowedSpaceIds.map(id => {
-            const s = this.universe.initialSpaces.find(sp => sp.id === id);
-            const name = (s?.data as any)?.name ?? id;
-            const type = s?.type ?? 'Space';
-            return { id, name, type };
-        });
-
-        const result = await generateObject({
-            model: openai('gpt-5-mini'),
-            system: actor.systemPrompt,
-            prompt: `${context}
-            
-Rules:
-- Choose an action from: ${JSON.stringify(actionNames)}
-- Choose targetSpaceId from AllowedSpaces (use the id exactly, not the name)
-- If replying, keep it concise and coherent with the recent context
-
-AllowedSpaces:
-${JSON.stringify(allowedSpacesDetail, null, 2)}
-`,
-            schema: turnEventSchema,
-            temperature: 0.8,
-        });
-
-        const obj = result.object as z.infer<typeof turnEventSchema>;
-
-        // Optional: ensure chosen space supports the chosen action; if not, remap to first supported
-        const supports = (spaceId: string) => {
-            const spaceType = this.universe.initialSpaces.find(s => s.id === spaceId)?.type;
-            const supported = this.actionSpace.spaceTypes.find(t => t.name === spaceType)?.supportsActions ?? [];
-            return supported.includes(obj.action);
-        };
-        let chosenSpace = obj.targetSpaceId;
-        if (!supports(chosenSpace)) {
-            const firstSupported = allowedSpaceIds.find(id => supports(id));
-            if (firstSupported) chosenSpace = firstSupported;
-        }
-
-        return {
             action: obj.action,
-            parameters: obj.parameters,
-            targetSpace: chosenSpace,
+            actorId: actor.id,
+            contextId: chosenContext,
+            recipients,
+            parentId,
             content: obj.content,
-            metadata: obj.metadata
-        } as any;
+            metadata: undefined,
+            visibility
+        };
     }
 
-    private computeVisibility(action: any, actorId: string): string[] {
-        // Based on action type and target, determine visibility
+    private inferVisibility(ev: Omit<CanonicalEvent, 'id' | 'timestamp' | 'visibility'>): string[] {
+        const def = this.actionSpace.actions.find(a => a.name === ev.action);
+        const method = def?.visibilityComputation?.method;
 
-        if (action.targetSpace) {
-            // Group space message - visible to all members
-            const members = this.spaceMembers.get(action.targetSpace);
-            return members ? Array.from(members) : [actorId];
+        if (method === 'space_members' && ev.contextId) {
+            const members = this.spaceMembers.get(ev.contextId);
+            return members ? Array.from(members) : [ev.actorId];
         }
-
-        // Generic point-to-point visibility (DM/email): recipients array or to/cc/bcc or single recipientId
-        const recipients = new Set<string>();
-        const recArr = action.parameters?.recipients as string[] | undefined;
-        const toArr = action.parameters?.to as string[] | undefined;
-        const ccArr = action.parameters?.cc as string[] | undefined;
-        const bccArr = action.parameters?.bcc as string[] | undefined;
-        const recipientId = action.parameters?.recipientId as string | undefined;
-        if (Array.isArray(recArr)) recArr.forEach(x => recipients.add(x));
-        if (Array.isArray(toArr)) toArr.forEach(x => recipients.add(x));
-        if (Array.isArray(ccArr)) ccArr.forEach(x => recipients.add(x));
-        if (Array.isArray(bccArr)) bccArr.forEach(x => recipients.add(x));
-        if (typeof recipientId === 'string') recipients.add(recipientId);
-        if (recipients.size > 0) {
-            return [actorId, ...recipients];
+        if (method === 'explicit_recipients' && ev.recipients?.length) {
+            return Array.from(new Set([ev.actorId, ...ev.recipients]));
         }
-
-        // Default: only visible to actor
-        return [actorId];
+        if (method === 'everyone') {
+            return this.universe.agents.map(a => a.id);
+        }
+        // Fallbacks
+        if (ev.contextId && this.spaceMembers.has(ev.contextId)) {
+            return Array.from(this.spaceMembers.get(ev.contextId)!);
+        }
+        if (ev.recipients?.length) return Array.from(new Set([ev.actorId, ...ev.recipients]));
+        return [ev.actorId];
     }
 
-    private isSpaceCreatingAction(event: Event): boolean {
-        const action = this.actionSpace.actions.find(a => a.name === event.action);
+    private isContextCreatingAction(ev: CanonicalEvent): boolean {
+        const action = this.actionSpace.actions.find(a => a.name === ev.action);
         return action?.canCreateSpace || false;
     }
 
-    private handleSpaceCreation(event: Event) {
-        // Create new space and add creator as member
+    private handleContextCreation(ev: CanonicalEvent) {
         const spaceId = `space_${Date.now()}`;
-        const members = new Set<string>([event.actorId]);
-
-        // If action specifies initial members, add them
-        if (event.parameters?.members) {
-            for (const memberId of event.parameters.members) {
-                members.add(memberId);
-            }
-        }
-
+        const members = new Set<string>([ev.actorId, ...(ev.recipients ?? [])]);
         this.spaceMembers.set(spaceId, members);
 
-        // Resolve space type dynamically
-        const explicitType = (event.parameters?.spaceType as string | undefined);
-        const supportedType = this.actionSpace.spaceTypes.find(st => st.supportsActions.includes(event.action))?.name;
-        const spaceType = explicitType ?? supportedType ?? 'Space';
+        const supportedType = this.actionSpace.spaceTypes.find(st => st.supportsActions.includes(ev.action))?.name;
+        const type = supportedType ?? 'Context';
 
-        // Add to universe spaces (for tracking)
         this.universe.initialSpaces.push({
             id: spaceId,
-            type: spaceType,
-            data: {
-                name: event.parameters?.name || 'new-space',
-                isPrivate: event.parameters?.isPrivate || false
-            }
+            type,
+            data: { name: ev.metadata?.name || 'new-context' }
         });
+        for (const uid of members) this.universe.memberships.push({ agentId: uid, spaceId });
+    }
 
-        // Keep UniverseState memberships coherent
-        for (const agentId of members) {
-            this.universe.memberships.push({ agentId, spaceId });
+    private selectActor(): Agent {
+        const weights = this.universe.agents.map(a => a.activityLevel);
+        const total = weights.reduce((a, b) => a + b, 0) || 1;
+        let r = Math.random() * total;
+        for (let i = 0; i < this.universe.agents.length; i++) {
+            r -= weights[i];
+            if (r <= 0) return this.universe.agents[i];
         }
+        return this.universe.agents[0];
+    }
+
+    private buildContext(actorId: string): string {
+        const visible = this.events.filter(e => e.visibility.includes(actorId)).slice(-20);
+        const byCtx = new Map<string, CanonicalEvent[]>();
+        for (const e of visible) {
+            const key = e.contextId ?? 'global';
+            if (!byCtx.has(key)) byCtx.set(key, []);
+            byCtx.get(key)!.push(e);
+        }
+        let s = "Recent activity you can see:\n\n";
+        for (const [ctxId, evs] of byCtx) {
+            const ctx = this.universe.initialSpaces.find(sp => sp.id === ctxId);
+            const name = (ctx?.data as any)?.name ?? ctxId;
+            s += `In ${name}:\n`;
+            for (const e of evs.slice(-5)) {
+                const who = this.universe.agents.find(a => a.id === e.actorId)?.name ?? e.actorId;
+                s += `- ${who}: ${e.content ?? e.action}\n`;
+            }
+            s += "\n";
+        }
+        const myCtx = Array.from(this.spaceMembers.entries())
+            .filter(([_, m]) => m.has(actorId))
+            .map(([id]) => (this.universe.initialSpaces.find(s => s.id === id)?.data as any)?.name ?? id);
+        s += `\nYou are in these contexts: ${myCtx.join(', ')}\n`;
+        return s;
     }
 
     private advanceTime() {
-        // Realistic time progression
-        const timeJump = this.calculateTimeJump();
-        this.currentTime = new Date(this.currentTime.getTime() + timeJump);
+        const delta = this.calculateTimeJump();
+        this.currentTime = new Date(this.currentTime.getTime() + delta);
     }
 
     private calculateTimeJump(): number {
         const hour = this.currentTime.getHours();
-
-        // Night time: bigger jumps
-        if (hour >= 22 || hour < 7) {
-            return Math.random() * 8 * 60 * 60 * 1000; // 0-8 hours
-        }
-
-        // Work hours: smaller jumps
-        if (hour >= 9 && hour < 17) {
-            return Math.random() * 10 * 60 * 1000; // 0-10 minutes
-        }
-
-        // Other times: medium jumps
-        return Math.random() * 60 * 60 * 1000; // 0-1 hour
+        if (hour >= 22 || hour < 7) return Math.random() * 8 * 60 * 60 * 1000;
+        if (hour >= 9 && hour < 17) return Math.random() * 10 * 60 * 1000;
+        return Math.random() * 60 * 60 * 1000;
     }
 
-    private formatEvent(event: Event): string {
-        switch (event.action) {
-            case 'send_message':
-                return event.content || '[message]';
-            case 'react_message':
-                return `reacted ${event.parameters?.emoji || '👍'}`;
-            case 'create_channel':
-                return `created ${event.parameters?.name ?? 'space'}`;
-            default:
-                return event.action;
+    private pickRecentContextForActor(actorId: string, allowed: string[]): string | undefined {
+        // Scan recent events for contexts visible to actor, pick the most recent among allowed
+        for (let i = this.events.length - 1; i >= 0; i--) {
+            const e = this.events[i];
+            if (e.visibility.includes(actorId) && e.contextId && allowed.includes(e.contextId)) {
+                return e.contextId;
+            }
         }
+        return undefined;
+    }
+
+    private pickLatestVisibleEventId(actorId: string, contextId?: string): string | undefined {
+        for (let i = this.events.length - 1; i >= 0; i--) {
+            const e = this.events[i];
+            if (e.visibility.includes(actorId) && (!contextId || e.contextId === contextId)) {
+                return e.id;
+            }
+        }
+        return undefined;
     }
 }
 
-// Usage
 export async function runSimulation(
     universe: UniverseState,
     actionSpace: ActionSpace,
@@ -339,7 +300,6 @@ export async function runSimulation(
 ) {
     const simulator = new UniverseSimulator(universe, actionSpace);
     const events = await simulator.simulate(numEvents);
-
     console.log(`Generated ${events.length} events`);
     return events;
 }
