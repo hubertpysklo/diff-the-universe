@@ -34,7 +34,7 @@ export const initializeUniverse = async (
 Space types available: ${JSON.stringify(actionSpace.spaceTypes.map(st => st.name))}
 
 Generate:
-- 5 agents with diverse personalities fitting the request
+- agents with diverse personalities, roles and behaviors etc. fitting the request and the service type
 - Initial spaces (at minimum a general/common space)
 - Membership assignments
 

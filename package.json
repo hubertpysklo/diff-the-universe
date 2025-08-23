@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "orchestrator:test": "tsx initializer/run_orchestrator.ts",
+    "test:create": "tsx initializer/run_test_creator.ts",
+    "test:autonomous": "tsx initializer/run_autonomous_test.ts",
+    "test:mcp": "tsx initializer/run_mcp_test.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

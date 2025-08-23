@@ -6,14 +6,40 @@ export const actionSpaceSchema = z.object({
         description: z.string(),
         requiredParams: z.array(z.string()),
         createsEntity: z.string(),
-        visibilityRule: z.string(),
+        visibilityRule: z.string().optional(), // Made optional - visibility is inferred from DB structure
         canCreateSpace: z.boolean().default(false),
         spaceParameter: z.string().optional(),
+
+        // NEW: Distinguish action types
+        actionType: z.enum(['system', 'agent']).default('agent').describe('System actions are for bootstrap (create users/spaces), agent actions are for simulation'),
+
         visibilityComputation: z.union([
             z.object({ method: z.literal('space_members'), spaceField: z.string() }),
             z.object({ method: z.literal('explicit_recipients'), recipientFields: z.array(z.string()).min(1) }),
-            z.object({ method: z.literal('everyone') })
-        ]).optional()
+            z.object({ method: z.literal('everyone') }),
+            // NEW: Custom visibility patterns for unique schemas
+            z.object({
+                method: z.literal('custom'),
+                description: z.string(),
+                // How to compute visibility from the event and database (optional - may just be described)
+                computeLogic: z.string().optional()
+            })
+        ]).describe('REQUIRED: How to determine who can see this action'),
+
+        // NEW: Database write specification
+        dbWrites: z.array(z.object({
+            op: z.enum(['insert', 'upsert', 'update']).default('insert'),
+            table: z.string(),
+            columns: z.record(z.string(), z.union([
+                z.string(), // Simple string mapping for backward compatibility
+                z.object({  // Detailed mapping with type information
+                    source: z.string().describe('Source field from event (actorId, contextId, metadata.field, etc)'),
+                    type: z.enum(['fk', 'json', 'text', 'integer', 'boolean', 'timestamp']).optional().describe('Data type hint for proper conversion')
+                })
+            ])).describe('Map of dbColumn to source (string) or {source, type}'),
+            staticValues: z.record(z.string(), z.any()).optional().describe('Static values to set'),
+            returning: z.string().optional().describe('Column to return (usually primary key)')
+        })).optional()
     })),
 
     spaceTypes: z.array(z.object({
@@ -23,7 +49,7 @@ export const actionSpaceSchema = z.object({
         definition: z.object({
             explicit: z.object({
                 tableName: z.string(),
-                membershipTable: z.string().optional()
+                membershipTable: z.string().optional().nullable()
             }).optional(),
             implicit: z.object({
                 emergesFrom: z.string()
@@ -33,11 +59,56 @@ export const actionSpaceSchema = z.object({
             }).optional()
         }),
 
-        supportsActions: z.array(z.string())
-    }))
+        supportsActions: z.array(z.string()).describe('Which actions can occur in this space type')
+    })),
+
+    // Bootstrap instructions for initial entity creation
+    bootstrap: z.object({
+        actors: z.object({
+            table: z.string().describe('Table name for actors/users'),
+            columns: z.record(z.string(), z.object({
+                source: z.enum(['id', 'name', 'email', 'metadata']),
+                type: z.enum(['fk', 'json', 'text', 'integer', 'boolean', 'timestamp']).optional(),
+                transform: z.string().optional().describe('Template for value transformation, e.g., "{{id}}@example.com"')
+            })).describe('Column mappings for actor creation'),
+            returning: z.string().describe('Column to return and store in idMap')
+        }).optional(),
+
+        spaces: z.object({
+            table: z.string().describe('Table name for spaces/channels'),
+            columns: z.record(z.string(), z.object({
+                source: z.enum(['id', 'name', 'type', 'metadata']),
+                type: z.enum(['fk', 'json', 'text', 'integer', 'boolean', 'timestamp']).optional(),
+                transform: z.string().optional()
+            })).describe('Column mappings for space creation'),
+            returning: z.string().describe('Column to return and store in idMap')
+        }).optional(),
+
+        memberships: z.object({
+            table: z.string().describe('Table name for memberships'),
+            actorColumn: z.string().describe('Column name for actor/user foreign key'),
+            spaceColumn: z.string().describe('Column name for space/channel foreign key')
+        }).optional()
+    }).optional().describe('Explicit instructions for bootstrapping initial entities')
 });
 
 export type ActionSpace = z.infer<typeof actionSpaceSchema>;
+
+// Extract types for database operations
+export type DbWrite = {
+    op?: 'insert' | 'upsert' | 'update';
+    table: string;
+    columns: Record<string, string | ColumnMapping>;
+    staticValues?: Record<string, any>;
+    returning?: string;
+};
+
+export type ColumnMapping = {
+    source: string;
+    type?: 'fk' | 'json' | 'text' | 'integer' | 'boolean' | 'timestamp';
+};
+
+export type Action = ActionSpace['actions'][0];
 
 export const universeStateSchema = z.object({
     agents: z.array(z.object({

@@ -21,12 +21,22 @@ export type SchemaSnapshot = {
 };
 
 export const getSchemaSnapshot = async (
-    options?: { schema?: string; includeRowCounts?: boolean }
+    options?: {
+        schema?: string;
+        includeRowCounts?: boolean;
+        tableFilter?: string; // Optional table filter pattern (inclusion)
+        excludeFilter?: string; // Optional table exclusion pattern
+    }
 ): Promise<SchemaSnapshot> => {
     const schema = options?.schema ?? 'public';
     if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL environment variable not found.');
     const sql = neon(process.env.DATABASE_URL);
 
+    // Get table filters from options or environment variables
+    const tableFilter = options?.tableFilter ?? process.env.TABLE_FILTER_PATTERN;
+    const excludeFilter = options?.excludeFilter ?? process.env.SERVICE_FILTERS;
+
+    // Get all tables from the schema
     const tablesRes = await sql<
         { table_name: string }[]
     >`
@@ -35,7 +45,58 @@ export const getSchemaSnapshot = async (
     WHERE table_schema = ${schema} AND table_type = 'BASE TABLE'
     ORDER BY table_name
   `;
-    const tableNames = tablesRes.map(r => r.table_name);
+
+    let tableNames = tablesRes.map(r => r.table_name);
+    const originalCount = tableNames.length;
+
+    // Apply exclusion filter first if specified
+    if (excludeFilter) {
+        // Support multiple patterns separated by comma
+        const excludePatterns = excludeFilter.split(',').map(p => p.trim());
+        console.log(`→ Excluding tables matching pattern(s): ${excludePatterns.join(', ')}`);
+
+        // Filter out tables that match exclusion patterns
+        tableNames = tableNames.filter(tableName => {
+            return !excludePatterns.some(pattern => {
+                // Support wildcards: * matches any characters
+                // If no wildcard, check if table name contains the pattern
+                if (pattern.includes('*')) {
+                    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$', 'i');
+                    return regex.test(tableName);
+                } else {
+                    // Simple contains check for service names
+                    return tableName.toLowerCase().includes(pattern.toLowerCase());
+                }
+            });
+        });
+
+        const excludedCount = originalCount - tableNames.length;
+        if (excludedCount > 0) {
+            console.log(`  ✓ Excluded ${excludedCount} table(s)`);
+        }
+    }
+
+    // Apply inclusion filter if specified
+    if (tableFilter) {
+        // Support multiple patterns separated by comma
+        const patterns = tableFilter.split(',').map(p => p.trim());
+        console.log(`→ Including only tables matching pattern(s): ${patterns.join(', ')}`);
+
+        // Filter tables in JavaScript (safer than dynamic SQL)
+        tableNames = tableNames.filter(tableName => {
+            return patterns.some(pattern => {
+                // Support wildcards: * matches any characters
+                const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$', 'i');
+                return regex.test(tableName);
+            });
+        });
+
+        if (tableNames.length === 0) {
+            console.warn(`⚠️ No tables matched the filter pattern: ${tableFilter}`);
+        }
+    }
+
+    console.log(`→ Found ${tableNames.length} tables${(tableFilter || excludeFilter) ? ' (filtered)' : ''}: ${tableNames.join(', ')}`);
 
     const columnsRes = await sql<
         { table_name: string; column_name: string; data_type: string; is_nullable: 'YES' | 'NO'; column_default: string | null }[]
