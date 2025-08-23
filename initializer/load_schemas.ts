@@ -27,32 +27,28 @@ export const getSchemaSnapshot = async (
     if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL environment variable not found.');
     const sql = neon(process.env.DATABASE_URL);
 
-    const tablesRes = await sql`
+    const tablesRes = await sql<
+        { table_name: string }[]
+    >`
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = ${schema} AND table_type = 'BASE TABLE'
     ORDER BY table_name
-  ` as unknown as { table_name: string }[];
-    // Optional service filtering via ENV: SERVICE_FILTERS / SERVICE_FILTER / SERVICES / SERVICE_NAMES
-    const serviceFiltersRaw = process.env.SERVICE_FILTERS || process.env.SERVICE_FILTER || process.env.SERVICES || process.env.SERVICE_NAMES;
-    let tableNames = tablesRes.map(r => r.table_name);
-    if (serviceFiltersRaw) {
-        const prefixes = serviceFiltersRaw
-            .split(',')
-            .map(s => s.trim())
-            .filter(Boolean)
-            .map(s => `${s}_`);
-        tableNames = tableNames.filter(name => prefixes.some(p => name.startsWith(p)));
-    }
+  `;
+    const tableNames = tablesRes.map(r => r.table_name);
 
-    const columnsRes = await sql`
+    const columnsRes = await sql<
+        { table_name: string; column_name: string; data_type: string; is_nullable: 'YES' | 'NO'; column_default: string | null }[]
+    >`
     SELECT table_name, column_name, data_type, is_nullable, column_default
     FROM information_schema.columns
     WHERE table_schema = ${schema}
     ORDER BY table_name, ordinal_position
-  ` as unknown as { table_name: string; column_name: string; data_type: string; is_nullable: 'YES' | 'NO'; column_default: string | null }[];
+  `;
 
-    const pkRes = await sql`
+    const pkRes = await sql<
+        { table_name: string; column_name: string }[]
+    >`
     SELECT tc.table_name, kcu.column_name
     FROM information_schema.table_constraints AS tc
     JOIN information_schema.key_column_usage AS kcu
@@ -61,9 +57,11 @@ export const getSchemaSnapshot = async (
     WHERE tc.table_schema = ${schema}
       AND tc.constraint_type = 'PRIMARY KEY'
     ORDER BY tc.table_name, kcu.ordinal_position
-  ` as unknown as { table_name: string; column_name: string }[];
+  `;
 
-    const fkRes = await sql`
+    const fkRes = await sql<
+        { fk_table: string; fk_column: string; referenced_table: string; referenced_column: string }[]
+    >`
     SELECT
       tc.table_name AS fk_table,
       kcu.column_name AS fk_column,
@@ -79,7 +77,7 @@ export const getSchemaSnapshot = async (
     WHERE tc.table_schema = ${schema}
       AND tc.constraint_type = 'FOREIGN KEY'
     ORDER BY fk_table, fk_column
-  ` as unknown as { fk_table: string; fk_column: string; referenced_table: string; referenced_column: string }[];
+  `;
 
     const columnsByTable = new Map<string, SchemaSnapshot['tables'][number]['columns']>();
     for (const t of tableNames) columnsByTable.set(t, []);
@@ -124,7 +122,7 @@ export const getSchemaSnapshot = async (
         // Simple counts; enable only for small schemas
         await Promise.all(
             tables.map(async t => {
-                const res = await (sql as any).unsafe(`SELECT COUNT(*)::bigint AS count FROM "${schema}"."${t.name}"`) as { count: string }[];
+                const res = await sql<{ count: string }[]>(`SELECT COUNT(*)::bigint AS count FROM "${schema}"."${t.name}"`);
                 t.rowCount = Number(res[0]?.count ?? 0);
             })
         );
