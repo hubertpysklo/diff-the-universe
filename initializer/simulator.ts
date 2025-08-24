@@ -128,8 +128,10 @@ ${this.actionSpace.actions.map(a => {
                 return `- ${a.name}: ${a.description}${params}`;
             }).join('\n')}
 
-When calling an action, you MUST provide ALL required parameters in the 'parameters' field.
+When calling an action, provide parameters in the 'parameters' field.
 The actual MESSAGE CONTENT goes in a parameter called "message" or "content".
+Provide all required parameters. For reply-type actions, if you don't know the parentId/parent_id, you may omit it and the system will infer the parent from recent context. If there are recent messages in the chosen space, prefer replying in-thread.
+
 Other required parameters should be generated with appropriate values:
 
 Examples of parameter generation:
