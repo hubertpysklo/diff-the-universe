@@ -25,18 +25,37 @@ export const initializeUniverse = async (
 2. INITIAL SPACES: Bootstrap environments where interactions can begin
    - Every universe needs at least one common space
    - Create realistic organizational structure
-   - Map to the discovered space types
+   
+   For CHANNEL-BASED systems (Slack, Discord):
+   - Use the discovered space types from the schema
+   - Spaces map to actual database entities (channels, rooms)
+   
+   For RECIPIENT-BASED systems (Email, SMS):
+   - Create VIRTUAL GROUPS as spaces (type: "VirtualGroup")
+   - These represent mailing lists, distribution groups, or recipient lists
+   - Example: { id: "team-all", type: "VirtualGroup", data: { name: "All Team", description: "Everyone in the company" } }
+   - When agents act in these spaces, it translates to sending messages to all members
 
 3. MEMBERSHIPS: Who belongs in which spaces initially`,
 
         prompt: `Create a universe for: "${userRequest}"
         
-Space types available: ${JSON.stringify(actionSpace.spaceTypes.map(st => st.name))}
+Space types available from schema: ${JSON.stringify(actionSpace.spaceTypes.map(st => st.name))}
+
+IMPORTANT: 
+- If space types look like storage/organizational units (Label, Folder, Tag), create VirtualGroup spaces instead
+- VirtualGroup represents a collection of people who communicate together
+- For email/messaging systems without channels, ALWAYS use VirtualGroup
 
 Generate:
 - agents with diverse personalities, roles and behaviors etc. fitting the request and the service type
-- Initial spaces (at minimum a general/common space)
-- Membership assignments
+- Initial spaces:
+  * For Slack/Discord: Use actual space types (Channel, Room)
+  * For Email/SMS: OPTIONAL - spaces will emerge from communication patterns
+    - You can start with NO spaces and let agents create them by sending emails
+    - OR create a few VirtualGroup spaces (e.g., "all-team", "project-x") to seed conversations
+  * For channel-based systems: At minimum create one general/common space
+- Membership assignments (who belongs to which spaces)
 
 Actions will be injected automatically at runtime from the schema.`,
 

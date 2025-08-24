@@ -84,6 +84,10 @@ class UniverseSimulator {
                 if (this.isMembershipAction(lastEvent)) {
                     this.handleMembershipChange(lastEvent);
                 }
+                // Handle emergent spaces from email/messaging
+                if (this.isMessageAction(lastEvent)) {
+                    this.handleEmergentSpace(lastEvent);
+                }
             }
             this.advanceTime();
         }
@@ -99,8 +103,11 @@ class UniverseSimulator {
             .filter(([_, members]) => members.has(actor.id))
             .map(([spaceId]) => spaceId);
 
-        if (allowedContextIds.length === 0) {
-            throw new Error(`Actor ${actor.id} has no allowed contexts`);
+        // For systems without spaces (like email), allow direct agent-to-agent actions
+        const hasSpaces = allowedContextIds.length > 0;
+        if (!hasSpaces) {
+            // Create a "direct" context for agent-to-agent communication
+            allowedContextIds.push('direct');
         }
 
         // Dynamic schema: action with content/parameters AND context
@@ -142,28 +149,42 @@ Examples of parameter generation:
                 system: enhancedSystemPrompt,
                 prompt: `${context}
 
-Your accessible spaces and what actions they support:
+${hasSpaces ? `Your accessible spaces and what actions they support:
 ${allowedContextIds.map(id => {
                     const space = this.universe.initialSpaces.find(s => s.id === id);
                     const spaceType = space?.type;
-                    const supportedActions = this.actionSpace.spaceTypes.find(t => t.name === spaceType)?.supportsActions ?? [];
                     const memberCount = this.spaceMembers.get(id)?.size || 0;
                     const name = (space?.data as any)?.name || id;
 
-                    // Only show actions that this space actually supports
-                    const relevantActions = supportedActions.filter(action =>
-                        this.actionSpace.actions.some(a => a.name === action)
-                    );
+                    // For VirtualGroup spaces, show communication actions
+                    let relevantActions: string[] = [];
+                    if (spaceType === 'VirtualGroup') {
+                        // For virtual groups, allow sending messages/emails to the group
+                        relevantActions = this.actionSpace.actions
+                            .filter(a => a.actionType === 'agent' &&
+                                (a.name.includes('send') || a.name.includes('post') || a.name.includes('message')))
+                            .map(a => a.name);
+                    } else {
+                        // For real spaces, use the defined supported actions
+                        const supportedActions = this.actionSpace.spaceTypes.find(t => t.name === spaceType)?.supportsActions ?? [];
+                        relevantActions = supportedActions.filter(action =>
+                            this.actionSpace.actions.some(a => a.name === action)
+                        );
+                    }
 
                     // Show the ACTUAL ID that must be used
                     return `- ${id} (name: ${name}, type: ${spaceType}, ${memberCount} members): supports ${relevantActions.join(', ')}`;
-                }).join('\n')}
+                }).join('\n')}` : `You can communicate directly with other agents:
+${this.universe.agents.filter(a => a.id !== actor.id).map(a => `- ${a.id}: ${a.name}`).join('\n')}
+
+For email actions like send_email, include the recipient's ID in the parameters.`}
 
 Choose an action to perform and provide:
 1. action: The action name from AVAILABLE ACTIONS
-2. contextId: The space ID where this action occurs (use the exact ID from the list above, e.g., "mbx_shared")
+2. contextId: ${hasSpaces ? 'The space ID where this action occurs (use the exact ID from the list above)' : 'Optional - use "direct" for direct communication or leave empty'}
 3. parameters: An object with ALL required parameters for the action, where:
    - The actual MESSAGE CONTENT goes in a parameter called "message" or "content"
+   - For emails, include "recipient" with the target agent's ID
    - Other metadata like message_id, recipient, subject, etc. go as separate parameters
    
 Example for send_email:
@@ -233,30 +254,45 @@ Example for send_email:
         let parentId: string | undefined;
 
         // Check if action needs a parent (from dbWrites or requiredParams)
-        const needsParent = def.dbWrites?.some(write =>
-            Object.values(write.columns || {}).includes('parentId') ||
-            Object.values(write.columns || {}).includes('parent_id')
-        ) || (def?.requiredParams ?? []).includes('parentId');
+        const needsParent = (
+            def.dbWrites?.some(write => {
+                const colValues = Object.values(write.columns || {});
+                // accept both literal string mappings and object mappings with .source
+                return colValues.some((v: any) => {
+                    if (typeof v === 'string') return v === 'parentId' || v === 'parent_id' || v === 'metadata.parent_id';
+                    if (typeof v === 'object' && v && 'source' in v) {
+                        return v.source === 'parentId' || v.source === 'parent_id' || v.source === 'metadata.parent_id';
+                    }
+                    return false;
+                });
+            }) ?? false
+        ) || (def?.requiredParams ?? []).some(p => p === 'parentId' || p === 'parent_id');
 
         if (needsParent) {
             // If the LLM provided a parentId, validate it exists
-            if (obj.parameters.parentId) {
-                const parentEvent = this.events.find(e => e.id === obj.parameters.parentId);
+            const providedParent = obj.parameters.parentId || obj.parameters.parent_id;
+            if (providedParent) {
+                const parentEvent = this.events.find(e => e.id === providedParent);
                 if (parentEvent && parentEvent.visibility.includes(actor.id)) {
-                    parentId = obj.parameters.parentId;
+                    parentId = providedParent;
                     // Also inherit the context from the parent
                     if (!chosenContext && parentEvent.contextId) {
                         chosenContext = parentEvent.contextId;
                         console.log(`  DEBUG: Inherited context from parent: ${chosenContext}`);
                     }
                 } else {
-                    console.warn(`  WARNING: Invalid or invisible parentId provided: ${obj.parameters.parentId}`);
+                    console.warn(`  WARNING: Invalid or invisible parentId provided: ${providedParent}`);
                 }
             }
 
             // If no valid parent provided, pick the latest visible event in the context
             if (!parentId && chosenContext) {
                 parentId = this.pickLatestVisibleEventId(actor.id, chosenContext);
+            }
+
+            // Ensure parent identifier is surfaced in metadata as parent_id for DB mapping
+            if (parentId) {
+                obj.parameters.parent_id = parentId;
             }
         }
 
@@ -449,6 +485,61 @@ Example for send_email:
             data: { name: ev.metadata?.name || 'new-context' }
         });
         for (const uid of members) this.universe.memberships.push({ agentId: uid, spaceId });
+    }
+
+    private isMessageAction(ev: CanonicalEvent): boolean {
+        // Check if this is a messaging action (email, message, etc.)
+        const action = this.actionSpace.actions.find(a => a.name === ev.action);
+        return action?.name.includes('send') || action?.name.includes('message') || action?.name.includes('email') || false;
+    }
+
+    private handleEmergentSpace(ev: CanonicalEvent) {
+        // Create a space from email/message threads
+        if (!ev.recipients || ev.recipients.length === 0) {
+            return; // No space needed for single recipient
+        }
+
+        // Create thread ID if not present
+        const threadId = ev.metadata?.thread_id || `thread_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+
+        // Check if space already exists for this thread
+        let spaceId = `thread_${threadId}`;
+        if (!this.spaceMembers.has(spaceId)) {
+            // Create new emergent space for this thread
+            const members = new Set<string>([ev.actorId, ...(ev.recipients || [])]);
+            this.spaceMembers.set(spaceId, members);
+
+            // Add to universe spaces
+            this.universe.initialSpaces.push({
+                id: spaceId,
+                type: 'EmergentThread',
+                data: {
+                    name: `Thread: ${ev.metadata?.subject || 'Conversation'}`,
+                    thread_id: threadId,
+                    created_from: ev.action
+                }
+            });
+
+            // Add memberships
+            for (const uid of members) {
+                this.universe.memberships.push({ agentId: uid, spaceId });
+            }
+
+            console.log(`  📧 Created emergent space ${spaceId} with ${members.size} members from ${ev.action}`);
+        } else {
+            // Add new recipients to existing thread space if needed
+            const members = this.spaceMembers.get(spaceId)!;
+            for (const recipient of ev.recipients || []) {
+                if (!members.has(recipient)) {
+                    members.add(recipient);
+                    this.universe.memberships.push({ agentId: recipient, spaceId });
+                    console.log(`  📧 Added ${recipient} to thread space ${spaceId}`);
+                }
+            }
+        }
+
+        // Update event to reference this space
+        ev.contextId = spaceId;
     }
 
     private selectActor(): Agent {

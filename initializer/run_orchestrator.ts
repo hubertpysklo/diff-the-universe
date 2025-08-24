@@ -242,8 +242,10 @@ async function main() {
             console.log(`  Created ${bootstrapEvents.length} bootstrap events`);
         }
 
-        console.log('\n→ Running simulator for 20 turns...');
-        const simulationEvents = await runSimulation(universe, actionSpace, 5);
+        const envTurns = process.env.TURNS || process.env.SIM_TURNS;
+        const numTurns = envTurns && !isNaN(parseInt(envTurns, 10)) ? parseInt(envTurns, 10) : 20;
+        console.log(`\n→ Running simulator for ${numTurns} turns...`);
+        const simulationEvents = await runSimulation(universe, actionSpace, numTurns);
 
         // Combine bootstrap and simulation events
         const allEvents = [...bootstrapEvents, ...simulationEvents];
