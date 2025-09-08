@@ -1,4 +1,4 @@
-# diff-the-universe
+# diff-the-universe (YC AI AGENTS HACKATON 25)
 
 ┌─────────────────┐
 │ User Request    │ → "AI startup in SF with 5 employees"
