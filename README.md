@@ -11,7 +11,17 @@ The idea came from the YC AI Agents Hackathon 2025 with my Wordware colleagues. 
 - Docker
 - uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
-
 # Setup
 make install
+
+# Run 
+make dev
+
+# Clean 
+
+make clean
+
+
+
+
 
