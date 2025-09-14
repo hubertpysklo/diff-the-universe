@@ -20,13 +20,27 @@ from src.matrixes.slack.database.schema import (
     AppSetting,
 )
 
+from sqlalchemy import select
+from src.matrixes.slack.database.db import session
+
 """
 # I choosed the ones that are most likely to be used by agents. Slack OpenAPI speck has over 150 actions, unable to cover by one person - feel free to add more.
 
 """
 
 # Replica specific actions
+
+
 # Create Team
+
+
+def create_team(team_id: int, team_name: str):
+    team = Team(team_id=team_id, team_name=team_name)
+    session.add(team)
+    session.commit()
+    return team
+
+
 # Create User
 
 

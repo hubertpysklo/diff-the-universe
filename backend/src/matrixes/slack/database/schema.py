@@ -33,7 +33,9 @@ class User(Base):
     user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime, default=None)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime, default=None
+    )  # THe deafult value should be current time, but the DB needs to accept incoming values too. This is to populate the DB with existing/ simulated data.
     last_login: Mapped[datetime | None] = mapped_column(DateTime, default=None)
     is_active: Mapped[bool | None] = mapped_column(Boolean, default=True)
 
@@ -49,7 +51,9 @@ class Team(Base):
     __tablename__ = "teams"
     team_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     team_name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime
+    )  # THe deafult value should be current time, but the DB needs to accept incoming values too. This is to populate the DB with existing/ simulated data.
 
     channels: Mapped[list["Channel"]] = relationship(
         back_populates="team", cascade="all,delete-orphan"
