@@ -1,8 +1,4 @@
-.PHONY: install up down dev migration migrate
-
-install:
-	uv venv
-	uv sync
+.PHONY: up down logs ps db psql migrate migration backend-dev
 
 up:
 	docker compose up 
@@ -10,11 +6,14 @@ up:
 down:
 	docker compose down
 
-dev:
-	uv run main.py
+logs:
+	docker compose logs
 
 migration:
-	uv run alembic revision --autogenerate -m "$(m)"
+	cd backend && uv run alembic revision --autogenerate -m "$(m)"
 
 migrate:
-	uv run alembic upgrade head
+	cd backend && uv run alembic upgrade head
+
+backend-dev: up
+	cd backend && uv run main.py
