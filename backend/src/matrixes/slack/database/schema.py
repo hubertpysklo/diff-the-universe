@@ -15,11 +15,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
 
-class UserSettingsTheme(PyEnum):
-    light = "light"
-    dark = "dark"
-
-
 class UserSettingsNotificationLevel(PyEnum):
     all = "all"
     mentions = "mentions"
@@ -199,9 +194,6 @@ class File(Base):
 class UserSetting(Base):
     __tablename__ = "user_settings"
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), primary_key=True)
-    theme: Mapped[UserSettingsTheme | None] = mapped_column(
-        Enum(UserSettingsTheme, name="usersettings_theme_enum", native_enum=True)
-    )
     notification_level: Mapped[UserSettingsNotificationLevel | None] = mapped_column(
         Enum(
             UserSettingsNotificationLevel,
