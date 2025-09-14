@@ -12,10 +12,10 @@ The idea came from the YC AI Agents Hackathon 2025 with my Wordware colleagues. 
 - uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
 ## Set up 
-1. make migration
-2. make migrate
-3. make up
-4. make backend-dev
+1. `make migration`
+2. `make migrate`
+3. `make up`
+4. `make backend-dev`
 
 
 
