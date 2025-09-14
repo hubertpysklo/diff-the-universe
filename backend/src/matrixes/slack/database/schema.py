@@ -11,11 +11,8 @@ from sqlalchemy import (
     ForeignKey,
     Enum,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
-
-
-class Base(DeclarativeBase):
-    pass
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from .base import Base
 
 
 class UserSettingsTheme(PyEnum):
