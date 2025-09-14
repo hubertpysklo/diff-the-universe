@@ -6,4 +6,7 @@ install:
 
 dev:
 	uv run main.py
-	docker compose up -d
+	docker compose up
+
+clean:
+	docker compose down
