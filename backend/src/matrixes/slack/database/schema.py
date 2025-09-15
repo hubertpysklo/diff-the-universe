@@ -65,6 +65,7 @@ class Channel(Base):
     channel_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     channel_name: Mapped[str] = mapped_column(String(100), nullable=False)
     team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.team_id"))
+    topic_text: Mapped[str | None] = mapped_column(Text)
     is_private: Mapped[bool | None] = mapped_column(Boolean)
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime, default=datetime.now()
@@ -74,9 +75,6 @@ class Channel(Base):
     team: Mapped[Team | None] = relationship(back_populates="channels")
     messages: Mapped[list["Message"]] = relationship(
         back_populates="channel", cascade="all,delete-orphan"
-    )
-    topic: Mapped["ChannelTopic"] = relationship(
-        back_populates="channel", uselist=False, cascade="all,delete-orphan"
     )
 
 
@@ -140,20 +138,6 @@ class MessageReaction(Base):
 
     message: Mapped["Message"] = relationship(back_populates="reactions")
     user: Mapped["User"] = relationship()
-
-
-class ChannelTopic(Base):
-    __tablename__ = "channel_topics"
-    topic_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    channel_id: Mapped[int] = mapped_column(
-        ForeignKey("channels.channel_id"), nullable=False
-    )
-    topic_text: Mapped[str | None] = mapped_column(Text)
-    updated_at: Mapped[datetime | None] = mapped_column(
-        DateTime, default=datetime.now()
-    )
-
-    channel: Mapped["Channel"] = relationship(back_populates="topic")
 
 
 class DirectMessage(Base):

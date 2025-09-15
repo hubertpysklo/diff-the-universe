@@ -1,7 +1,6 @@
 from os import environ
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from .base import Base
 
 DATABASE_URL = environ["DATABASE_URL"]
 
