@@ -20,6 +20,7 @@ from src.matrixes.slack.database.schema import (
     AppSetting,
 )
 
+from datetime import datetime
 from sqlalchemy import select
 from src.matrixes.slack.database.db import session
 
@@ -33,13 +34,11 @@ from src.matrixes.slack.database.db import session
 
 # Create Team
 
-
-def create_team(team_id: int, team_name: str):
-    team = Team(team_id=team_id, team_name=team_name)
+def create_team(team_name: str, created_at: datetime)
+    team = Team(team_name=team_name, created_at=created_at)
     session.add(team)
     session.commit()
     return team
-
 
 # Create User
 

@@ -34,8 +34,8 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     created_at: Mapped[datetime | None] = mapped_column(
-        DateTime, default=None
-    )  # THe deafult value should be current time, but the DB needs to accept incoming values too. This is to populate the DB with existing/ simulated data.
+        DateTime, default=datetime.now()
+    )
     last_login: Mapped[datetime | None] = mapped_column(DateTime, default=None)
     is_active: Mapped[bool | None] = mapped_column(Boolean, default=True)
 
@@ -52,8 +52,8 @@ class Team(Base):
     team_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     team_name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     created_at: Mapped[datetime | None] = mapped_column(
-        DateTime
-    )  # THe deafult value should be current time, but the DB needs to accept incoming values too. This is to populate the DB with existing/ simulated data.
+        DateTime, default=datetime.now()
+    )
 
     channels: Mapped[list["Channel"]] = relationship(
         back_populates="team", cascade="all,delete-orphan"
@@ -66,7 +66,9 @@ class Channel(Base):
     channel_name: Mapped[str] = mapped_column(String(100), nullable=False)
     team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.team_id"))
     is_private: Mapped[bool | None] = mapped_column(Boolean)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime, default=datetime.now()
+    )
     is_archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     team: Mapped[Team | None] = relationship(back_populates="channels")
@@ -86,7 +88,9 @@ class Message(Base):
     )
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
     message_text: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime, default=datetime.now()
+    )
 
     channel: Mapped["Channel"] = relationship(back_populates="messages")
     user: Mapped["User"] = relationship(back_populates="messages")
@@ -104,7 +108,7 @@ class ChannelMember(Base):
         ForeignKey("channels.channel_id"), primary_key=True
     )
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), primary_key=True)
-    joined_at: Mapped[datetime | None] = mapped_column(DateTime)
+    joined_at: Mapped[datetime | None] = mapped_column(DateTime, default=datetime.now())
 
     channel: Mapped["Channel"] = relationship()
     user: Mapped["User"] = relationship()
@@ -130,7 +134,9 @@ class MessageReaction(Base):
     )
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
     reaction_type: Mapped[str | None] = mapped_column(String(50))
-    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime, default=datetime.now()
+    )
 
     message: Mapped["Message"] = relationship(back_populates="reactions")
     user: Mapped["User"] = relationship()
@@ -143,7 +149,9 @@ class ChannelTopic(Base):
         ForeignKey("channels.channel_id"), nullable=False
     )
     topic_text: Mapped[str | None] = mapped_column(Text)
-    updated_at: Mapped[datetime | None] = mapped_column(DateTime)
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime, default=datetime.now()
+    )
 
     channel: Mapped["Channel"] = relationship(back_populates="topic")
 
@@ -156,7 +164,9 @@ class DirectMessage(Base):
         ForeignKey("users.user_id"), nullable=False
     )
     message_text: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime, default=datetime.now()
+    )
 
     sender: Mapped["User"] = relationship(foreign_keys=[sender_id])
     receiver: Mapped["User"] = relationship(foreign_keys=[receiver_id])
@@ -190,7 +200,9 @@ class File(Base):
     file_name: Mapped[str | None] = mapped_column(String(255))
     file_size: Mapped[int | None] = mapped_column(Integer)
     file_type: Mapped[str | None] = mapped_column(String(50))
-    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime, default=datetime.now()
+    )
 
     user: Mapped["User"] = relationship(back_populates="files")
 
@@ -240,14 +252,6 @@ class UserTeam(Base):
     team: Mapped["Team"] = relationship()
 
 
-class AuditLog(Base):
-    __tablename__ = "audit_logs"
-    log_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    action: Mapped[str | None] = mapped_column(String(100))
-    description: Mapped[str | None] = mapped_column(Text)
-    action_timestamp: Mapped[datetime | None] = mapped_column(DateTime)
-
-
 class UserMention(Base):
     __tablename__ = "user_mentions"
     mention_id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -255,7 +259,9 @@ class UserMention(Base):
         ForeignKey("messages.message_id"), nullable=False
     )
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
-    mentioned_at: Mapped[datetime | None] = mapped_column(DateTime)
+    mentioned_at: Mapped[datetime | None] = mapped_column(
+        DateTime, default=datetime.now()
+    )
 
     message: Mapped["Message"] = relationship()
     user: Mapped["User"] = relationship()
@@ -268,6 +274,6 @@ class MessageEdit(Base):
         ForeignKey("messages.message_id"), nullable=False
     )
     edited_text: Mapped[str | None] = mapped_column(Text)
-    edited_at: Mapped[datetime | None] = mapped_column(DateTime)
+    edited_at: Mapped[datetime | None] = mapped_column(DateTime, default=datetime.now())
 
     message: Mapped["Message"] = relationship(back_populates="edits")
