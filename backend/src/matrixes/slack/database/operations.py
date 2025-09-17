@@ -177,15 +177,6 @@ def reply_to_message(
     return reply_message
 
 
-def send_message_to_user(session: Session, user_id: int, message_text: str):
-    user = session.get(User, user_id)
-    if user is None:
-        raise ValueError("User not found")
-    message = Message(user_id=user_id, message_text=message_text)
-    session.add(message)
-    return message
-
-
 def send_direct_message(
     session: Session,
     user_id: int,
@@ -239,9 +230,97 @@ def send_direct_message(
     return message
 
 
-# update-message
 # add-emoji-reaction
+
+
+def add_emoji_reaction(
+    session: Session,
+    message_id: int,
+    user_id: int,
+    reaction_type: str,
+    created_at: datetime,
+) -> MessageReaction:
+    message = session.get(Message, message_id)
+    if message is None:
+        raise ValueError("Message not found")
+    user = session.get(User, user_id)
+    if user is None:
+        raise ValueError("User not found")
+    reaction = MessageReaction(
+        message_id=message_id,
+        user_id=user_id,
+        reaction_type=reaction_type,
+        created_at=created_at,
+    )
+    session.add(reaction)
+    return reaction
+
+
 # remove-emoji-reaction
+
+
+def remove_emoji_reaction(session: Session, user_id: int, reaction_id: int):
+    user = session.get(User, user_id)
+    if user is None:
+        raise ValueError("User not found")
+    reaction = session.get(MessageReaction, reaction_id)
+    if reaction is None:
+        raise ValueError("Reaction not found")
+    if reaction.user_id != user_id:
+        raise ValueError("User does not have this reaction")
+    session.delete(reaction)
+    return reaction
+
+
 # list-channels
+
+
+def list_channels(session: Session, user_id: int, team_id: int):
+    user = session.get(User, user_id)
+    if user is None:
+        raise ValueError("User not found")
+    team = session.get(Team, team_id)
+    if team is None:
+        raise ValueError("Team not found")
+    team_member = session.get(UserTeam, (user_id, team_id))
+    if team_member is None:
+        raise ValueError("User is not a member of the team")
+
+    channels = (
+        session.execute(
+            select(Channel)
+            .where(Channel.team_id == team_id)
+            .join(ChannelMember)
+            .where(ChannelMember.user_id == user_id)
+        )
+        .scalars()
+        .all()
+    )
+    return channels
+
+
+def list_direct_messages(session: Session, user_id: int, team_id: int):
+    user = session.get(User, user_id)
+    if user is None:
+        raise ValueError("User not found")
+    team = session.get(Team, team_id)
+    if team is None:
+        raise ValueError("Team not found")
+    team_member = session.get(UserTeam, (user_id, team_id))
+    if team_member is None:
+        raise ValueError("User is not a member of the team")
+    direct_messages = (
+        session.execute(
+            select(Channel)
+            .where(Channel.is_dm.is_(True), Channel.team_id == team_id)
+            .join(ChannelMember)
+            .where(ChannelMember.user_id == user_id)
+        )
+        .scalars()
+        .all()
+    )
+    return direct_messages
+
+
 # list-members-in-channel
 # list-history (paginated)

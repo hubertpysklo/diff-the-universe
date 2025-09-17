@@ -173,6 +173,7 @@ class File(Base):
     file_name: Mapped[str | None] = mapped_column(String(255))
     file_size: Mapped[int | None] = mapped_column(Integer)
     file_type: Mapped[str | None] = mapped_column(String(50))
+    file_url: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime, default=datetime.now()
     )
