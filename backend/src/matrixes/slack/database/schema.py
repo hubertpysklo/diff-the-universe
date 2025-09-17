@@ -67,6 +67,8 @@ class Channel(Base):
     team_id: Mapped[int | None] = mapped_column(ForeignKey("teams.team_id"))
     topic_text: Mapped[str | None] = mapped_column(Text)
     is_private: Mapped[bool | None] = mapped_column(Boolean)
+    is_dm: Mapped[bool | None] = mapped_column(Boolean, default=False)
+    is_gc: Mapped[bool | None] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime, default=datetime.now()
     )
@@ -81,6 +83,9 @@ class Channel(Base):
 class Message(Base):
     __tablename__ = "messages"
     message_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("messages.message_id"), nullable=True
+    )
     channel_id: Mapped[int] = mapped_column(
         ForeignKey("channels.channel_id"), nullable=False
     )
@@ -140,22 +145,6 @@ class MessageReaction(Base):
     user: Mapped["User"] = relationship()
 
 
-class DirectMessage(Base):
-    __tablename__ = "direct_messages"
-    direct_message_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    sender_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), nullable=False)
-    receiver_id: Mapped[int] = mapped_column(
-        ForeignKey("users.user_id"), nullable=False
-    )
-    message_text: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime | None] = mapped_column(
-        DateTime, default=datetime.now()
-    )
-
-    sender: Mapped["User"] = relationship(foreign_keys=[sender_id])
-    receiver: Mapped["User"] = relationship(foreign_keys=[receiver_id])
-
-
 class TeamRole(Base):
     __tablename__ = "team_roles"
     role_id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -203,13 +192,6 @@ class UserSetting(Base):
     )
 
     user: Mapped["User"] = relationship()
-
-
-class AppSetting(Base):
-    __tablename__ = "app_settings"
-    setting_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    setting_name: Mapped[str | None] = mapped_column(String(100))
-    setting_value: Mapped[str | None] = mapped_column(String(255))
 
 
 class FileMessage(Base):
