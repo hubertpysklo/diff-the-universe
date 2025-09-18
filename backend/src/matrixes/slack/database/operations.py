@@ -5,17 +5,7 @@ from src.matrixes.slack.database.schema import (
     Message,
     ChannelMember,
     MessageReaction,
-    DirectMessage,
-    File,
-    MessageEdit,
-    TeamRole,
-    TeamSetting,
-    UserMention,
-    UserRole,
-    UserSetting,
     UserTeam,
-    FileMessage,
-    AppSetting,
 )
 
 from datetime import datetime
@@ -323,4 +313,78 @@ def list_direct_messages(session: Session, user_id: int, team_id: int):
 
 
 # list-members-in-channel
+
+
+def list_members_in_channel(session: Session, channel_id: int, team_id: int):
+    channel = session.get(Channel, channel_id)
+    if channel is None:
+        raise ValueError("Channel not found")
+    team = session.get(Team, team_id)
+    if team is None:
+        raise ValueError("Team not found")
+    team_member = session.get(UserTeam, (channel.team_id, team_id))
+    if team_member is None:
+        raise ValueError("User is not a member of the team")
+    members = (
+        session.execute(
+            select(ChannelMember).where(ChannelMember.channel_id == channel_id)
+        )
+        .scalars()
+        .all()
+    )
+    return members
+
+
+# list-users-in-team
+
+
+def list_users_in_team(session: Session, team_id: int, user_id: int):
+    user = session.get(User, user_id)
+    if user is None:
+        raise ValueError("User not found")
+    team = session.get(Team, team_id)
+    if team is None:
+        raise ValueError("Team not found")
+    team_member = session.get(UserTeam, (user_id, team_id))
+    if team_member is None:
+        raise ValueError("User is not a member of the team")
+    users = (
+        session.execute(select(User).join(UserTeam).where(UserTeam.team_id == team_id))
+        .scalars()
+        .all()
+    )
+    return users
+
+
 # list-history (paginated)
+
+
+def list_channel_history(
+    session: Session,
+    channel_id: int,
+    user_id: int,
+    team_id: int,
+    limit: int,
+    offset: int,
+):
+    channel = session.get(Channel, channel_id)
+    if channel is None:
+        raise ValueError("Channel not found")
+    team = session.get(Team, team_id)
+    if team is None:
+        raise ValueError("Team not found")
+    team_member = session.get(UserTeam, (user_id, team_id))
+    if team_member is None:
+        raise ValueError("User is not a member of the team")
+    history = (
+        session.execute(
+            select(Message)
+            .where(Message.channel_id == channel_id)
+            .order_by(Message.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        .scalars()
+        .all()
+    )
+    return history
