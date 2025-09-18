@@ -9,22 +9,25 @@ from src.matrixes.slack.database.schema import (
 )
 
 from datetime import datetime
+from typing import Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, exists, and_
 
 """
 # I choosed the ones that are most likely to be used by agents. Slack OpenAPI speck has over 150 actions, unable to cover by one person - feel free to add more.
 
 """
 
-# Replica specific actions
-
 
 # Create Team
 
 
-def create_team(session: Session, team_name: str, created_at: datetime):
-    team = Team(team_name=team_name, created_at=created_at)
+def create_team(
+    session: Session, team_name: str, created_at: Optional[datetime] = None
+):
+    team = Team(team_name=team_name)
+    if created_at is not None:
+        team.created_at = created_at
     session.add(team)
     return team
 
@@ -32,8 +35,12 @@ def create_team(session: Session, team_name: str, created_at: datetime):
 # Create User
 
 
-def create_user(session: Session, username: str, email: str, created_at: datetime):
-    user = User(username=username, email=email, created_at=created_at)
+def create_user(
+    session: Session, username: str, email: str, created_at: Optional[datetime] = None
+):
+    user = User(username=username, email=email)
+    if created_at is not None:
+        user.created_at = created_at
     session.add(user)
     return user
 
@@ -42,13 +49,18 @@ def create_user(session: Session, username: str, email: str, created_at: datetim
 
 
 def create_channel(
-    session: Session, channel_name: str, team_id: int, created_at: datetime
+    session: Session,
+    channel_name: str,
+    team_id: int,
+    created_at: Optional[datetime] = None,
 ) -> Channel:
     team = session.get(Team, team_id)
     if team is None:
         raise ValueError("Team not found")
 
-    channel = Channel(channel_name=channel_name, team_id=team_id, created_at=created_at)
+    channel = Channel(channel_name=channel_name, team_id=team_id)
+    if created_at is not None:
+        channel.created_at = created_at
     session.add(channel)
     return channel
 
@@ -101,15 +113,25 @@ def set_channel_topic(session: Session, channel_id: int, topic: str) -> Channel:
 
 
 def invite_user_to_channel(
-    session: Session, channel_id: int, user_id: int
+    session: Session,
+    channel_id: int,
+    user_id: int,
+    joined_at: Optional[datetime] = None,
 ) -> ChannelMember:
     channel = session.get(Channel, channel_id)
     user = session.get(User, user_id)
-    if channel or user is None:
-        raise ValueError("Channel or user not found")
-    channel_member = ChannelMember(channel_id=channel_id, user_id=user_id)
-    session.add(channel_member)
-    return channel_member
+    if channel is None:
+        raise ValueError("Channel not found")
+    if user is None:
+        raise ValueError("User not found")
+    existing = session.get(ChannelMember, (channel_id, user_id))
+    if existing:
+        return existing
+    member = ChannelMember(channel_id=channel_id, user_id=user_id)
+    if joined_at is not None:
+        member.joined_at = joined_at
+    session.add(member)
+    return member
 
 
 # kick-user-from-channel
@@ -118,7 +140,7 @@ def invite_user_to_channel(
 def kick_user_from_channel(session: Session, channel_id: int, user_id: int):
     channel = session.get(Channel, channel_id)
     user = session.get(User, user_id)
-    if channel or user is None:
+    if channel is None or user is None:
         raise ValueError("Channel or user not found")
     channel_member = session.get(ChannelMember, (channel_id, user_id))
     if channel_member is None:
@@ -135,17 +157,24 @@ def send_message(
     channel_id: int,
     user_id: int,
     message_text: str,
-    message_id: int | None,
+    parent_id: Optional[int] = None,
+    created_at: Optional[datetime] = None,
 ):
     channel = session.get(Channel, channel_id)
     user = session.get(User, user_id)
-    if channel or user is None:
+    if channel is None or user is None:
         raise ValueError("Channel or user not found")
+    # If replying, validate parent exists and is same channel
+    if parent_id is not None:
+        parent = session.get(Message, parent_id)
+        if parent is None or parent.channel_id != channel_id:
+            raise ValueError("Parent message not found in this channel")
     message = Message(
         channel_id=channel_id,
         user_id=user_id,
         message_text=message_text,
-        message_id=message_id,
+        parent_id=parent_id,
+        **({"created_at": created_at} if created_at is not None else {}),
     )
     session.add(message)
     return message
@@ -157,14 +186,13 @@ def reply_to_message(
     message = session.get(Message, message_id)
     if message is None:
         raise ValueError("Message not found")
-    reply_message = Message(
-        parent_id=message.message_id,
+    return send_message(
+        session=session,
         channel_id=message.channel_id,
-        message_text=message_text,
         user_id=user_id,
+        message_text=message_text,
+        parent_id=message.message_id,
     )
-    session.add(reply_message)
-    return reply_message
 
 
 def send_direct_message(
@@ -175,44 +203,19 @@ def send_direct_message(
     recipient_id: int,
     team_id: int | None = None,
 ):
-    sender = session.get(User, user_id)
+    sender = session.get(User, sender_id)
     recipient = session.get(User, recipient_id)
     if sender is None:
-        raise ValueError("User not found")
-    if recipient is None:
         raise ValueError("Sender not found")
+    if recipient is None:
+        raise ValueError("Recipient not found")
 
-    dm_channel = session.execute(
-        select(Channel)
-        .where(
-            Channel.is_dm.is_(True),
-        )
-        .join(ChannelMember)
-        .where(
-            ChannelMember.user_id == recipient_id,
-            ChannelMember.channel_id == sender_id,
-        )
-    ).scalar_one_or_none()
-    if dm_channel is None:
-        dm_channel = Channel(
-            is_dm=True,
-            team_id=team_id,
-            channel_name=f"{sender.username}-{recipient.username}",
-        )
-        session.add(dm_channel)
-        channel_member_sender = ChannelMember(
-            channel_id=dm_channel.channel_id, user_id=sender_id
-        )
-        channel_member_recipient = ChannelMember(
-            channel_id=dm_channel.channel_id, user_id=recipient_id
-        )
-        session.add_all(
-            [
-                channel_member_sender,
-                channel_member_recipient,
-            ]
-        )
-        session.flush()
+    dm_channel = find_or_create_dm_channel(
+        session=session,
+        user1_id=sender_id,
+        user2_id=recipient_id,
+        team_id=team_id if team_id is not None else 0,
+    )
     message = Message(
         channel_id=dm_channel.channel_id, user_id=sender_id, message_text=message_text
     )
@@ -228,7 +231,7 @@ def add_emoji_reaction(
     message_id: int,
     user_id: int,
     reaction_type: str,
-    created_at: datetime,
+    created_at: Optional[datetime] = None,
 ) -> MessageReaction:
     message = session.get(Message, message_id)
     if message is None:
@@ -240,7 +243,7 @@ def add_emoji_reaction(
         message_id=message_id,
         user_id=user_id,
         reaction_type=reaction_type,
-        created_at=created_at,
+        **({"created_at": created_at} if created_at is not None else {}),
     )
     session.add(reaction)
     return reaction
@@ -262,10 +265,119 @@ def remove_emoji_reaction(session: Session, user_id: int, reaction_id: int):
     return reaction
 
 
+def update_message(session: Session, message_id: int, text: str) -> Message:
+    message = session.get(Message, message_id)
+    if message is None:
+        raise ValueError("Message not found")
+    message.message_text = text
+    return message
+
+
+def delete_message(session: Session, message_id: int) -> None:
+    message = session.get(Message, message_id)
+    if message is None:
+        raise ValueError("Message not found")
+    session.delete(message)
+
+
+def get_reactions(session: Session, message_id: int) -> list[MessageReaction]:
+    msg = session.get(Message, message_id)
+    if msg is None:
+        raise ValueError("Message not found")
+    reactions = (
+        session.execute(
+            select(MessageReaction).where(MessageReaction.message_id == message_id)
+        )
+        .scalars()
+        .all()
+    )
+    return list(reactions)
+
+
+def get_user(session: Session, user_id: int) -> User:
+    user = session.get(User, user_id)
+    if user is None:
+        raise ValueError("User not found")
+    return user
+
+
+def join_channel(
+    session: Session,
+    channel_id: int,
+    user_id: int,
+    joined_at: Optional[datetime] = None,
+) -> ChannelMember:
+    channel = session.get(Channel, channel_id)
+    user = session.get(User, user_id)
+    if channel is None or user is None:
+        raise ValueError("Channel or user not found")
+    existing = session.get(ChannelMember, (channel_id, user_id))
+    if existing:
+        return existing
+    member = ChannelMember(
+        channel_id=channel_id,
+        user_id=user_id,
+        **({"joined_at": joined_at} if joined_at is not None else {}),
+    )
+    session.add(member)
+    return member
+
+
+def leave_channel(session: Session, channel_id: int, user_id: int) -> None:
+    member = session.get(ChannelMember, (channel_id, user_id))
+    if member is None:
+        raise ValueError("Not a channel member")
+    session.delete(member)
+
+
+def find_or_create_dm_channel(
+    session: Session, user1_id: int, user2_id: int, team_id: int
+) -> Channel:
+    a, b = (user1_id, user2_id) if user1_id <= user2_id else (user2_id, user1_id)
+    dm = (
+        session.execute(
+            select(Channel)
+            .where(Channel.is_dm.is_(True), Channel.team_id == team_id)
+            .where(
+                and_(
+                    exists().where(
+                        and_(
+                            ChannelMember.channel_id == Channel.channel_id,
+                            ChannelMember.user_id == a,
+                        )
+                    ),
+                    exists().where(
+                        and_(
+                            ChannelMember.channel_id == Channel.channel_id,
+                            ChannelMember.user_id == b,
+                        )
+                    ),
+                )
+            )
+        )
+        .scalars()
+        .first()
+    )
+    if dm:
+        return dm
+    ch = Channel(
+        is_dm=True, is_private=True, team_id=team_id, channel_name=f"dm-{a}-{b}"
+    )
+    session.add(ch)
+    session.flush()
+    session.add_all(
+        [
+            ChannelMember(channel_id=ch.channel_id, user_id=a),
+            ChannelMember(channel_id=ch.channel_id, user_id=b),
+        ]
+    )
+    return ch
+
+
 # list-channels
 
 
-def list_channels(session: Session, user_id: int, team_id: int):
+def list_user_channels(session: Session, user_id: int, team_id: int):
     user = session.get(User, user_id)
     if user is None:
         raise ValueError("User not found")
@@ -283,6 +395,18 @@ def list_channels(session: Session, user_id: int, team_id: int):
             .join(ChannelMember)
             .where(ChannelMember.user_id == user_id)
         )
+        .scalars()
+        .all()
+    )
+    return channels
+
+
+def list_public_channels(session: Session, team_id: int):
+    team = session.get(Team, team_id)
+    if team is None:
+        raise ValueError("Team not found")
+    channels = (
+        session.execute(select(Channel).where(Channel.team_id == team_id))
         .scalars()
         .all()
     )
@@ -319,12 +443,8 @@ def list_members_in_channel(session: Session, channel_id: int, team_id: int):
     channel = session.get(Channel, channel_id)
     if channel is None:
         raise ValueError("Channel not found")
-    team = session.get(Team, team_id)
-    if team is None:
-        raise ValueError("Team not found")
-    team_member = session.get(UserTeam, (channel.team_id, team_id))
-    if team_member is None:
-        raise ValueError("User is not a member of the team")
+    if channel.team_id != team_id:
+        raise ValueError("Channel not in team")
     members = (
         session.execute(
             select(ChannelMember).where(ChannelMember.channel_id == channel_id)
