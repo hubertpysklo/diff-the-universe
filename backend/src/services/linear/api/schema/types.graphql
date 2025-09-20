@@ -2434,9 +2434,6 @@ type Initiative implements Node {
   """The unique identifier of the entity."""
   id: ID!
 
-  """Settings for all integrations associated with that initiative."""
-  integrationsSettings: IntegrationsSettings
-
   """The last initiative update posted for this initiative."""
   lastUpdate: InitiativeUpdate
 
@@ -5613,9 +5610,6 @@ type IssueSearchResult implements Node {
     orderBy: PaginationOrderBy
   ): IssueSuggestionConnection!
 
-  """Integration type that created this issue, if applicable."""
-  integrationSourceType: IntegrationService
-
   """Inverse relations associated with this issue."""
   inverseRelations(
     """A cursor to be used with first for forward pagination"""
@@ -6139,17 +6133,6 @@ enum IssueSuggestionType {
   relatedIssue
   similarIssue
   team
-}
-
-type IssueTitleSuggestionFromCustomerRequestPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """[Internal] The log id of the ai response."""
-  logId: String
-
-  """The suggested issue title."""
-  title: String!
 }
 
 input IssueUpdateInput {
@@ -6842,17 +6825,6 @@ type Mutation {
     permanentlyDelete: Boolean
   ): IssueArchivePayload!
 
-  """
-  [INTERNAL] Updates an issue description from the Front app to handle Front attachments correctly.
-  """
-  issueDescriptionUpdateFromFront(
-    """Description to update the issue with. """
-    description: String!
-
-    """The identifier of the issue to update."""
-    id: String!
-  ): IssuePayload!
-
   """Disables external sync on an issue."""
   issueExternalSyncDisable(
     """The ID of the sync attachment to disable."""
@@ -7168,19 +7140,6 @@ type Mutation {
     input: IssueUpdateInput!
   ): IssuePayload!
 
-  """
-  [INTERNAL] Connects the organization with a Jira Personal Access Token.
-  """
-  jiraIntegrationConnect(
-    """Jira integration settings."""
-    input: JiraConfigurationInput!
-  ): IntegrationPayload!
-
-  """Join an organization from onboarding."""
-  joinOrganizationFromOnboarding(
-    """Organization details for the organization to join."""
-    input: JoinOrganizationInput!
-  ): CreateOrJoinOrganizationResponse!
 
   """Leave an organization."""
   leaveOrganization(
@@ -7660,14 +7619,6 @@ type Mutation {
     id: String!
   ): DeletePayload!
 
-  """Manually update Google Sheets data."""
-  refreshGoogleSheetsData(
-    """The identifier of the Google Sheets integration to update."""
-    id: String!
-
-    """The type of export."""
-    type: String
-  ): IntegrationPayload!
 
   """Re-send an organization invite."""
   resendOrganizationInvite(
@@ -7849,11 +7800,6 @@ type Mutation {
     id: String!
   ): DeletePayload!
 
-  """Refresh the integration schedule information."""
-  timeScheduleRefreshIntegrationSchedule(
-    """The identifier of the time schedule to refresh."""
-    id: String!
-  ): TimeSchedulePayload!
 
   """Updates a time schedule."""
   timeScheduleUpdate(
@@ -7893,18 +7839,6 @@ type Mutation {
     """The properties of the triage responsibility to update."""
     input: TriageResponsibilityUpdateInput!
   ): TriageResponsibilityPayload!
-
-  """[Internal] Updates existing Slack integration scopes."""
-  updateIntegrationSlackScopes(
-    """The Slack OAuth code."""
-    code: String!
-
-    """The ID of the existing Slack integration"""
-    integrationId: String!
-
-    """The Slack OAuth redirect URI."""
-    redirectUri: String!
-  ): IntegrationPayload!
 
   """Makes user a regular user. Can only be called by an admin."""
   userDemoteAdmin(
@@ -8084,607 +8018,6 @@ interface Node {
   id: ID!
 }
 
-"""A notification sent to a user."""
-interface Notification implements Entity & Node {
-  """The user that caused the notification."""
-  actor: User
-
-  """[Internal] Notification actor initials if avatar is not available."""
-  actorAvatarColor: String!
-
-  """[Internal] Notification avatar URL."""
-  actorAvatarUrl: String
-
-  """[Internal] Notification actor initials if avatar is not available."""
-  actorInitials: String
-
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The bot that caused the notification."""
-  botActor: ActorBot
-
-  """The category of the notification."""
-  category: NotificationCategory!
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """
-  The time at when an email reminder for this notification was sent to the user. Null, if no email
-      reminder has been sent.
-  """
-  emailedAt: DateTime
-
-  """The external user that caused the notification."""
-  externalUserActor: ExternalUser
-
-  """
-  [Internal] Notifications with the same grouping key will be grouped together in the UI.
-  """
-  groupingKey: String!
-
-  """
-  [Internal] Priority of the notification with the same grouping key. Higher number means higher priority. If priority is the same, notifications should be sorted by `createdAt`.
-  """
-  groupingPriority: Float!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """[Internal] Inbox URL for the notification."""
-  inboxUrl: String!
-
-  """[Internal] If notification actor was Linear."""
-  isLinearActor: Boolean!
-
-  """[Internal] Issue's status type for issue notifications."""
-  issueStatusType: String
-
-  """[Internal] Project update health for new updates."""
-  projectUpdateHealth: String
-
-  """
-  The time at when the user marked the notification as read. Null, if the the user hasn't read the notification
-  """
-  readAt: DateTime
-
-  """
-  The time until a notification will be snoozed. After that it will appear in the inbox again.
-  """
-  snoozedUntilAt: DateTime
-
-  """[Internal] Notification subtitle."""
-  subtitle: String!
-
-  """[Internal] Notification title."""
-  title: String!
-
-  """Notification type."""
-  type: String!
-
-  """The time at which a notification was unsnoozed.."""
-  unsnoozedAt: DateTime
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """[Internal] URL to the target of the notification."""
-  url: String!
-
-  """The user that received the notification."""
-  user: User!
-}
-
-"""A generic payload return from entity archive mutations."""
-type NotificationArchivePayload implements ArchivePayload {
-  """The archived/unarchived entity. Null if entity was deleted."""
-  entity: Notification
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type NotificationBatchActionPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """The notifications that were updated."""
-  notifications: [Notification!]!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-"""The categories of notifications a user can subscribe to."""
-enum NotificationCategory {
-  appsAndIntegrations
-  assignments
-  commentsAndReplies
-  customers
-  documentChanges
-  feed
-  mentions
-  postsAndUpdates
-  reactions
-  reminders
-  reviews
-  statusChanges
-  subscriptions
-  system
-  triage
-}
-
-"""A user's notification category preferences."""
-type NotificationCategoryPreferences {
-  """The preferences for notifications about apps and integrations."""
-  appsAndIntegrations: NotificationChannelPreferences!
-
-  """The preferences for notifications about assignments."""
-  assignments: NotificationChannelPreferences!
-
-  """The preferences for notifications about comments and replies."""
-  commentsAndReplies: NotificationChannelPreferences!
-
-  """The preferences for customer notifications."""
-  customers: NotificationChannelPreferences!
-
-  """The preferences for notifications about document changes."""
-  documentChanges: NotificationChannelPreferences!
-
-  """The preferences for feed summary notifications."""
-  feed: NotificationChannelPreferences!
-
-  """The preferences for notifications about mentions."""
-  mentions: NotificationChannelPreferences!
-
-  """The preferences for notifications about posts and updates."""
-  postsAndUpdates: NotificationChannelPreferences!
-
-  """The preferences for notifications about reactions."""
-  reactions: NotificationChannelPreferences!
-
-  """The preferences for notifications about reminders."""
-  reminders: NotificationChannelPreferences!
-
-  """The preferences for notifications about reviews."""
-  reviews: NotificationChannelPreferences!
-
-  """The preferences for notifications about status changes."""
-  statusChanges: NotificationChannelPreferences!
-
-  """The preferences for notifications about subscriptions."""
-  subscriptions: NotificationChannelPreferences!
-
-  """The preferences for system notifications."""
-  system: NotificationChannelPreferences!
-
-  """The preferences for triage notifications."""
-  triage: NotificationChannelPreferences!
-}
-
-input NotificationCategoryPreferencesInput {
-  """The preferences for notifications about apps and integrations."""
-  appsAndIntegrations: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about assignments."""
-  assignments: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about comments and replies."""
-  commentsAndReplies: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about customers."""
-  customers: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about document changes."""
-  documentChanges: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about feed summaries."""
-  feed: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about mentions."""
-  mentions: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about posts and updates."""
-  postsAndUpdates: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about reactions."""
-  reactions: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about reminders."""
-  reminders: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about reviews."""
-  reviews: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about status changes."""
-  statusChanges: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about subscriptions."""
-  subscriptions: PartialNotificationChannelPreferencesInput
-
-  """The preferences for notifications about triage."""
-  triage: PartialNotificationChannelPreferencesInput
-}
-
-"""The delivery channels a user can receive notifications in."""
-enum NotificationChannel {
-  desktop
-  email
-  mobile
-  slack
-}
-
-"""
-A user's notification channel preferences, indicating if a channel is enabled or not
-"""
-type NotificationChannelPreferences {
-  """Whether notifications are currently enabled for desktop."""
-  desktop: Boolean!
-
-  """Whether notifications are currently enabled for email."""
-  email: Boolean!
-
-  """Whether notifications are currently enabled for mobile."""
-  mobile: Boolean!
-
-  """Whether notifications are currently enabled for Slack."""
-  slack: Boolean!
-}
-
-type NotificationConnection {
-  edges: [NotificationEdge!]!
-  nodes: [Notification!]!
-  pageInfo: PageInfo!
-}
-
-"""A user's notification delivery preferences."""
-type NotificationDeliveryPreferences {
-  """The delivery preferences for the mobile channel."""
-  mobile: NotificationDeliveryPreferencesChannel
-}
-
-"""A user's notification delivery preferences."""
-type NotificationDeliveryPreferencesChannel {
-  """
-  [DEPRECATED] Whether notifications are enabled for this channel. Use notificationChannelPreferences instead.
-  """
-  notificationsDisabled: Boolean @deprecated(reason: "This field has been replaced by notificationChannelPreferences")
-
-  """The schedule for notifications on this channel."""
-  schedule: NotificationDeliveryPreferencesSchedule
-}
-
-input NotificationDeliveryPreferencesChannelInput {
-  """
-  [DEPRECATED] Whether notifications are enabled for this channel. Use notificationChannelPreferences instead.
-  """
-  notificationsDisabled: Boolean @deprecated(reason: "This field has been replaced by notificationChannelPreferences")
-
-  """The schedule for notifications on this channel."""
-  schedule: NotificationDeliveryPreferencesScheduleInput
-}
-
-"""A user's notification delivery schedule for a particular day."""
-type NotificationDeliveryPreferencesDay {
-  """The time notifications end."""
-  end: String
-
-  """The time notifications start."""
-  start: String
-}
-
-input NotificationDeliveryPreferencesDayInput {
-  """The time notifications end."""
-  end: String
-
-  """The time notifications start."""
-  start: String
-}
-
-input NotificationDeliveryPreferencesInput {
-  """The delivery preferences for the mobile channel."""
-  mobile: NotificationDeliveryPreferencesChannelInput
-}
-
-"""A user's notification delivery schedule for a particular day."""
-type NotificationDeliveryPreferencesSchedule {
-  """Whether the schedule is disabled."""
-  disabled: Boolean
-
-  """Delivery preferences for Friday."""
-  friday: NotificationDeliveryPreferencesDay!
-
-  """Delivery preferences for Monday."""
-  monday: NotificationDeliveryPreferencesDay!
-
-  """Delivery preferences for Saturday."""
-  saturday: NotificationDeliveryPreferencesDay!
-
-  """Delivery preferences for Sunday."""
-  sunday: NotificationDeliveryPreferencesDay!
-
-  """Delivery preferences for Thursday."""
-  thursday: NotificationDeliveryPreferencesDay!
-
-  """Delivery preferences for Tuesday."""
-  tuesday: NotificationDeliveryPreferencesDay!
-
-  """Delivery preferences for Wednesday."""
-  wednesday: NotificationDeliveryPreferencesDay!
-}
-
-input NotificationDeliveryPreferencesScheduleInput {
-  """Whether the schedule is disabled."""
-  disabled: Boolean
-
-  """Delivery preferences for Friday."""
-  friday: NotificationDeliveryPreferencesDayInput!
-
-  """Delivery preferences for Monday."""
-  monday: NotificationDeliveryPreferencesDayInput!
-
-  """Delivery preferences for Saturday."""
-  saturday: NotificationDeliveryPreferencesDayInput!
-
-  """Delivery preferences for Sunday."""
-  sunday: NotificationDeliveryPreferencesDayInput!
-
-  """Delivery preferences for Thursday."""
-  thursday: NotificationDeliveryPreferencesDayInput!
-
-  """Delivery preferences for Tuesday."""
-  tuesday: NotificationDeliveryPreferencesDayInput!
-
-  """Delivery preferences for Wednesday."""
-  wednesday: NotificationDeliveryPreferencesDayInput!
-}
-
-type NotificationEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Notification!
-}
-
-"""Describes the type and id of the entity to target for notifications."""
-input NotificationEntityInput {
-  """The id of the notification."""
-  id: String
-
-  """The id of the initiative related to the notification."""
-  initiativeId: String
-
-  """The id of the initiative update related to the notification."""
-  initiativeUpdateId: String
-
-  """The id of the issue related to the notification."""
-  issueId: String
-
-  """The id of the OAuth client approval related to the notification."""
-  oauthClientApprovalId: String
-
-  """[DEPRECATED] The id of the project related to the notification."""
-  projectId: String
-
-  """The id of the project update related to the notification."""
-  projectUpdateId: String
-}
-
-"""Notification filtering options."""
-input NotificationFilter {
-  """Compound filters, all of which need to be matched by the notification."""
-  and: [NotificationFilter!]
-
-  """Comparator for the archived at date."""
-  archivedAt: DateComparator
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Compound filters, one of which need to be matched by the notification."""
-  or: [NotificationFilter!]
-
-  """Comparator for the notification type."""
-  type: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-type NotificationPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """The notification that was created or updated."""
-  notification: Notification!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-"""Notification subscriptions for models."""
-interface NotificationSubscription implements Entity & Node {
-  """Whether the subscription is active or not."""
-  active: Boolean!
-
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """
-  The type of view to which the notification subscription context is associated with.
-  """
-  contextViewType: ContextViewType
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """
-  The contextual custom view associated with the notification subscription.
-  """
-  customView: CustomView
-
-  """The customer associated with the notification subscription."""
-  customer: Customer
-
-  """
-  The contextual cycle view associated with the notification subscription.
-  """
-  cycle: Cycle
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """
-  The contextual initiative view associated with the notification subscription.
-  """
-  initiative: Initiative
-
-  """
-  The contextual label view associated with the notification subscription.
-  """
-  label: IssueLabel
-
-  """
-  The contextual project view associated with the notification subscription.
-  """
-  project: Project
-
-  """The user that subscribed to receive notifications."""
-  subscriber: User!
-
-  """The team associated with the notification subscription."""
-  team: Team
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The user view associated with the notification subscription."""
-  user: User
-
-  """
-  The type of user view to which the notification subscription context is associated with.
-  """
-  userContextViewType: UserContextViewType
-}
-
-type NotificationSubscriptionConnection {
-  edges: [NotificationSubscriptionEdge!]!
-  nodes: [NotificationSubscription!]!
-  pageInfo: PageInfo!
-}
-
-input NotificationSubscriptionCreateInput {
-  """Whether the subscription is active."""
-  active: Boolean
-
-  """
-  The type of view to which the notification subscription context is associated with.
-  """
-  contextViewType: ContextViewType
-
-  """The identifier of the custom view to subscribe to."""
-  customViewId: String
-
-  """The identifier of the customer to subscribe to."""
-  customerId: String
-
-  """The identifier of the cycle to subscribe to."""
-  cycleId: String
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The identifier of the initiative to subscribe to."""
-  initiativeId: String
-
-  """The identifier of the label to subscribe to."""
-  labelId: String
-
-  """The types of notifications of the subscription."""
-  notificationSubscriptionTypes: [String!]
-
-  """The identifier of the project to subscribe to."""
-  projectId: String
-
-  """The identifier of the team to subscribe to."""
-  teamId: String
-
-  """
-  The type of user view to which the notification subscription context is associated with.
-  """
-  userContextViewType: UserContextViewType
-
-  """The identifier of the user to subscribe to."""
-  userId: String
-}
-
-type NotificationSubscriptionEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: NotificationSubscription!
-}
-
-type NotificationSubscriptionPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """The notification subscription that was created or updated."""
-  notificationSubscription: NotificationSubscription!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-input NotificationSubscriptionUpdateInput {
-  """Whether the subscription is active."""
-  active: Boolean
-
-  """The types of notifications of the subscription."""
-  notificationSubscriptionTypes: [String!]
-}
-
-input NotificationUpdateInput {
-  """The id of the project update related to the notification."""
-  initiativeUpdateId: String
-
-  """The id of the project update related to the notification."""
-  projectUpdateId: String
-
-  """The time when notification was marked as read."""
-  readAt: DateTime
-
-  """
-  The time until a notification will be snoozed. After that it will appear in the inbox again.
-  """
-  snoozedUntilAt: DateTime
-}
-
-input NotionSettingsInput {
-  """The ID of the Notion workspace being connected."""
-  workspaceId: String!
-
-  """The name of the Notion workspace being connected."""
-  workspaceName: String!
-}
-
 """Comment filtering options."""
 input NullableCommentFilter {
   """Compound filters, all of which need to be matched by the comment."""
@@ -8768,8 +8101,6 @@ input NullableCustomerFilter {
   """Comparator for the customer size."""
   size: NumberComparator
 
-  """Comparator for the customer slack channel ID."""
-  slackChannelId: StringComparator
 
   """Filters that the customer's status must satisfy."""
   status: CustomerStatusFilter
@@ -9907,33 +9238,6 @@ type Organization implements Node {
   """The hour at which to prompt for initiative updates."""
   initiativeUpdateRemindersHour: Float!
 
-  """Integrations associated with the organization."""
-  integrations(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): IntegrationConnection!
-
   """IP restriction configurations."""
   ipRestrictions: [OrganizationIpRestriction!]
 
@@ -10668,263 +9972,12 @@ enum PaginationSortOrder {
   Descending
 }
 
-"""The paid subscription of an organization."""
-type PaidSubscription implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The date the subscription is scheduled to be canceled, if any."""
-  cancelAt: DateTime
-
-  """The date the subscription was canceled, if any."""
-  canceledAt: DateTime
-
-  """
-  The collection method for this subscription, either automatically charged or invoiced.
-  """
-  collectionMethod: String!
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The creator of the subscription."""
-  creator: User
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The date the subscription will be billed next."""
-  nextBillingAt: DateTime
-
-  """The organization that the subscription is associated with."""
-  organization: Organization!
-
-  """The subscription type of a pending change. Null if no change pending."""
-  pendingChangeType: String
-
-  """The number of seats in the subscription."""
-  seats: Float!
-
-  """The maximum number of seats that will be billed in the subscription."""
-  seatsMaximum: Float
-
-  """The minimum number of seats that will be billed in the subscription."""
-  seatsMinimum: Float
-
-  """The subscription type."""
-  type: String!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-input PartialNotificationChannelPreferencesInput {
-  """Whether notifications are currently enabled for desktop."""
-  desktop: Boolean
-
-  """Whether notifications are currently enabled for email."""
-  email: Boolean
-
-  """Whether notifications are currently enabled for mobile."""
-  mobile: Boolean
-
-  """Whether notifications are currently enabled for Slack."""
-  slack: Boolean
-}
 
 type PasskeyLoginStartResponse {
   options: JSONObject!
   success: Boolean!
 }
 
-"""[Internal] A generic post."""
-type Post implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The update content summarized for audio consumption."""
-  audioSummary: String
-
-  """The update content in markdown format."""
-  body: String!
-
-  """[Internal] The content of the post as a Prosemirror document."""
-  bodyData: String!
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who wrote the post."""
-  creator: User
-
-  """The time the post was edited."""
-  editedAt: DateTime
-
-  """The log id of the ai response."""
-  evalLogId: String
-
-  """Schedule used to create a post summary."""
-  feedSummaryScheduleAtCreate: FeedSummarySchedule
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """The post's unique URL slug."""
-  slugId: String!
-
-  """The team that the post is associated with."""
-  team: Team
-
-  """The post's title."""
-  title: String
-
-  """A URL of the TTL (text-to-language) for the body."""
-  ttlUrl: String
-
-  """The type of the post."""
-  type: PostType
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The user that the post is associated with."""
-  user: User
-
-  """[Internal] The written update data used to compose the written post."""
-  writtenSummaryData: JSONObject
-}
-
-"""A post related notification."""
-type PostNotification implements Entity & Node & Notification {
-  """The user that caused the notification."""
-  actor: User
-
-  """[Internal] Notification actor initials if avatar is not available."""
-  actorAvatarColor: String!
-
-  """[Internal] Notification avatar URL."""
-  actorAvatarUrl: String
-
-  """[Internal] Notification actor initials if avatar is not available."""
-  actorInitials: String
-
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The bot that caused the notification."""
-  botActor: ActorBot
-
-  """The category of the notification."""
-  category: NotificationCategory!
-
-  """
-  Related comment ID. Null if the notification is not related to a comment.
-  """
-  commentId: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """
-  The time at when an email reminder for this notification was sent to the user. Null, if no email
-      reminder has been sent.
-  """
-  emailedAt: DateTime
-
-  """The external user that caused the notification."""
-  externalUserActor: ExternalUser
-
-  """
-  [Internal] Notifications with the same grouping key will be grouped together in the UI.
-  """
-  groupingKey: String!
-
-  """
-  [Internal] Priority of the notification with the same grouping key. Higher number means higher priority. If priority is the same, notifications should be sorted by `createdAt`.
-  """
-  groupingPriority: Float!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """[Internal] Inbox URL for the notification."""
-  inboxUrl: String!
-
-  """[Internal] If notification actor was Linear."""
-  isLinearActor: Boolean!
-
-  """[Internal] Issue's status type for issue notifications."""
-  issueStatusType: String
-
-  """
-  Related parent comment ID. Null if the notification is not related to a comment.
-  """
-  parentCommentId: String
-
-  """Related post ID."""
-  postId: String!
-
-  """[Internal] Project update health for new updates."""
-  projectUpdateHealth: String
-
-  """Name of the reaction emoji related to the notification."""
-  reactionEmoji: String
-
-  """
-  The time at when the user marked the notification as read. Null, if the the user hasn't read the notification
-  """
-  readAt: DateTime
-
-  """
-  The time until a notification will be snoozed. After that it will appear in the inbox again.
-  """
-  snoozedUntilAt: DateTime
-
-  """[Internal] Notification subtitle."""
-  subtitle: String!
-
-  """[Internal] Notification title."""
-  title: String!
-
-  """Notification type."""
-  type: String!
-
-  """The time at which a notification was unsnoozed.."""
-  unsnoozedAt: DateTime
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """[Internal] URL to the target of the notification."""
-  url: String!
-
-  """The user that received the notification."""
-  user: User!
-}
-
-"""Type of Post"""
-enum PostType {
-  summary
-  update
-}
 
 """Issue priority sorting options."""
 input PrioritySort {
@@ -10938,15 +9991,6 @@ input PrioritySort {
   order: PaginationSortOrder
 }
 
-"""
-[Internal] The scope of product intelligence suggestion data for a team.
-"""
-enum ProductIntelligenceScope {
-  none
-  team
-  teamHierarchy
-  workspace
-}
 
 """A project."""
 type Project implements Node {
@@ -11164,8 +10208,6 @@ type Project implements Node {
     orderBy: PaginationOrderBy
   ): InitiativeConnection!
 
-  """Settings for all integrations associated with that project."""
-  integrationsSettings: IntegrationsSettings
 
   """Inverse relations associated with this project."""
   inverseRelations(
@@ -11448,15 +10490,6 @@ type Project implements Node {
 
   """The total number of estimation points after each week."""
   scopeHistory: [Float!]!
-
-  """Whether to send new issue comment notifications to Slack."""
-  slackIssueComments: Boolean! @deprecated(reason: "No longer in use")
-
-  """Whether to send new issue status updates to Slack."""
-  slackIssueStatuses: Boolean! @deprecated(reason: "No longer is use")
-
-  """Whether to send new issue notifications to Slack."""
-  slackNewIssue: Boolean! @deprecated(reason: "No longer in use")
 
   """The project's unique URL slug."""
   slugId: String!
@@ -12595,212 +11628,6 @@ input ProjectNameSort {
   order: PaginationSortOrder
 }
 
-"""A project related notification."""
-type ProjectNotification implements Entity & Node & Notification {
-  """The user that caused the notification."""
-  actor: User
-
-  """[Internal] Notification actor initials if avatar is not available."""
-  actorAvatarColor: String!
-
-  """[Internal] Notification avatar URL."""
-  actorAvatarUrl: String
-
-  """[Internal] Notification actor initials if avatar is not available."""
-  actorInitials: String
-
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The bot that caused the notification."""
-  botActor: ActorBot
-
-  """The category of the notification."""
-  category: NotificationCategory!
-
-  """The comment related to the notification."""
-  comment: Comment
-
-  """
-  Related comment ID. Null if the notification is not related to a comment.
-  """
-  commentId: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The document related to the notification."""
-  document: Document
-
-  """
-  The time at when an email reminder for this notification was sent to the user. Null, if no email
-      reminder has been sent.
-  """
-  emailedAt: DateTime
-
-  """The external user that caused the notification."""
-  externalUserActor: ExternalUser
-
-  """
-  [Internal] Notifications with the same grouping key will be grouped together in the UI.
-  """
-  groupingKey: String!
-
-  """
-  [Internal] Priority of the notification with the same grouping key. Higher number means higher priority. If priority is the same, notifications should be sorted by `createdAt`.
-  """
-  groupingPriority: Float!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """[Internal] Inbox URL for the notification."""
-  inboxUrl: String!
-
-  """[Internal] If notification actor was Linear."""
-  isLinearActor: Boolean!
-
-  """[Internal] Issue's status type for issue notifications."""
-  issueStatusType: String
-
-  """
-  The parent comment related to the notification, if a notification is a reply comment notification.
-  """
-  parentComment: Comment
-
-  """
-  Related parent comment ID. Null if the notification is not related to a comment.
-  """
-  parentCommentId: String
-
-  """The project related to the notification."""
-  project: Project!
-
-  """Related project ID."""
-  projectId: String!
-
-  """Related project milestone ID."""
-  projectMilestoneId: String
-
-  """The project update related to the notification."""
-  projectUpdate: ProjectUpdate
-
-  """[Internal] Project update health for new updates."""
-  projectUpdateHealth: String
-
-  """Related project update ID."""
-  projectUpdateId: String
-
-  """Name of the reaction emoji related to the notification."""
-  reactionEmoji: String
-
-  """
-  The time at when the user marked the notification as read. Null, if the the user hasn't read the notification
-  """
-  readAt: DateTime
-
-  """
-  The time until a notification will be snoozed. After that it will appear in the inbox again.
-  """
-  snoozedUntilAt: DateTime
-
-  """[Internal] Notification subtitle."""
-  subtitle: String!
-
-  """[Internal] Notification title."""
-  title: String!
-
-  """Notification type."""
-  type: String!
-
-  """The time at which a notification was unsnoozed.."""
-  unsnoozedAt: DateTime
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """[Internal] URL to the target of the notification."""
-  url: String!
-
-  """The user that received the notification."""
-  user: User!
-}
-
-"""A project notification subscription."""
-type ProjectNotificationSubscription implements Entity & Node & NotificationSubscription {
-  """Whether the subscription is active or not."""
-  active: Boolean!
-
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """
-  The type of view to which the notification subscription context is associated with.
-  """
-  contextViewType: ContextViewType
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """
-  The contextual custom view associated with the notification subscription.
-  """
-  customView: CustomView
-
-  """The customer associated with the notification subscription."""
-  customer: Customer
-
-  """
-  The contextual cycle view associated with the notification subscription.
-  """
-  cycle: Cycle
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """
-  The contextual initiative view associated with the notification subscription.
-  """
-  initiative: Initiative
-
-  """
-  The contextual label view associated with the notification subscription.
-  """
-  label: IssueLabel
-
-  """The type of subscription."""
-  notificationSubscriptionTypes: [String!]!
-
-  """The project subscribed to."""
-  project: Project!
-
-  """The user that subscribed to receive notifications."""
-  subscriber: User!
-
-  """The team associated with the notification subscription."""
-  team: Team
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The user view associated with the notification subscription."""
-  user: User
-
-  """
-  The type of user view to which the notification subscription context is associated with.
-  """
-  userContextViewType: UserContextViewType
-}
 
 type ProjectPayload {
   """The identifier of the last sync operation."""
@@ -13175,9 +12002,6 @@ type ProjectSearchResult implements Node {
     orderBy: PaginationOrderBy
   ): InitiativeConnection!
 
-  """Settings for all integrations associated with that project."""
-  integrationsSettings: IntegrationsSettings
-
   """Inverse relations associated with this project."""
   inverseRelations(
     """A cursor to be used with first for forward pagination"""
@@ -13462,15 +12286,6 @@ type ProjectSearchResult implements Node {
 
   """The total number of estimation points after each week."""
   scopeHistory: [Float!]!
-
-  """Whether to send new issue comment notifications to Slack."""
-  slackIssueComments: Boolean! @deprecated(reason: "No longer in use")
-
-  """Whether to send new issue status updates to Slack."""
-  slackIssueStatuses: Boolean! @deprecated(reason: "No longer is use")
-
-  """Whether to send new issue notifications to Slack."""
-  slackNewIssue: Boolean! @deprecated(reason: "No longer in use")
 
   """The project's unique URL slug."""
   slugId: String!
@@ -14041,14 +12856,6 @@ input ProjectUpdateInput {
   """The time until which project update reminders are paused."""
   projectUpdateRemindersPausedUntilAt: DateTime
 
-  """Whether to send new issue comment notifications to Slack."""
-  slackIssueComments: Boolean
-
-  """Whether to send issue status update notifications to Slack."""
-  slackIssueStatuses: Boolean
-
-  """Whether to send new issue notifications to Slack."""
-  slackNewIssue: Boolean
 
   """The sort order for the project in shared views."""
   sortOrder: Float
@@ -14307,190 +13114,6 @@ type PullRequestMergeSettings {
   squashMergeAllowed: Boolean!
 }
 
-"""A pull request related notification."""
-type PullRequestNotification implements Entity & Node & Notification {
-  """The user that caused the notification."""
-  actor: User
-
-  """[Internal] Notification actor initials if avatar is not available."""
-  actorAvatarColor: String!
-
-  """[Internal] Notification avatar URL."""
-  actorAvatarUrl: String
-
-  """[Internal] Notification actor initials if avatar is not available."""
-  actorInitials: String
-
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The bot that caused the notification."""
-  botActor: ActorBot
-
-  """The category of the notification."""
-  category: NotificationCategory!
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """
-  The time at when an email reminder for this notification was sent to the user. Null, if no email
-      reminder has been sent.
-  """
-  emailedAt: DateTime
-
-  """The external user that caused the notification."""
-  externalUserActor: ExternalUser
-
-  """
-  [Internal] Notifications with the same grouping key will be grouped together in the UI.
-  """
-  groupingKey: String!
-
-  """
-  [Internal] Priority of the notification with the same grouping key. Higher number means higher priority. If priority is the same, notifications should be sorted by `createdAt`.
-  """
-  groupingPriority: Float!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """[Internal] Inbox URL for the notification."""
-  inboxUrl: String!
-
-  """[Internal] If notification actor was Linear."""
-  isLinearActor: Boolean!
-
-  """[Internal] Issue's status type for issue notifications."""
-  issueStatusType: String
-
-  """[Internal] Project update health for new updates."""
-  projectUpdateHealth: String
-
-  """The pull request related to the notification."""
-  pullRequest: PullRequest!
-
-  """
-  Related pull request comment ID. Null if the notification is not related to a pull request comment.
-  """
-  pullRequestCommentId: String
-
-  """Related pull request."""
-  pullRequestId: String!
-
-  """
-  The time at when the user marked the notification as read. Null, if the the user hasn't read the notification
-  """
-  readAt: DateTime
-
-  """
-  The time until a notification will be snoozed. After that it will appear in the inbox again.
-  """
-  snoozedUntilAt: DateTime
-
-  """[Internal] Notification subtitle."""
-  subtitle: String!
-
-  """[Internal] Notification title."""
-  title: String!
-
-  """Notification type."""
-  type: String!
-
-  """The time at which a notification was unsnoozed.."""
-  unsnoozedAt: DateTime
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """[Internal] URL to the target of the notification."""
-  url: String!
-
-  """The user that received the notification."""
-  user: User!
-}
-
-enum PullRequestReviewTool {
-  graphite
-  source
-}
-
-"""The status of a pull request."""
-enum PullRequestStatus {
-  approved
-  closed
-  draft
-  inReview
-  merged
-  open
-}
-
-"""A user's web or mobile push notification subscription."""
-type PushSubscription implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-input PushSubscriptionCreateInput {
-  """The data of the subscription in stringified JSON format."""
-  data: String!
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """
-  Whether this is a subscription payload for Google Cloud Messaging or Apple Push Notification service.
-  """
-  type: PushSubscriptionType = web
-
-  """The user identifier of the subscription."""
-  userId: String @deprecated(reason: "Not needed anymore.")
-}
-
-type PushSubscriptionPayload {
-  """The push subscription that was created or updated."""
-  entity: PushSubscription!
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type PushSubscriptionTestPayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-"""The different push subscription types."""
-enum PushSubscriptionType {
-  apple
-  appleDevelopment
-  firebase
-  web
-}
 
 type Query {
   """
@@ -14524,75 +13147,6 @@ type Query {
     """
     orderBy: PaginationOrderBy
   ): TeamConnection!
-
-  """All agent activities."""
-  agentActivities(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned agent activities."""
-    filter: AgentActivityFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AgentActivityConnection!
-
-  """A specific agent activity."""
-  agentActivity(
-    """The identifier of the agent activity to retrieve."""
-    id: String!
-  ): AgentActivity!
-
-  """A specific agent session."""
-  agentSession(
-    """The identifier of the agent session to retrieve."""
-    id: String!
-  ): AgentSession!
-
-  """All agent sessions."""
-  agentSessions(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AgentSessionConnection!
 
   """All API keys for the user."""
   apiKeys(
@@ -15320,110 +13874,9 @@ type Query {
     sort: [InitiativeSortInput!]
   ): InitiativeConnection!
 
-  """One specific integration."""
-  integration(id: String!): Integration!
-
-  """Checks if the integration has all required scopes."""
-  integrationHasScopes(
-    """The integration ID."""
-    integrationId: String!
-
-    """Required scopes."""
-    scopes: [String!]!
-  ): IntegrationHasScopesPayload!
-
-  """One specific integrationTemplate."""
-  integrationTemplate(id: String!): IntegrationTemplate!
-
-  """Template and integration connections."""
-  integrationTemplates(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): IntegrationTemplateConnection!
-
-  """All integrations."""
-  integrations(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): IntegrationConnection!
-
-  """One specific set of settings."""
-  integrationsSettings(id: String!): IntegrationsSettings!
 
   """One specific issue."""
   issue(id: String!): Issue!
-
-  """Find issues that are related to a given Figma file key."""
-  issueFigmaFileKeySearch(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """The Figma file key."""
-    fileKey: String!
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): IssueConnection!
 
   """Suggests filters for an issue view based on a text prompt."""
   issueFilterSuggestion(
@@ -16234,12 +14687,6 @@ type Query {
   """All templates from all users."""
   templates: [Template!]!
 
-  """Returns all templates that are associated with the integration type."""
-  templatesForIntegration(
-    """The type of integration for which to return associated templates."""
-    integrationType: String!
-  ): [Template!]!
-
   """A specific time schedule."""
   timeSchedule(
     """The identifier of the time schedule to retrieve."""
@@ -16934,70 +15381,6 @@ enum SLADayCountType {
   onlyBusinessDays
 }
 
-"""[INTERNAL] Comparator for Salesforce metadata."""
-input SalesforceMetadataIntegrationComparator {
-  """Salesforce Case metadata filter"""
-  caseMetadata: JSONObject
-}
-
-input SalesforceSettingsInput {
-  """
-  Whether a ticket should be automatically reopened when its linked Linear issue is cancelled.
-  """
-  automateTicketReopeningOnCancellation: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when a comment is posted on its linked Linear issue
-  """
-  automateTicketReopeningOnComment: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear issue is completed.
-  """
-  automateTicketReopeningOnCompletion: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear project is cancelled.
-  """
-  automateTicketReopeningOnProjectCancellation: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear project is completed.
-  """
-  automateTicketReopeningOnProjectCompletion: Boolean
-
-  """The Salesforce team to use when a template doesn't specify a team."""
-  defaultTeam: String
-
-  """
-  [ALPHA] Whether customer and customer requests should not be automatically created when conversations are linked to a Linear issue.
-  """
-  disableCustomerRequestsAutoCreation: Boolean
-
-  """The Salesforce case status to use to reopen cases."""
-  reopenCaseStatus: String
-
-  """
-  Whether to restrict visibility of the integration to issues that have been either created from Salesforce or linked to Salesforce.
-  """
-  restrictVisibility: Boolean
-
-  """
-  Whether an internal message should be added when someone comments on an issue.
-  """
-  sendNoteOnComment: Boolean
-
-  """
-  Whether an internal message should be added when a Linear issue changes status (for status types except completed or canceled).
-  """
-  sendNoteOnStatusChange: Boolean
-
-  """The Salesforce subdomain."""
-  subdomain: String
-
-  """The Salesforce instance URL."""
-  url: String
-}
 
 """Filters for semantic search results."""
 input SemanticSearchFilters {
@@ -17173,236 +15556,6 @@ input SlaStatusSort {
   order: PaginationSortOrder
 }
 
-input SlackAsksSettingsInput {
-  """The user role type that is allowed to manage Asks settings."""
-  canAdministrate: UserRoleType!
-
-  """Enterprise id of the connected Slack enterprise"""
-  enterpriseId: String
-
-  """Enterprise name of the connected Slack enterprise"""
-  enterpriseName: String
-
-  """Whether to show unfurl previews in Slack"""
-  shouldUnfurl: Boolean
-
-  """
-  The mapping of Slack channel ID => Slack channel name for connected channels.
-  """
-  slackChannelMapping: [SlackChannelNameMappingInput!]
-
-  """Slack workspace id"""
-  teamId: String
-
-  """Slack workspace name"""
-  teamName: String
-}
-
-"""Tuple for mapping Slack channel IDs to names."""
-type SlackAsksTeamSettings {
-  """
-  Whether the default Asks template is enabled in the given channel for this team.
-  """
-  hasDefaultAsk: Boolean!
-
-  """The Linear team ID."""
-  id: String!
-}
-
-input SlackAsksTeamSettingsInput {
-  """
-  Whether the default Asks template is enabled in the given channel for this team.
-  """
-  hasDefaultAsk: Boolean!
-
-  """The Linear team ID."""
-  id: String!
-}
-
-type SlackChannelConnectPayload {
-  """Whether the bot needs to be manually added to the channel."""
-  addBot: Boolean!
-
-  """The integration that was created or updated."""
-  integration: Integration
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether it's recommended to connect main Slack integration."""
-  nudgeToConnectMainSlackIntegration: Boolean
-
-  """Whether it's recommended to update main Slack integration."""
-  nudgeToUpdateMainSlackIntegration: Boolean
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-"""Object for mapping Slack channel IDs to names and other settings."""
-type SlackChannelNameMapping {
-  """
-  Whether or not to use AI to generate titles for Asks created in this channel.
-  """
-  aiTitles: Boolean
-
-  """
-  Whether or not @-mentioning the bot should automatically create an Ask with the message.
-  """
-  autoCreateOnBotMention: Boolean
-
-  """
-  Whether or not using the :ticket: emoji in this channel should automatically create Asks.
-  """
-  autoCreateOnEmoji: Boolean
-
-  """
-  Whether or not top-level messages in this channel should automatically create Asks.
-  """
-  autoCreateOnMessage: Boolean
-
-  """
-  The optional template ID to use for Asks auto-created in this channel. If not set, auto-created Asks won't use any template.
-  """
-  autoCreateTemplateId: String
-
-  """
-  Whether or not the Linear Asks bot has been added to this Slack channel.
-  """
-  botAdded: Boolean
-
-  """The Slack channel ID."""
-  id: String!
-
-  """Whether or not the Slack channel is private."""
-  isPrivate: Boolean
-
-  """Whether or not the Slack channel is shared with an external org."""
-  isShared: Boolean
-
-  """The Slack channel name."""
-  name: String!
-
-  """
-  Whether or not synced Slack threads should be updated with a message when their Ask is accepted from triage.
-  """
-  postAcceptedFromTriageUpdates: Boolean
-
-  """
-  Whether or not synced Slack threads should be updated with a message and emoji when their Ask is canceled.
-  """
-  postCancellationUpdates: Boolean
-
-  """
-  Whether or not synced Slack threads should be updated with a message and emoji when their Ask is completed.
-  """
-  postCompletionUpdates: Boolean
-
-  """Which teams are connected to the channel and settings for those teams."""
-  teams: [SlackAsksTeamSettings!]!
-}
-
-input SlackChannelNameMappingInput {
-  """
-  Whether or not to use AI to generate titles for Asks created in this channel.
-  """
-  aiTitles: Boolean
-
-  """
-  Whether or not @-mentioning the bot should automatically create an Ask with the message.
-  """
-  autoCreateOnBotMention: Boolean
-
-  """
-  Whether or not using the :ticket: emoji in this channel should automatically create Asks.
-  """
-  autoCreateOnEmoji: Boolean
-
-  """
-  Whether or not top-level messages in this channel should automatically create Asks.
-  """
-  autoCreateOnMessage: Boolean
-
-  """
-  The optional template ID to use for Asks auto-created in this channel. If not set, auto-created Asks won't use any template.
-  """
-  autoCreateTemplateId: String
-
-  """
-  Whether or not the Linear Asks bot has been added to this Slack channel.
-  """
-  botAdded: Boolean
-
-  """The Slack channel ID."""
-  id: String!
-
-  """Whether or not the Slack channel is private."""
-  isPrivate: Boolean
-
-  """Whether or not the Slack channel is shared with an external org."""
-  isShared: Boolean
-
-  """The Slack channel name."""
-  name: String!
-
-  """
-  Whether or not synced Slack threads should be updated with a message when their Ask is accepted from triage.
-  """
-  postAcceptedFromTriageUpdates: Boolean
-
-  """
-  Whether or not synced Slack threads should be updated with a message and emoji when their Ask is canceled.
-  """
-  postCancellationUpdates: Boolean
-
-  """
-  Whether or not synced Slack threads should be updated with a message and emoji when their Ask is completed.
-  """
-  postCompletionUpdates: Boolean
-
-  """Which teams are connected to the channel and settings for those teams."""
-  teams: [SlackAsksTeamSettingsInput!]!
-}
-
-enum SlackChannelType {
-  DirectMessage
-  MultiPersonDirectMessage
-  Private
-  Public
-}
-
-input SlackPostSettingsInput {
-  channel: String!
-  channelId: String!
-  channelType: SlackChannelType
-  configurationUrl: String!
-
-  """Slack workspace id"""
-  teamId: String
-}
-
-input SlackSettingsInput {
-  """Enterprise id of the connected Slack enterprise"""
-  enterpriseId: String
-
-  """Enterprise name of the connected Slack enterprise"""
-  enterpriseName: String
-
-  """
-  Whether Linear should automatically respond with issue unfurls when an issue identifier is mentioned in a Slack message.
-  """
-  linkOnIssueIdMention: Boolean!
-
-  """Whether to show unfurl previews in Slack"""
-  shouldUnfurl: Boolean
-
-  """Slack workspace id"""
-  teamId: String
-
-  """Slack workspace name"""
-  teamName: String
-}
-
 """Comparator for issue source type."""
 input SourceMetadataComparator {
   """Equals constraint."""
@@ -17422,8 +15575,6 @@ input SourceMetadataComparator {
   """
   null: Boolean
 
-  """[INTERNAL] Comparator for the salesforce metadata."""
-  salesforceMetadata: SalesforceMetadataIntegrationComparator
 
   """Comparator for the sub type."""
   subType: SubTypeComparator
@@ -17710,37 +15861,6 @@ type SummaryPayload {
   summary: String!
 }
 
-"""A comment thread that is synced with an external source."""
-type SyncedExternalThread {
-  """The display name of the thread."""
-  displayName: String
-  id: ID
-
-  """Whether this thread is syncing with the external service."""
-  isConnected: Boolean!
-
-  """
-  Whether the current user has the corresponding personal integration connected for the external service.
-  """
-  isPersonalIntegrationConnected: Boolean!
-
-  """
-  Whether a connected personal integration is required to comment in this thread.
-  """
-  isPersonalIntegrationRequired: Boolean!
-
-  """The display name of the source."""
-  name: String
-
-  """The sub type of the external source."""
-  subType: String
-
-  """The type of the external source."""
-  type: String!
-
-  """The external url of the thread."""
-  url: String
-}
 
 """Project target date sorting options."""
 input TargetDateSort {
@@ -17946,8 +16066,6 @@ type Team implements Node {
   """
   inheritWorkflowStatuses: Boolean!
 
-  """Settings for all integrations associated with that team."""
-  integrationsSettings: IntegrationsSettings
 
   """Unique hash for the team to be used in invite URLs."""
   inviteHash: String!
@@ -18199,15 +16317,6 @@ type Team implements Node {
 
   """Where to move issues when changing state."""
   setIssueSortOrderOnStateChange: String!
-
-  """Whether to send new issue comment notifications to Slack."""
-  slackIssueComments: Boolean! @deprecated(reason: "No longer in use")
-
-  """Whether to send new issue status updates to Slack."""
-  slackIssueStatuses: Boolean! @deprecated(reason: "No longer in use")
-
-  """Whether to send new issue notifications to Slack."""
-  slackNewIssue: Boolean! @deprecated(reason: "No longer is use")
 
   """
   The workflow state into which issues are moved when a PR has been opened.
@@ -18866,15 +16975,6 @@ input TeamUpdateInput {
   """Whether to move issues to bottom of the column when changing state."""
   setIssueSortOrderOnStateChange: String
 
-  """Whether to send new issue comment notifications to Slack."""
-  slackIssueComments: Boolean
-
-  """Whether to send issue status update notifications to Slack."""
-  slackIssueStatuses: Boolean
-
-  """Whether to send new issue notifications to Slack."""
-  slackNewIssue: Boolean
-
   """The timezone of the team."""
   timezone: String
 
@@ -19042,9 +17142,6 @@ type TimeSchedule implements Node {
 
   """The unique identifier of the entity."""
   id: ID!
-
-  """The identifier of the Linear integration populating the schedule."""
-  integration: Integration
 
   """The name of the schedule."""
   name: String!
@@ -19882,8 +17979,6 @@ enum UserFlagType {
   projectWelcomeDismissed
   pulseWelcomeDismissed
   rewindBannerDismissed
-  slackBotWelcomeMessageShown
-  slackCommentReactionTipShown
   teamsPageIntroductionDismissed
   threadedCommentsNudgeIsSeen
   triageWelcomeDismissed
@@ -19892,7 +17987,6 @@ enum UserFlagType {
   tryInvitePeopleDismissed
   tryRoadmapsDismissed
   tryTriageDismissed
-  updatedSlackThreadSyncIntegration
 }
 
 """Operations that can be applied to UserFlagType."""
@@ -20481,23 +18575,6 @@ type WebhookPayload {
   webhook: Webhook!
 }
 
-input WebhookUpdateInput {
-  """Whether this webhook is enabled."""
-  enabled: Boolean
-
-  """Label for the webhook."""
-  label: String
-
-  """List of resources the webhook should subscribe to."""
-  resourceTypes: [String!]
-
-  """A secret token used to sign the webhook payload."""
-  secret: String
-
-  """The URL that will be called on data changes."""
-  url: String
-}
-
 """A state in a team workflow."""
 type WorkflowState implements Node {
   """
@@ -20697,65 +18774,4 @@ input WorkflowStateUpdateInput {
 
   """The position of the state."""
   position: Float
-}
-
-input ZendeskSettingsInput {
-  """
-  Whether a ticket should be automatically reopened when its linked Linear issue is cancelled.
-  """
-  automateTicketReopeningOnCancellation: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when a comment is posted on its linked Linear issue
-  """
-  automateTicketReopeningOnComment: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear issue is completed.
-  """
-  automateTicketReopeningOnCompletion: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear project is cancelled.
-  """
-  automateTicketReopeningOnProjectCancellation: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear project is completed.
-  """
-  automateTicketReopeningOnProjectCompletion: Boolean
-
-  """The ID of the Linear bot user."""
-  botUserId: String
-
-  """
-  [INTERNAL] Temporary flag indicating if the integration has the necessary scopes for Customers
-  """
-  canReadCustomers: Boolean
-
-  """
-  [ALPHA] Whether customer and customer requests should not be automatically created when conversations are linked to a Linear issue.
-  """
-  disableCustomerRequestsAutoCreation: Boolean
-
-  """
-  Whether an internal message should be added when someone comments on an issue.
-  """
-  sendNoteOnComment: Boolean
-
-  """
-  Whether an internal message should be added when a Linear issue changes status (for status types except completed or canceled).
-  """
-  sendNoteOnStatusChange: Boolean
-
-  """The subdomain of the Zendesk organization being connected."""
-  subdomain: String!
-
-  """
-  [INTERNAL] Flag indicating if the integration supports OAuth refresh tokens
-  """
-  supportsOAuthRefresh: Boolean
-
-  """The URL of the connected Zendesk organization."""
-  url: String!
 }
