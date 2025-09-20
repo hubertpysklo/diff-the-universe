@@ -419,9 +419,6 @@ input CommentCollectionFilter {
   """Comparator for the collection length."""
   length: NumberComparator
 
-  """Filters that the comment's customer needs must satisfy."""
-  needs: CustomerNeedCollectionFilter
-
   """Compound filters, one of which need to be matched by the comment."""
   or: [CommentCollectionFilter!]
 
@@ -537,9 +534,6 @@ input CommentFilter {
 
   """Filters that the comment's issue must satisfy."""
   issue: NullableIssueFilter
-
-  """Filters that the comment's customer needs must satisfy."""
-  needs: CustomerNeedCollectionFilter
 
   """Compound filters, one of which need to be matched by the comment."""
   or: [CommentFilter!]
@@ -1142,9 +1136,6 @@ type Document implements Node {
   """The initiative that the document is associated with."""
   initiative: Initiative
 
-  """The last template that was applied to this document."""
-  lastAppliedTemplate: Template
-
   """The project that the document is associated with."""
   project: Project
 
@@ -1287,9 +1278,6 @@ input DocumentCreateInput {
 
   """[Internal] Related initiative for the document."""
   initiativeId: String
-
-  """The ID of the last template applied to the document."""
-  lastAppliedTemplateId: String
 
   """Related project for the document."""
   projectId: String
@@ -1442,9 +1430,6 @@ type DocumentSearchResult implements Node {
   """The initiative that the document is associated with."""
   initiative: Initiative
 
-  """The last template that was applied to this document."""
-  lastAppliedTemplate: Template
-
   """Metadata related to search result."""
   metadata: JSONObject!
 
@@ -1504,9 +1489,6 @@ input DocumentUpdateInput {
   """[Internal] Related initiative for the document."""
   initiativeId: String
 
-  """The ID of the last template applied to the document."""
-  lastAppliedTemplateId: String
-
   """Related project for the document."""
   projectId: String
 
@@ -1542,88 +1524,6 @@ input DueDateSort {
 Represents a duration in ISO 8601 format. Accepts ISO 8601 duration strings or integers in milliseconds.
 """
 scalar Duration
-
-"""An email address that can be used for submitting issues."""
-type EmailIntakeAddress implements Node {
-  """Unique email address user name (before @) used for incoming email."""
-  address: String!
-
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who created the email intake address."""
-  creator: User
-
-  """
-  Whether issues created from that email address will be turned into customer requests.
-  """
-  customerRequestsEnabled: Boolean!
-
-  """Whether the email address is enabled."""
-  enabled: Boolean!
-
-  """The email address used to forward emails to the intake address."""
-  forwardingEmailAddress: String
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """
-  The auto-reply message for issue canceled. If not set, the default reply will be used.
-  """
-  issueCanceledAutoReply: String
-
-  """Whether the auto-reply for issue canceled is enabled."""
-  issueCanceledAutoReplyEnabled: Boolean!
-
-  """
-  The auto-reply message for issue completed. If not set, the default reply will be used.
-  """
-  issueCompletedAutoReply: String
-
-  """Whether the auto-reply for issue completed is enabled."""
-  issueCompletedAutoReplyEnabled: Boolean!
-
-  """
-  The auto-reply message for issue created. If not set, the default reply will be used.
-  """
-  issueCreatedAutoReply: String
-
-  """Whether the auto-reply for issue created is enabled."""
-  issueCreatedAutoReplyEnabled: Boolean!
-
-  """The organization that the email address is associated with."""
-  organization: Organization!
-
-  """Whether email replies are enabled."""
-  repliesEnabled: Boolean!
-
-  """The name to be used for outgoing emails."""
-  senderName: String
-
-  """The team that the email address is associated with."""
-  team: Team
-
-  """The template that the email address is associated with."""
-  template: Template
-
-  """The type of the email address."""
-  type: EmailIntakeAddressType!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """Whether the commenter's name is included in the email replies."""
-  useUserNamesInReplies: Boolean!
-}
 
 
 """A custom emoji."""
@@ -1933,11 +1833,6 @@ input FrontSettingsInput {
   Whether a ticket should be automatically reopened when its linked Linear project is completed.
   """
   automateTicketReopeningOnProjectCompletion: Boolean
-
-  """
-  [ALPHA] Whether customer and customer requests should not be automatically created when conversations are linked to a Linear issue.
-  """
-  disableCustomerRequestsAutoCreation: Boolean
 
   """
   Whether an internal message should be added when someone comments on an issue.
@@ -3144,11 +3039,6 @@ type Issue implements Node {
   """The user who created the issue."""
   creator: User
 
-  """
-  Returns the number of Attachment resources which are created by customer support ticketing systems (e.g. Zendesk).
-  """
-  customerTicketCount: Int!
-
   """The cycle that the issue is associated with."""
   cycle: Cycle
 
@@ -3207,38 +3097,6 @@ type Issue implements Node {
     """
     orderBy: PaginationOrderBy
   ): AttachmentConnection!
-
-  """
-  Customer needs previously associated with the issue before being moved to another issue.
-  """
-  formerNeeds(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned needs."""
-    filter: CustomerNeedFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CustomerNeedConnection!
 
   """History entries associated with the issue."""
   history(
@@ -3333,39 +3191,6 @@ type Issue implements Node {
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
 
-  """The last template that was applied to this issue."""
-  lastAppliedTemplate: Template
-
-  """Customer needs associated with the issue."""
-  needs(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned needs."""
-    filter: CustomerNeedFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CustomerNeedConnection!
-
   """The issue's unique number."""
   number: Float!
 
@@ -3400,8 +3225,6 @@ type Issue implements Node {
   """Reactions associated with the issue."""
   reactions: [Reaction!]!
 
-  """The recurring issue template that created this issue."""
-  recurringIssueTemplate: Template
 
   """Relations associated with this issue."""
   relations(
@@ -3606,12 +3429,6 @@ input IssueCollectionFilter {
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
 
-  """Count of customers"""
-  customerCount: NumberComparator
-
-  """Count of important customers"""
-  customerImportantCount: NumberComparator
-
   """Filters that the issues cycle must satisfy."""
   cycle: NullableCycleFilter
 
@@ -3676,17 +3493,12 @@ input IssueCollectionFilter {
   """Filters that issue labels must satisfy."""
   labels: IssueLabelCollectionFilter
 
-  """Filters that the last applied template must satisfy."""
-  lastAppliedTemplate: NullableTemplateFilter
-
   """[Internal] Lead time (created -> completed) comparator."""
   leadTime: NullableDurationComparator
 
   """Comparator for the collection length."""
   length: NumberComparator
 
-  """Filters that the issue's customer needs must satisfy."""
-  needs: CustomerNeedCollectionFilter
 
   """Comparator for the issues number."""
   number: NumberComparator
@@ -3710,9 +3522,6 @@ input IssueCollectionFilter {
 
   """Filters that the issues reactions must satisfy."""
   reactions: ReactionCollectionFilter
-
-  """[ALPHA] Filters that the recurring issue template must satisfy."""
-  recurringIssueTemplate: NullableTemplateFilter
 
   """[Internal] Comparator for the issues content."""
   searchableContent: ContentComparator
@@ -3816,9 +3625,6 @@ input IssueCreateInput {
   """The identifiers of the issue labels associated with this ticket."""
   labelIds: [String!]
 
-  """The ID of the last template applied to the issue."""
-  lastAppliedTemplateId: String
-
   """The identifier of the parent issue."""
   parentId: String
 
@@ -3878,18 +3684,9 @@ input IssueCreateInput {
   """The identifier of the team associated with the issue."""
   teamId: String!
 
-  """
-  The identifier of a template the issue should be created from. If other values are provided in the input, they will override template values.
-  """
-  templateId: String
-
   """The title of the issue."""
   title: String
 
-  """
-  Whether to use the default template for the team. When set to true, the default template of this team based on user's membership will be applied.
-  """
-  useDefaultTemplate: Boolean
 }
 
 type IssueEdge {
@@ -3946,12 +3743,6 @@ input IssueFilter {
 
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
-
-  """Count of customers"""
-  customerCount: NumberComparator
-
-  """Count of important customers"""
-  customerImportantCount: NumberComparator
 
   """Filters that the issues cycle must satisfy."""
   cycle: NullableCycleFilter
@@ -4014,14 +3805,8 @@ input IssueFilter {
   """Filters that issue labels must satisfy."""
   labels: IssueLabelCollectionFilter
 
-  """Filters that the last applied template must satisfy."""
-  lastAppliedTemplate: NullableTemplateFilter
-
   """[Internal] Lead time (created -> completed) comparator."""
   leadTime: NullableDurationComparator
-
-  """Filters that the issue's customer needs must satisfy."""
-  needs: CustomerNeedCollectionFilter
 
   """Comparator for the issues number."""
   number: NumberComparator
@@ -4045,9 +3830,6 @@ input IssueFilter {
 
   """Filters that the issues reactions must satisfy."""
   reactions: ReactionCollectionFilter
-
-  """[ALPHA] Filters that the recurring issue template must satisfy."""
-  recurringIssueTemplate: NullableTemplateFilter
 
   """[Internal] Comparator for the issues content."""
   searchableContent: ContentComparator
@@ -4142,9 +3924,6 @@ type IssueHistory implements Node {
 
   """The time at which the entity was created."""
   createdAt: DateTime!
-
-  """The id of linked customer need."""
-  customerNeedId: String
 
   """The actors that edited the description of the issue, if any."""
   descriptionUpdatedBy: [User!]
@@ -4948,10 +4727,6 @@ type IssueSearchResult implements Node {
   """The user who created the issue."""
   creator: User
 
-  """
-  Returns the number of Attachment resources which are created by customer support ticketing systems (e.g. Zendesk).
-  """
-  customerTicketCount: Int!
 
   """The cycle that the issue is associated with."""
   cycle: Cycle
@@ -5011,38 +4786,6 @@ type IssueSearchResult implements Node {
     """
     orderBy: PaginationOrderBy
   ): AttachmentConnection!
-
-  """
-  Customer needs previously associated with the issue before being moved to another issue.
-  """
-  formerNeeds(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned needs."""
-    filter: CustomerNeedFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CustomerNeedConnection!
 
   """History entries associated with the issue."""
   history(
@@ -5137,41 +4880,8 @@ type IssueSearchResult implements Node {
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
 
-  """The last template that was applied to this issue."""
-  lastAppliedTemplate: Template
-
   """Metadata related to search result."""
   metadata: JSONObject!
-
-  """Customer needs associated with the issue."""
-  needs(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned needs."""
-    filter: CustomerNeedFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CustomerNeedConnection!
 
   """The issue's unique number."""
   number: Float!
@@ -5206,9 +4916,6 @@ type IssueSearchResult implements Node {
 
   """Reactions associated with the issue."""
   reactions: [Reaction!]!
-
-  """The recurring issue template that created this issue."""
-  recurringIssueTemplate: Template
 
   """Relations associated with this issue."""
   relations(
@@ -5354,18 +5061,6 @@ input IssueSortInput {
   """Sort by issue creation date"""
   createdAt: CreatedAtSort
 
-  """Sort by customer name"""
-  customer: CustomerSort
-
-  """Sort by number of customers associated with the issue"""
-  customerCount: CustomerCountSort
-
-  """Sort by number of important customers associated with the issue"""
-  customerImportantCount: CustomerImportantCountSort
-
-  """Sort by customer revenue"""
-  customerRevenue: CustomerRevenueSort
-
   """Sort by Cycle start date"""
   cycle: CycleSort
 
@@ -5454,9 +5149,6 @@ input IssueUpdateInput {
 
   """The identifiers of the issue labels associated with this ticket."""
   labelIds: [String!]
-
-  """The ID of the last template applied to the issue."""
-  lastAppliedTemplateId: String
 
   """The identifier of the parent issue."""
   parentId: String
@@ -6602,27 +6294,6 @@ type Mutation {
     mapping: InheritanceEntityMapping
   ): TeamPayload!
 
-  """Creates a new template."""
-  templateCreate(
-    """The template object to create."""
-    input: TemplateCreateInput!
-  ): TemplatePayload!
-
-  """Deletes a template."""
-  templateDelete(
-    """The identifier of the template to delete."""
-    id: String!
-  ): DeletePayload!
-
-  """Updates an existing template."""
-  templateUpdate(
-    """The identifier of the template."""
-    id: String!
-
-    """The properties of the template to update."""
-    input: TemplateUpdateInput!
-  ): TemplatePayload!
-
   """Creates a new time schedule."""
   timeScheduleCreate(
     """The properties of the time schedule to create."""
@@ -6757,15 +6428,6 @@ type Mutation {
   ): WorkflowStatePayload!
 }
 
-"""Customer name sorting options."""
-input NameSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
-}
-
 interface Node {
   """The unique identifier of the entity."""
   id: ID!
@@ -6790,9 +6452,6 @@ input NullableCommentFilter {
 
   """Filters that the comment's issue must satisfy."""
   issue: NullableIssueFilter
-
-  """Filters that the comment's customer needs must satisfy."""
-  needs: CustomerNeedCollectionFilter
 
   """Filter based on the existence of the relation."""
   null: Boolean
@@ -7034,12 +6693,6 @@ input NullableIssueFilter {
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
 
-  """Count of customers"""
-  customerCount: NumberComparator
-
-  """Count of important customers"""
-  customerImportantCount: NumberComparator
-
   """Filters that the issues cycle must satisfy."""
   cycle: NullableCycleFilter
 
@@ -7101,14 +6754,8 @@ input NullableIssueFilter {
   """Filters that issue labels must satisfy."""
   labels: IssueLabelCollectionFilter
 
-  """Filters that the last applied template must satisfy."""
-  lastAppliedTemplate: NullableTemplateFilter
-
   """[Internal] Lead time (created -> completed) comparator."""
   leadTime: NullableDurationComparator
-
-  """Filters that the issue's customer needs must satisfy."""
-  needs: CustomerNeedCollectionFilter
 
   """Filter based on the existence of the relation."""
   null: Boolean
@@ -7135,9 +6782,6 @@ input NullableIssueFilter {
 
   """Filters that the issues reactions must satisfy."""
   reactions: ReactionCollectionFilter
-
-  """[ALPHA] Filters that the recurring issue template must satisfy."""
-  recurringIssueTemplate: NullableTemplateFilter
 
   """[Internal] Comparator for the issues content."""
   searchableContent: ContentComparator
@@ -7248,12 +6892,6 @@ input NullableProjectFilter {
   """Filters that the projects creator must satisfy."""
   creator: UserFilter
 
-  """Count of customers"""
-  customerCount: NumberComparator
-
-  """Count of important customers"""
-  customerImportantCount: NumberComparator
-
   """Comparator for filtering projects which are blocked."""
   hasBlockedByRelations: RelationExistsComparator
 
@@ -7294,9 +6932,6 @@ input NullableProjectFilter {
   """Filters that project labels must satisfy."""
   labels: ProjectLabelCollectionFilter
 
-  """Filters that the last applied template must satisfy."""
-  lastAppliedTemplate: NullableTemplateFilter
-
   """Filters that the projects lead must satisfy."""
   lead: NullableUserFilter
 
@@ -7305,9 +6940,6 @@ input NullableProjectFilter {
 
   """Comparator for the project name."""
   name: StringComparator
-
-  """Filters that the project's customer needs must satisfy."""
-  needs: CustomerNeedCollectionFilter
 
   """Filters that the project's next milestone must satisfy."""
   nextProjectMilestone: ProjectMilestoneFilter
@@ -7534,33 +7166,6 @@ input NullableTeamFilter {
   updatedAt: DateComparator
 }
 
-"""Template filtering options."""
-input NullableTemplateFilter {
-  """Compound filters, all of which need to be matched by the template."""
-  and: [NullableTemplateFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the template's name."""
-  name: StringComparator
-
-  """Filter based on the existence of the relation."""
-  null: Boolean
-
-  """Compound filters, one of which need to be matched by the template."""
-  or: [NullableTemplateFilter!]
-
-  """Comparator for the template's type."""
-  type: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
 """Comparator for optional timeless dates."""
 input NullableTimelessDateComparator {
   """Equals constraint."""
@@ -7714,15 +7319,6 @@ type Organization implements Node {
 
   """Number of issues in the organization."""
   createdIssueCount: Int!
-
-  """Number of customers in the organization."""
-  customerCount: Int!
-
-  """Configuration settings for the Customers feature."""
-  customersConfiguration: JSONObject!
-
-  """Whether the organization is using Customers."""
-  customersEnabled: Boolean!
 
   """Default schedule for how often feed summaries are generated."""
   defaultFeedSummarySchedule: FeedSummarySchedule
@@ -7891,35 +7487,6 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): TeamConnection!
 
-  """Templates associated with the organization."""
-  templates(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned templates."""
-    filter: NullableTemplateFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): TemplateConnection!
 
   """[ALPHA] Theme settings for the organization."""
   themeSettings: JSONObject
@@ -8171,12 +7738,6 @@ input OrganizationUpdateInput {
   """Allowed file upload content types."""
   allowedFileUploadContentTypes: [String!]
 
-  """[INTERNAL] Configuration settings for the Customers feature."""
-  customersConfiguration: JSONObject
-
-  """[INTERNAL] Whether the organization is using customers."""
-  customersEnabled: Boolean
-
   """Default schedule for how often feed summaries are generated."""
   defaultFeedSummarySchedule: FeedSummarySchedule
 
@@ -8221,11 +7782,6 @@ input OrganizationUpdateInput {
   """The hour at which project updates are sent."""
   projectUpdateRemindersHour: Float
 
-  """
-  Whether the organization has opted for reduced customer support attachment information.
-  """
-  reducedPersonalInformation: Boolean
-
   """Whether agent invocation is restricted to full workspace members."""
   restrictAgentInvocationToMembers: Boolean
 
@@ -8249,15 +7805,6 @@ input OrganizationUpdateInput {
 
   """[Internal] The list of working days. Sunday is 0, Monday is 1, etc."""
   workingDays: [Float!]
-}
-
-"""Customer owner sorting options."""
-input OwnerSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
 }
 
 type PageInfo {
@@ -8619,9 +8166,6 @@ type Project implements Node {
     orderBy: PaginationOrderBy
   ): ProjectLabelConnection!
 
-  """The last template that was applied to this project."""
-  lastAppliedTemplate: Template
-
   """The last project update posted for this project."""
   lastUpdate: ProjectUpdate
 
@@ -8663,36 +8207,6 @@ type Project implements Node {
 
   """The project's name."""
   name: String!
-
-  """Customer needs associated with the project."""
-  needs(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned needs."""
-    filter: CustomerNeedFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CustomerNeedConnection!
 
   """
   The priority of the project. 0 = No priority, 1 = Urgent, 2 = High, 3 = Normal, 4 = Low.
@@ -8977,12 +8491,6 @@ input ProjectCollectionFilter {
   """Filters that the projects creator must satisfy."""
   creator: UserFilter
 
-  """Count of customers"""
-  customerCount: NumberComparator
-
-  """Count of important customers"""
-  customerImportantCount: NumberComparator
-
   """Filters that needs to be matched by all projects."""
   every: ProjectFilter
 
@@ -9026,9 +8534,6 @@ input ProjectCollectionFilter {
   """Filters that project labels must satisfy."""
   labels: ProjectLabelCollectionFilter
 
-  """Filters that the last applied template must satisfy."""
-  lastAppliedTemplate: NullableTemplateFilter
-
   """Filters that the projects lead must satisfy."""
   lead: NullableUserFilter
 
@@ -9040,9 +8545,6 @@ input ProjectCollectionFilter {
 
   """Comparator for the project name."""
   name: StringComparator
-
-  """Filters that the project's customer needs must satisfy."""
-  needs: CustomerNeedCollectionFilter
 
   """Filters that the project's next milestone must satisfy."""
   nextProjectMilestone: ProjectMilestoneFilter
@@ -9118,9 +8620,6 @@ input ProjectCreateInput {
   [Internal]The identifiers of the project labels associated with this project.
   """
   labelIds: [String!]
-
-  """The ID of the last template applied to the project."""
-  lastAppliedTemplateId: String
 
   """The identifier of the project lead."""
   leadId: String
@@ -9209,12 +8708,6 @@ input ProjectFilter {
   """Filters that the projects creator must satisfy."""
   creator: UserFilter
 
-  """Count of customers"""
-  customerCount: NumberComparator
-
-  """Count of important customers"""
-  customerImportantCount: NumberComparator
-
   """Comparator for filtering projects which are blocked."""
   hasBlockedByRelations: RelationExistsComparator
 
@@ -9255,9 +8748,6 @@ input ProjectFilter {
   """Filters that project labels must satisfy."""
   labels: ProjectLabelCollectionFilter
 
-  """Filters that the last applied template must satisfy."""
-  lastAppliedTemplate: NullableTemplateFilter
-
   """Filters that the projects lead must satisfy."""
   lead: NullableUserFilter
 
@@ -9266,9 +8756,6 @@ input ProjectFilter {
 
   """Comparator for the project name."""
   name: StringComparator
-
-  """Filters that the project's customer needs must satisfy."""
-  needs: CustomerNeedCollectionFilter
 
   """Filters that the project's next milestone must satisfy."""
   nextProjectMilestone: ProjectMilestoneFilter
@@ -10402,9 +9889,6 @@ type ProjectSearchResult implements Node {
     orderBy: PaginationOrderBy
   ): ProjectLabelConnection!
 
-  """The last template that was applied to this project."""
-  lastAppliedTemplate: Template
-
   """The last project update posted for this project."""
   lastUpdate: ProjectUpdate
 
@@ -10449,36 +9933,6 @@ type ProjectSearchResult implements Node {
 
   """The project's name."""
   name: String!
-
-  """Customer needs associated with the project."""
-  needs(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned needs."""
-    filter: CustomerNeedFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CustomerNeedConnection!
 
   """
   The priority of the project. 0 = No priority, 1 = Urgent, 2 = High, 3 = Normal, 4 = Low.
@@ -10919,7 +10373,6 @@ input ProjectStatusUpdateInput {
 
 """Different tabs available inside a project."""
 enum ProjectTab {
-  customers
   documents
   issues
   updates
@@ -11137,9 +10590,6 @@ input ProjectUpdateInput {
 
   """The identifiers of the project labels associated with this project."""
   labelIds: [String!]
-
-  """The ID of the last template applied to the project."""
-  lastAppliedTemplateId: String
 
   """The identifier of the project lead."""
   leadId: String
@@ -12475,14 +11925,6 @@ type Query {
     orderBy: PaginationOrderBy
   ): TeamConnection!
 
-  """A specific template."""
-  template(
-    """The identifier of the template to retrieve."""
-    id: String!
-  ): Template!
-
-  """All templates from all users."""
-  templates: [Template!]!
 
   """A specific time schedule."""
   timeSchedule(
@@ -12865,15 +12307,6 @@ enum ReleaseChannel {
   public
 }
 
-"""Customer revenue sorting options."""
-input RevenueSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
-}
-
 """[Deprecated] A roadmap for projects."""
 type Roadmap implements Node {
   """
@@ -13223,15 +12656,6 @@ input SentrySettingsInput {
   unresolvingReopensIssues: Boolean!
 }
 
-
-"""Customer size sorting options."""
-input SizeSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
-}
 
 enum SlaStatus {
   Breached
@@ -13691,29 +13115,6 @@ type Team implements Node {
   """
   defaultIssueState: WorkflowState
 
-  """The default template to use for new projects created for the team."""
-  defaultProjectTemplate: Template
-
-  """
-  The default template to use for new issues created by members of the team.
-  """
-  defaultTemplateForMembers: Template
-
-  """
-  The id of the default template to use for new issues created by members of the team.
-  """
-  defaultTemplateForMembersId: String @deprecated(reason: "Use defaultTemplateForMembers instead")
-
-  """
-  The default template to use for new issues created by non-members of the team.
-  """
-  defaultTemplateForNonMembers: Template
-
-  """
-  The id of the default template to use for new issues created by non-members of the team.
-  """
-  defaultTemplateForNonMembersId: String @deprecated(reason: "Use defaultTemplateForNonMembers instead")
-
   """The team's description."""
   description: String
 
@@ -14001,35 +13402,6 @@ type Team implements Node {
     orderBy: PaginationOrderBy
   ): WorkflowStateConnection!
 
-  """Templates associated with the team."""
-  templates(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned templates."""
-    filter: NullableTemplateFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): TemplateConnection!
 
   """
   The timezone of the team. Defaults to "America/Los_Angeles"
@@ -14167,15 +13539,6 @@ input TeamCreateInput {
 
   """What to use as an default estimate for unestimated issues."""
   defaultIssueEstimate: Float
-
-  """The identifier of the default project template of this team."""
-  defaultProjectTemplateId: String
-
-  """The identifier of the default template for members of this team."""
-  defaultTemplateForMembersId: String
-
-  """The identifier of the default template for non-members of this team."""
-  defaultTemplateForNonMembersId: String
 
   """The description of the team."""
   description: String
@@ -14461,15 +13824,6 @@ input TeamUpdateInput {
   """Default status for newly created issues."""
   defaultIssueStateId: String
 
-  """The identifier of the default project template of this team."""
-  defaultProjectTemplateId: String
-
-  """The identifier of the default template for members of this team."""
-  defaultTemplateForMembersId: String
-
-  """The identifier of the default template for non-members of this team."""
-  defaultTemplateForNonMembersId: String
-
   """The description of the team."""
   description: String
 
@@ -14544,142 +13898,6 @@ input TeamUpdateInput {
 
   """How many upcoming cycles to create."""
   upcomingCycleCount: Float
-}
-
-"""A template object used for creating entities faster."""
-type Template implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who created the template."""
-  creator: User
-
-  """Template description."""
-  description: String
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The original template inherited from."""
-  inheritedFrom: Template
-
-  """The user who last updated the template."""
-  lastUpdatedBy: User
-
-  """The name of the template."""
-  name: String!
-
-  """
-  The organization that the template is associated with. If null, the template is associated with a particular team.
-  """
-  organization: Organization!
-
-  """The sort order of the template."""
-  sortOrder: Float!
-
-  """
-  The team that the template is associated with. If null, the template is global to the workspace.
-  """
-  team: Team
-
-  """Template data."""
-  templateData: JSON!
-
-  """The entity type this template is for."""
-  type: String!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-type TemplateConnection {
-  edges: [TemplateEdge!]!
-  nodes: [Template!]!
-  pageInfo: PageInfo!
-}
-
-input TemplateCreateInput {
-  """The template description."""
-  description: String
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The template name."""
-  name: String!
-
-  """The position of the template in the templates list."""
-  sortOrder: Float
-
-  """
-  The identifier or key of the team associated with the template. If not given, the template will be shared across all teams.
-  """
-  teamId: String
-
-  """
-  The template data as JSON encoded attributes of the type of entity, such as an issue.
-  """
-  templateData: JSON!
-
-  """The template type, e.g. 'issue'."""
-  type: String!
-}
-
-type TemplateEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Template!
-}
-
-type TemplatePayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-
-  """The template that was created or updated."""
-  template: Template!
-}
-
-input TemplateUpdateInput {
-  """The template description."""
-  description: String
-
-  """The template name."""
-  name: String
-
-  """The position of the template in the templates list."""
-  sortOrder: Float
-
-  """
-  The identifier or key of the team associated with the template. If set to null, the template will be shared across all teams.
-  """
-  teamId: String
-
-  """
-  The template data as JSON encoded attributes of the type of entity, such as an issue.
-  """
-  templateData: JSON
-}
-
-"""Customer tier sorting options."""
-input TierSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
 }
 
 """A time schedule."""
