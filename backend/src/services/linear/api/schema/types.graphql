@@ -235,130 +235,6 @@ input AttachmentUpdateInput {
   title: String!
 }
 
-"""
-An organization. Organizations are root-level objects that contain users and teams.
-"""
-type AuthOrganization {
-  """Allowed authentication providers, empty array means all are allowed"""
-  allowedAuthServices: [String!]!
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The time at which deletion of the organization was requested."""
-  deletionRequestedAt: DateTime
-
-  """
-  Whether the organization is enabled. Used as a superuser tool to lock down the org.
-  """
-  enabled: Boolean!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The organization's logo URL."""
-  logoUrl: String
-
-  """The organization's name."""
-  name: String!
-
-  """
-  Previously used URL keys for the organization (last 3 are kept and redirected).
-  """
-  previousUrlKeys: [String!]!
-
-  """The region the organization is hosted in."""
-  region: String!
-
-  """The feature release channel the organization belongs to."""
-  releaseChannel: ReleaseChannel!
-
-  """Whether SAML authentication is enabled for organization."""
-  samlEnabled: Boolean!
-
-  """[INTERNAL] SAML settings"""
-  samlSettings: JSONObject
-
-  """Whether SCIM provisioning is enabled for organization."""
-  scimEnabled: Boolean!
-
-  """The email domain or URL key for the organization."""
-  serviceId: String!
-
-  """The organization's unique URL key."""
-  urlKey: String!
-  userCount: Float!
-}
-
-type AuthResolverResponse {
-  """Should the signup flow allow access for the domain."""
-  allowDomainAccess: Boolean
-
-  """
-  List of organizations allowing this user account to join automatically.
-  """
-  availableOrganizations: [AuthOrganization!]
-
-  """Email for the authenticated account."""
-  email: String!
-
-  """User account ID."""
-  id: String!
-
-  """ID of the organization last accessed by the user."""
-  lastUsedOrganizationId: String
-
-  """
-  List of organization available to this user account but locked due to the current auth method.
-  """
-  lockedOrganizations: [AuthOrganization!]
-
-  """List of locked users that are locked by login restrictions"""
-  lockedUsers: [AuthUser!]!
-
-  """Application token."""
-  token: String @deprecated(reason: "Deprecated and not used anymore. Never populated.")
-
-  """List of active users that belong to the user account."""
-  users: [AuthUser!]!
-}
-
-"""A user that has access to the the resources of an organization."""
-type AuthUser {
-  """Whether the user is active."""
-  active: Boolean!
-
-  """An URL to the user's avatar image."""
-  avatarUrl: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user's display (nick) name. Unique within each organization."""
-  displayName: String!
-
-  """The user's email address."""
-  email: String!
-  id: ID!
-
-  """[INTERNAL] Identity provider the user is managed by."""
-  identityProvider: AuthIdentityProvider
-
-  """The user's full name."""
-  name: String!
-
-  """Organization the user belongs to."""
-  organization: AuthOrganization!
-
-  """
-  Whether the user is an organization admin or guest on a database level.
-  """
-  role: UserRoleType!
-
-  """User account ID the user belongs to."""
-  userAccountId: String!
-}
-
 
 """Comparator for booleans."""
 input BooleanComparator {
@@ -601,10 +477,6 @@ input CommentCreateInput {
   """
   displayIconUrl: String
 
-  """
-  Flag to prevent auto subscription to the issue the comment is created on.
-  """
-  doNotSubscribeToIssue: Boolean
 
   """The document content to associate the comment with."""
   documentContentId: String
@@ -707,11 +579,6 @@ input CommentUpdateInput {
   bodyData: JSON
 
   """
-  [INTERNAL] Flag to prevent auto subscription to the issue the comment is updated on.
-  """
-  doNotSubscribeToIssue: Boolean
-
-  """
   The text that this comment references. Only defined for inline comments.
   """
   quotedText: String
@@ -743,15 +610,6 @@ enum ContextViewType {
   upcomingCycle
 }
 
-type CreateCsvExportReportPayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type CreateOrJoinOrganizationResponse {
-  organization: AuthOrganization!
-  user: AuthUser!
-}
 
 input CreateOrganizationInput {
   """Whether the organization should allow email domain access."""
@@ -1748,9 +1606,6 @@ type EmailIntakeAddress implements Node {
   """The name to be used for outgoing emails."""
   senderName: String
 
-  """The SES domain identity that the email address is associated with."""
-  sesDomainIdentity: SesDomainIdentity
-
   """The team that the email address is associated with."""
   team: Team
 
@@ -2017,58 +1872,6 @@ input EstimateSort {
   order: PaginationSortOrder
 }
 
-"""
-A facet. Facets are joins between entities. A facet can tie a custom view to a project, or a a project to a roadmap for example.
-"""
-type Facet implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The sort order of the facet."""
-  sortOrder: Float!
-
-  """The owning feed user."""
-  sourceFeedUser: User
-
-  """The owning initiative."""
-  sourceInitiative: Initiative
-
-  """The owning organization."""
-  sourceOrganization: Organization
-
-  """The owning page."""
-  sourcePage: FacetPageSource
-
-  """The owning project."""
-  sourceProject: Project
-
-  """The owning team."""
-  sourceTeam: Team
-
-  """The targeted custom view."""
-  targetCustomView: CustomView
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-enum FacetPageSource {
-  feed
-  projects
-  teamIssues
-}
-
 type FetchDataPayload {
   """The fetched data based on the natural language query."""
   data: JSONObject
@@ -2239,9 +2042,6 @@ type Initiative implements Node {
     """
     orderBy: PaginationOrderBy
   ): DocumentConnection!
-
-  """[Internal] Facets associated with the initiative."""
-  facets: [Facet!]!
 
   """The resolution of the reminder frequency."""
   frequencyResolution: FrequencyResolutionType!
@@ -3704,38 +3504,6 @@ type Issue implements Node {
     orderBy: PaginationOrderBy
   ): UserConnection!
 
-  """[Internal] Product Intelligence suggestions for the issue."""
-  suggestions(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): IssueSuggestionConnection!
-
-  """
-  [Internal] The time at which the most recent suggestions for this issue were generated.
-  """
-  suggestionsGeneratedAt: DateTime
-
   """The external services the issue is synced with."""
   syncedWith: [ExternalEntityInfo!]
 
@@ -3972,9 +3740,6 @@ input IssueCollectionFilter {
 
   """Filters that issue subscribers must satisfy."""
   subscribers: UserCollectionFilter
-
-  """[Internal] Filters that the issue's suggestions must satisfy."""
-  suggestions: IssueSuggestionCollectionFilter
 
   """Filters that the issues team must satisfy."""
   team: TeamFilter
@@ -4308,9 +4073,6 @@ input IssueFilter {
   """Filters that issue subscribers must satisfy."""
   subscribers: UserCollectionFilter
 
-  """[Internal] Filters that the issue's suggestions must satisfy."""
-  suggestions: IssueSuggestionCollectionFilter
-
   """Filters that the issues team must satisfy."""
   team: TeamFilter
 
@@ -4325,14 +4087,6 @@ input IssueFilter {
 
   """Comparator for the updated at date."""
   updatedAt: DateComparator
-}
-
-type IssueFilterSuggestionPayload {
-  """The json filter that is suggested."""
-  filter: JSONObject
-
-  """The log id of the prompt, that created this filter."""
-  logId: String
 }
 
 """A record of changes to an issue."""
@@ -5323,35 +5077,6 @@ type IssueSearchResult implements Node {
   """Issue's human readable identifier (e.g. ENG-123)."""
   identifier: String!
 
-  """
-  [Internal] Incoming product intelligence relation suggestions for the issue.
-  """
-  incomingSuggestions(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): IssueSuggestionConnection!
-
   """Inverse relations associated with this issue."""
   inverseRelations(
     """A cursor to be used with first for forward pagination"""
@@ -5586,37 +5311,6 @@ type IssueSearchResult implements Node {
     orderBy: PaginationOrderBy
   ): UserConnection!
 
-  """[Internal] Product Intelligence suggestions for the issue."""
-  suggestions(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): IssueSuggestionConnection!
-
-  """
-  [Internal] The time at which the most recent suggestions for this issue were generated.
-  """
-  suggestionsGeneratedAt: DateTime
 
   """The external services the issue is synced with."""
   syncedWith: [ExternalEntityInfo!]
@@ -5724,158 +5418,6 @@ input IssueSortInput {
   workflowState: WorkflowStateSort
 }
 
-type IssueSuggestion implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-  dismissalReason: String
-
-  """The unique identifier of the entity."""
-  id: ID!
-  issue: Issue!
-  issueId: String!
-  metadata: IssueSuggestionMetadata
-  state: IssueSuggestionState!
-  stateChangedAt: DateTime!
-  suggestedIssue: Issue
-  suggestedIssueId: String
-  suggestedLabel: IssueLabel
-  suggestedLabelId: String
-  suggestedProject: Project
-  suggestedTeam: Team
-  suggestedUser: User
-  suggestedUserId: String
-  type: IssueSuggestionType!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-"""IssueSuggestion collection filtering options."""
-input IssueSuggestionCollectionFilter {
-  """Compound filters, all of which need to be matched by the suggestion."""
-  and: [IssueSuggestionCollectionFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that needs to be matched by all suggestions."""
-  every: IssueSuggestionFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the collection length."""
-  length: NumberComparator
-
-  """Compound filters, one of which need to be matched by the suggestion."""
-  or: [IssueSuggestionCollectionFilter!]
-
-  """Filters that needs to be matched by some suggestions."""
-  some: IssueSuggestionFilter
-
-  """Comparator for the suggestion state."""
-  state: StringComparator
-
-  """Filters that the suggested label must satisfy."""
-  suggestedLabel: IssueLabelFilter
-
-  """Filters that the suggested project must satisfy."""
-  suggestedProject: NullableProjectFilter
-
-  """Filters that the suggested team must satisfy."""
-  suggestedTeam: NullableTeamFilter
-
-  """Filters that the suggested user must satisfy."""
-  suggestedUser: NullableUserFilter
-
-  """Comparator for the suggestion type."""
-  type: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-type IssueSuggestionConnection {
-  edges: [IssueSuggestionEdge!]!
-  nodes: [IssueSuggestion!]!
-  pageInfo: PageInfo!
-}
-
-type IssueSuggestionEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: IssueSuggestion!
-}
-
-"""IssueSuggestion filtering options."""
-input IssueSuggestionFilter {
-  """Compound filters, all of which need to be matched by the suggestion."""
-  and: [IssueSuggestionFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Compound filters, one of which need to be matched by the suggestion."""
-  or: [IssueSuggestionFilter!]
-
-  """Comparator for the suggestion state."""
-  state: StringComparator
-
-  """Filters that the suggested label must satisfy."""
-  suggestedLabel: IssueLabelFilter
-
-  """Filters that the suggested project must satisfy."""
-  suggestedProject: NullableProjectFilter
-
-  """Filters that the suggested team must satisfy."""
-  suggestedTeam: NullableTeamFilter
-
-  """Filters that the suggested user must satisfy."""
-  suggestedUser: NullableUserFilter
-
-  """Comparator for the suggestion type."""
-  type: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-type IssueSuggestionMetadata {
-  appliedAutomationRuleId: String
-  classification: String
-  evalLogId: String
-  rank: Float
-  reasons: [String!]
-  score: Float
-  variant: String
-}
-
-enum IssueSuggestionState {
-  accepted
-  active
-  dismissed
-  stale
-}
-
-enum IssueSuggestionType {
-  assignee
-  label
-  project
-  relatedIssue
-  similarIssue
-  team
-}
 
 input IssueUpdateInput {
   """The identifiers of the issue labels to be added to this issue."""
@@ -6168,10 +5710,6 @@ type Mutation {
     input: CommentUpdateInput!
   ): CommentPayload!
 
-  """Create CSV export report for the organization."""
-  createCsvExportReport(includePrivateTeamIds: [String!]): CreateCsvExportReportPayload!
-
-
   """Archives a cycle."""
   cycleArchive(
     """The identifier of the cycle to archive."""
@@ -6267,25 +5805,11 @@ type Mutation {
     input: EmailIntakeAddressUpdateInput!
   ): EmailIntakeAddressPayload!
 
-  """Authenticates a user account via email and authentication token."""
-  emailTokenUserAccountAuth(
-    """The data used for token authentication."""
-    input: TokenUserAccountAuthInput!
-  ): AuthResolverResponse!
-
   """Unsubscribes the user from one type of email."""
   emailUnsubscribe(
     """Unsubscription details."""
     input: EmailUnsubscribeInput!
   ): EmailUnsubscribePayload!
-
-  """
-  Finds or creates a new user account by email and sends an email with token.
-  """
-  emailUserAccountAuthChallenge(
-    """The data used for email authentication."""
-    input: EmailUserAccountAuthChallengeInput!
-  ): EmailUserAccountAuthChallengeResponse!
 
   """Creates a custom emoji."""
   emojiCreate(
@@ -6817,19 +6341,6 @@ type Mutation {
     input: ProjectMilestoneUpdateInput!
   ): ProjectMilestonePayload!
 
-  """
-  [INTERNAL] Updates all projects currently assigned to to a project status to a new project status.
-  """
-  projectReassignStatus(
-    """The identifier of the new project status to update the projects to."""
-    newProjectStatusId: String!
-
-    """
-    The identifier of the project status with which projects will be updated.
-    """
-    originalProjectStatusId: String!
-  ): SuccessPayload!
-
   """Creates a new project relation."""
   projectRelationCreate(
     """The project relation to create."""
@@ -6939,18 +6450,6 @@ type Mutation {
     input: ProjectUpdateUpdateInput!
   ): ProjectUpdatePayload!
 
-  """Creates a push subscription."""
-  pushSubscriptionCreate(
-    """The push subscription to create."""
-    input: PushSubscriptionCreateInput!
-  ): PushSubscriptionPayload!
-
-  """Deletes a push subscription."""
-  pushSubscriptionDelete(
-    """The identifier of the push subscription to delete."""
-    id: String!
-  ): PushSubscriptionPayload!
-
   """Creates a new reaction."""
   reactionCreate(
     """The reaction object to create."""
@@ -7029,14 +6528,6 @@ type Mutation {
     """The properties of the roadmap to update."""
     input: RoadmapUpdateInput!
   ): RoadmapPayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """
-  Authenticates a user account via email and authentication token for SAML.
-  """
-  samlTokenUserAccountAuth(
-    """The data used for token authentication."""
-    input: TokenUserAccountAuthInput!
-  ): AuthResolverResponse!
 
   """
   Creates a new team. The user who creates the team will automatically be added as a member to the newly created team.
@@ -7196,30 +6687,6 @@ type Mutation {
     id: String!
   ): UserAdminPayload!
 
-  """Connects the Discord user to this Linear account via OAuth2."""
-  userDiscordConnect(
-    """The Discord OAuth code."""
-    code: String!
-
-    """The Discord OAuth redirect URI."""
-    redirectUri: String!
-  ): UserPayload!
-
-  """Disconnects the external user from this Linear account."""
-  userExternalUserDisconnect(
-    """The external service to disconnect."""
-    service: String!
-  ): UserPayload!
-
-  """Updates a user's settings flag."""
-  userFlagUpdate(
-    """Settings flag to increment."""
-    flag: UserFlagType!
-
-    """Flag operation to perform."""
-    operation: UserFlagUpdateOperation!
-  ): UserSettingsFlagPayload!
-
   """Makes user an admin. Can only be called by an admin."""
   userPromoteAdmin(
     """The identifier of the user to make an admin."""
@@ -7231,12 +6698,6 @@ type Mutation {
     """The identifier of the user to make a regular user."""
     id: String!
   ): UserAdminPayload!
-
-  """Resets user's setting flags."""
-  userSettingsFlagsReset(
-    """The flags to reset. If not provided all flags will be reset."""
-    flags: [UserFlagType!]
-  ): UserSettingsFlagsResetPayload!
 
   """Updates the user's settings."""
   userSettingsUpdate(
@@ -7250,16 +6711,6 @@ type Mutation {
   """Suspends a user. Can only be called by an admin."""
   userSuspend(
     """The identifier of the user to suspend."""
-    id: String!
-  ): UserAdminPayload!
-
-  """
-  Unlinks a guest user from their identity provider. Can only be called by an admin when SCIM is enabled.
-  """
-  userUnlinkFromIdentityProvider(
-    """
-    The identifier of the guest user to unlink from their identity provider.
-    """
     id: String!
   ): UserAdminPayload!
 
@@ -7712,8 +7163,6 @@ input NullableIssueFilter {
   """Filters that issue subscribers must satisfy."""
   subscribers: UserCollectionFilter
 
-  """[Internal] Filters that the issue's suggestions must satisfy."""
-  suggestions: IssueSuggestionCollectionFilter
 
   """Filters that the issues team must satisfy."""
   team: TeamFilter
@@ -8252,9 +7701,6 @@ type Organization implements Node {
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
 
-  """Allowed authentication providers, empty array means all are allowed."""
-  allowedAuthServices: [String!]!
-
   """Allowed file upload content types"""
   allowedFileUploadContentTypes: [String!]
 
@@ -8283,9 +7729,6 @@ type Organization implements Node {
 
   """The time at which deletion of the organization was requested."""
   deletionRequestedAt: DateTime
-
-  """[Internal] Facets associated with the organization."""
-  facets: [Facet!]!
 
   """Whether the organization has enabled the feed feature."""
   feedEnabled: Boolean!
@@ -8417,24 +7860,6 @@ type Organization implements Node {
 
   """Whether the organization is using a roadmap."""
   roadmapEnabled: Boolean!
-
-  """Whether SAML authentication is enabled for organization."""
-  samlEnabled: Boolean!
-
-  """[INTERNAL] SAML settings."""
-  samlSettings: JSONObject
-
-  """Whether SCIM provisioning is enabled for organization."""
-  scimEnabled: Boolean!
-
-  """[INTERNAL] SCIM settings."""
-  scimSettings: JSONObject
-
-  """[DEPRECATED] Which day count to use for SLA calculations."""
-  slaDayCount: SLADayCountType! @deprecated(reason: "No longer in use")
-
-  """The organization's subscription to a paid plan."""
-  subscription: PaidSubscription
 
   """Teams associated with the organization."""
   teams(
@@ -8661,9 +8086,6 @@ type OrganizationInviteFullDetailsPayload {
   """Whether the invite has already been accepted."""
   accepted: Boolean!
 
-  """Allowed authentication providers, empty array means all are allowed."""
-  allowedAuthServices: [String!]!
-
   """When the invite was created."""
   createdAt: DateTime!
 
@@ -8715,43 +8137,6 @@ input OrganizationInviteUpdateInput {
   teamIds: [String!]!
 }
 
-type OrganizationIpRestriction {
-  """Optional restriction description."""
-  description: String
-
-  """Whether the restriction is enabled."""
-  enabled: Boolean!
-
-  """IP range in CIDR format."""
-  range: String!
-
-  """Restriction type."""
-  type: String!
-}
-
-"""[INTERNAL] Organization IP restriction configuration."""
-input OrganizationIpRestrictionInput {
-  """Optional restriction description."""
-  description: String
-
-  """Whether the restriction is enabled."""
-  enabled: Boolean!
-
-  """IP range in CIDR format."""
-  range: String!
-
-  """Restriction type."""
-  type: String!
-}
-
-type OrganizationMeta {
-  """Allowed authentication providers, empty array means all are allowed."""
-  allowedAuthServices: [String!]!
-
-  """The region the organization is hosted in."""
-  region: String!
-}
-
 type OrganizationPayload {
   """The identifier of the last sync operation."""
   lastSyncId: Float!
@@ -8782,9 +8167,6 @@ input OrganizationUpdateInput {
 
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
-
-  """List of services that are allowed to be used for login."""
-  allowedAuthServices: [String!]
 
   """Allowed file upload content types."""
   allowedFileUploadContentTypes: [String!]
@@ -8826,11 +8208,6 @@ input OrganizationUpdateInput {
 
   """The name of the organization."""
   name: String
-
-  """
-  Whether the organization has opted for having to approve all OAuth applications for install.
-  """
-  oauthAppReview: Boolean
 
   """[INTERNAL] Whether the organization has enabled the member API keys."""
   personalApiKeysEnabled: Boolean
@@ -8918,12 +8295,6 @@ enum PaginationOrderBy {
 enum PaginationSortOrder {
   Ascending
   Descending
-}
-
-
-type PasskeyLoginStartResponse {
-  options: JSONObject!
-  success: Boolean!
 }
 
 
@@ -9078,8 +8449,6 @@ type Project implements Node {
     orderBy: PaginationOrderBy
   ): EntityExternalLinkConnection!
 
-  """[Internal] Facets associated with the project."""
-  facets: [Facet!]!
 
   """The user's favorite associated with this project."""
   favorite: Favorite
@@ -9941,13 +9310,6 @@ input ProjectFilter {
   updatedAt: DateComparator
 }
 
-type ProjectFilterSuggestionPayload {
-  """The json filter that is suggested."""
-  filter: JSONObject
-
-  """The log id of the prompt, that created this filter."""
-  logId: String
-}
 
 """Project health sorting options."""
 input ProjectHealthSort {
@@ -10871,9 +10233,6 @@ type ProjectSearchResult implements Node {
     """
     orderBy: PaginationOrderBy
   ): EntityExternalLinkConnection!
-
-  """[Internal] Facets associated with the project."""
-  facets: [Facet!]!
 
   """The user's favorite associated with this project."""
   favorite: Favorite
@@ -12450,13 +11809,6 @@ type Query {
   """One specific issue."""
   issue(id: String!): Issue!
 
-  """Suggests filters for an issue view based on a text prompt."""
-  issueFilterSuggestion(
-    """The ID of the project if filtering a project view"""
-    projectId: String
-    prompt: String!
-  ): IssueFilterSuggestionPayload!
-
   """One specific label."""
   issueLabel(id: String!): IssueLabel!
 
@@ -12558,9 +11910,6 @@ type Query {
     query: String
   ): IssueConnection!
 
-  """Suggests issue title based on a customer request."""
-  issueTitleSuggestionFromCustomerRequest(request: String!): IssueTitleSuggestionFromCustomerRequestPayload!
-
   """Find issue based on the VCS branch name."""
   issueVcsBranchSearch(
     """The VCS branch name to search for."""
@@ -12641,9 +11990,6 @@ type Query {
 
   """One specific project."""
   project(id: String!): Project!
-
-  """Suggests filters for a project view based on a text prompt."""
-  projectFilterSuggestion(prompt: String!): ProjectFilterSuggestionPayload!
 
   """One specific label."""
   projectLabel(id: String!): ProjectLabel!
@@ -12847,15 +12193,6 @@ type Query {
     """[INTERNAL] Sort returned projects."""
     sort: [ProjectSortInput!]
   ): ProjectConnection!
-
-  """Sends a test push message."""
-  pushSubscriptionTest(
-    """The send strategy to use."""
-    sendStrategy: SendStrategy = push
-
-    """Whether to send to mobile devices."""
-    targetMobile: Boolean = false
-  ): PushSubscriptionTestPayload!
 
   """The status of the rate limiter."""
   rateLimitStatus: RateLimitPayload!
@@ -14631,12 +13968,6 @@ type Team implements Node {
   """Whether an issue needs to have a priority set before leaving triage."""
   requirePriorityToLeaveTriage: Boolean!
 
-  """The SCIM group name for the team."""
-  scimGroupName: String
-
-  """Whether the team is managed by SCIM integration."""
-  scimManaged: Boolean!
-
   """Where to move issues when changing state."""
   setIssueSortOrderOnStateChange: String!
 
@@ -14910,11 +14241,6 @@ input TeamCreateInput {
 
   """Internal. Whether the team is private or not."""
   private: Boolean
-
-  """
-  [Internal] The scope of product intelligence suggestion data for the team.
-  """
-  productIntelligenceScope: ProductIntelligenceScope
 
   """Whether an issue needs to have a priority set before leaving triage."""
   requirePriorityToLeaveTriage: Boolean
@@ -15204,18 +14530,8 @@ input TeamUpdateInput {
   """Whether the team is private or not."""
   private: Boolean
 
-  """
-  [Internal] The scope of product intelligence suggestion data for the team.
-  """
-  productIntelligenceScope: ProductIntelligenceScope
-
   """Whether an issue needs to have a priority set before leaving triage."""
   requirePriorityToLeaveTriage: Boolean
-
-  """
-  Whether the team is managed by SCIM integration. Mutation restricted to workspace admins and only unsetting is allowed!
-  """
-  scimManaged: Boolean
 
   """Whether to move issues to bottom of the column when changing state."""
   setIssueSortOrderOnStateChange: String
@@ -15508,23 +14824,6 @@ input TitleSort {
 
   """The order for the individual sort"""
   order: PaginationSortOrder
-}
-
-input TokenUserAccountAuthInput {
-  """The email which to login via the magic login code."""
-  email: String!
-
-  """An optional invite link for an organization."""
-  inviteLink: String
-
-  """The identifiers of the teams to auto-join."""
-  teamIdsToJoin: [String!] @deprecated(reason: "Not used anymore")
-
-  """The timezone of the user's browser."""
-  timezone: String!
-
-  """The magic login code."""
-  token: String!
 }
 
 """A team's triage responsibility."""
@@ -15838,8 +15137,6 @@ type User implements Node {
   """The unique identifier of the entity."""
   id: ID!
 
-  """[INTERNAL] Identity provider the user is managed by."""
-  identityProvider: IdentityProvider
 
   """The initials of the user."""
   initials: String!
@@ -15949,49 +15246,6 @@ type User implements Node {
 type UserAdminPayload {
   """Whether the operation was successful."""
   success: Boolean!
-}
-
-"""
-Public information of the OAuth application, plus whether the application has been authorized for the given scopes.
-"""
-type UserAuthorizedApplication {
-  """Details of the app user's existing token, if any."""
-  appUserAuthentication: AppUserAuthentication
-
-  """
-  Error associated with the application needing to be requested for approval in the workspace.
-  """
-  approvalErrorCode: String
-
-  """OAuth application's client ID."""
-  clientId: String!
-
-  """Whether the application was created by Linear."""
-  createdByLinear: Boolean!
-
-  """Information about the application."""
-  description: String
-
-  """Name of the developer."""
-  developer: String!
-
-  """Url of the developer (homepage or docs)."""
-  developerUrl: String!
-
-  """OAuth application's ID."""
-  id: String!
-
-  """Image of the application."""
-  imageUrl: String
-
-  """Whether the user has authorized the application for the given scopes."""
-  isAuthorized: Boolean!
-
-  """Application name."""
-  name: String!
-
-  """Whether or not webhooks are enabled for the application."""
-  webhooksEnabled: Boolean!
 }
 
 """User filtering options."""
@@ -16210,124 +15464,6 @@ enum UserRoleType {
   app
   guest
   user
-}
-
-"""The settings of a user as a JSON object."""
-type UserSettings implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """
-  Whether to auto-assign newly created issues to the current user by default.
-  """
-  autoAssignToSelf: Boolean!
-
-  """Hash for the user to be used in calendar URLs."""
-  calendarHash: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-
-  """Whether to show full user names instead of display names."""
-  showFullUserNames: Boolean!
-
-  """Whether this user is subscribed to changelog email or not."""
-  subscribedToChangelog: Boolean!
-
-  """Whether this user is subscribed to DPA emails or not."""
-  subscribedToDPA: Boolean!
-
-  """Whether this user is subscribed to invite accepted emails or not."""
-  subscribedToInviteAccepted: Boolean!
-
-  """
-  Whether this user is subscribed to privacy and legal update emails or not.
-  """
-  subscribedToPrivacyLegalUpdates: Boolean!
-
-  """The email types the user has unsubscribed from."""
-  unsubscribedFrom: [String!]! @deprecated(reason: "Use individual subscription fields instead. This field's value is now outdated.")
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The user associated with these settings."""
-  user: User!
-}
-
-type UserSettingsFlagPayload {
-  """The flag key which was updated."""
-  flag: String
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-
-  """The flag value after update."""
-  value: Int
-}
-
-type UserSettingsFlagsResetPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type UserSettingsPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-
-  """The user's settings."""
-  userSettings: UserSettings!
-}
-
-input UserSettingsUpdateInput {
-  """[Internal] How often to generate a feed summary."""
-  feedSummarySchedule: FeedSummarySchedule
-
-  """The user's settings."""
-  settings: JSONObject
-
-  """Whether this user is subscribed to changelog email or not."""
-  subscribedToChangelog: Boolean
-
-  """Whether this user is subscribed to DPA emails or not."""
-  subscribedToDPA: Boolean
-
-  """
-  Whether this user is subscribed to general marketing communications or not.
-  """
-  subscribedToGeneralMarketingCommunications: Boolean
-
-  """Whether this user is subscribed to invite accepted emails or not."""
-  subscribedToInviteAccepted: Boolean
-
-  """
-  Whether this user is subscribed to privacy and legal update emails or not.
-  """
-  subscribedToPrivacyLegalUpdates: Boolean
-
-  """The types of emails the user has unsubscribed from."""
-  unsubscribedFrom: [String!] @deprecated(reason: "Use individual subscription fields instead. This field is now ignored.")
-
-  """[Internal] The user's usage warning history."""
-  usageWarningHistory: JSONObject
 }
 
 """User sorting options."""
