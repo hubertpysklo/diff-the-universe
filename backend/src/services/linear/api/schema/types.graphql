@@ -1,135 +1,97 @@
-"""An API key. Grants access to the user's resources."""
-type ApiKey implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
+# """An API key. Grants access to the user's resources."""
+# type ApiKey implements Node {
+#   """
+#   The time at which the entity was archived. Null if the entity has not been archived.
+#   """
+#   archivedAt: DateTime
 
-  """The time at which the entity was created."""
-  createdAt: DateTime!
+#   """The time at which the entity was created."""
+#   createdAt: DateTime!
 
-  """The unique identifier of the entity."""
-  id: ID!
+#   """The unique identifier of the entity."""
+#   id: ID!
 
-  """The label of the API key."""
-  label: String!
+#   """The label of the API key."""
+#   label: String!
 
-  """When the API key was last used."""
-  lastActiveAt: DateTime
+#   """When the API key was last used."""
+#   lastActiveAt: DateTime
 
-  """Organization the API key belongs to."""
-  organization: Organization!
+#   """Organization the API key belongs to."""
+#   organization: Organization!
 
-  """
-  The sync groups that this API key requests access to. If null, the API key has access to all sync groups the user has access to. The final set of sync groups is computed as the intersection of these requested groups with the user's base sync groups.
-  """
-  requestedSyncGroups: [String!]
+#   """
+#   The sync groups that this API key requests access to. If null, the API key has access to all sync groups the user has access to. The final set of sync groups is computed as the intersection of these requested groups with the user's base sync groups.
+#   """
+#   requestedSyncGroups: [String!]
 
-  """Scopes associated with the API key."""
-  scope: [String!]
+#   """Scopes associated with the API key."""
+#   scope: [String!]
 
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
+#   """
+#   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
+#       been updated after creation.
+#   """
+#   updatedAt: DateTime!
+# }
 
-type ApiKeyConnection {
-  edges: [ApiKeyEdge!]!
-  nodes: [ApiKey!]!
-  pageInfo: PageInfo!
-}
+# type ApiKeyConnection {
+#   edges: [ApiKeyEdge!]!
+#   nodes: [ApiKey!]!
+#   pageInfo: PageInfo!
+# }
 
-input ApiKeyCreateInput {
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
+# input ApiKeyCreateInput {
+#   """
+#   The identifier in UUID v4 format. If none is provided, the backend will generate one.
+#   """
+#   id: String
 
-  """The API key value."""
-  key: String!
+#   """The API key value."""
+#   key: String!
 
-  """The label for the API key."""
-  label: String!
+#   """The label for the API key."""
+#   label: String!
 
-  """Scopes the API key has access to. Default is all scopes."""
-  scope: [String!]
+#   """Scopes the API key has access to. Default is all scopes."""
+#   scope: [String!]
 
-  """
-  List of team IDs to restrict this API key to. Default is all teams the user has access to.
-  """
-  teamIds: [String!]
-}
+#   """
+#   List of team IDs to restrict this API key to. Default is all teams the user has access to.
+#   """
+#   teamIds: [String!]
+# }
 
-type ApiKeyEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: ApiKey!
-}
+# type ApiKeyEdge {
+#   """Used in `before` and `after` args"""
+#   cursor: String!
+#   node: ApiKey!
+# }
 
-type ApiKeyPayload {
-  """The API key that was created."""
-  apiKey: ApiKey!
+# type ApiKeyPayload {
+#   """The API key that was created."""
+#   apiKey: ApiKey!
 
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
+#   """The identifier of the last sync operation."""
+#   lastSyncId: Float!
 
-  """Whether the operation was successful."""
-  success: Boolean!
-}
+#   """Whether the operation was successful."""
+#   success: Boolean!
+# }
 
-input ApiKeyUpdateInput {
-  """The new label for the API key."""
-  label: String
+# input ApiKeyUpdateInput {
+#   """The new label for the API key."""
+#   label: String
 
-  """Scopes the API key has access to. Default is all scopes."""
-  scope: [String!]
+#   """Scopes the API key has access to. Default is all scopes."""
+#   scope: [String!]
 
-  """
-  List of team IDs to restrict this API key to. Default is all teams the user has access to.
-  """
-  teamIds: [String!]
-}
+#   """
+#   List of team IDs to restrict this API key to. Default is all teams the user has access to.
+#   """
+#   teamIds: [String!]
+# }
 
-"""[INTERNAL] Details of the app user's existing token."""
-type AppUserAuthentication {
-  """The user that authorized the application, if known."""
-  authorizingUser: AuthorizingUser
-
-  """The timestamp at which the token was created."""
-  createdAt: DateTime!
-
-  """Whether the application has requested custom sync groups."""
-  requestedSyncGroups: Boolean!
-
-  """The scopes that the token has."""
-  scope: [String!]!
-}
-
-"""Public information of the OAuth application."""
-type Application {
-  """OAuth application's client ID."""
-  clientId: String!
-
-  """Information about the application."""
-  description: String
-
-  """Name of the developer."""
-  developer: String!
-
-  """Url of the developer (homepage or docs)."""
-  developerUrl: String!
-
-  """OAuth application's ID."""
-  id: String!
-
-  """Image of the application."""
-  imageUrl: String
-
-  """Application name."""
-  name: String!
-}
 
 """Customer approximate need count sorting options."""
 input ApproximateNeedCountSort {
