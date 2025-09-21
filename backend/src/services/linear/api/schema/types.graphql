@@ -6441,8 +6441,6 @@ input NumberComparator {
 An organization. Organizations are root-level objects that contain user accounts and teams.
 """
 type Organization implements Node {
-  """[INTERNAL] Whether the organization has enabled the AI add-on."""
-  aiAddonEnabled: Boolean!
 
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
@@ -6470,28 +6468,8 @@ type Organization implements Node {
   """Whether the organization has enabled the feed feature."""
   feedEnabled: Boolean!
 
-  """The month at which the fiscal year starts. Defaults to January (0)."""
-  fiscalYearStartMonth: Float!
-
-  """Whether HIPAA compliance is enabled for organization."""
-  hipaaComplianceEnabled: Boolean!
-
   """The unique identifier of the entity."""
   id: ID!
-
-  """
-  The n-weekly frequency at which to prompt for initiative updates. When not set, reminders are off.
-  """
-  initiativeUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which to prompt for initiative updates."""
-  initiativeUpdateRemindersDay: Day!
-
-  """The hour at which to prompt for initiative updates."""
-  initiativeUpdateRemindersHour: Float!
-
-  """IP restriction configurations."""
-  ipRestrictions: [OrganizationIpRestriction!]
 
   """Labels associated with the organization."""
   labels(
@@ -6523,19 +6501,8 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
 
-  """The organization's logo URL."""
-  logoUrl: String
-
   """The organization's name."""
   name: String!
-
-  """Rolling 30-day total upload volume for the organization, in megabytes."""
-  periodUploadVolume: Float!
-
-  """
-  Previously used URL keys for the organization (last 3 are kept and redirected).
-  """
-  previousUrlKeys: [String!]!
 
   """Project labels associated with the organization."""
   projectLabels(
@@ -6569,23 +6536,6 @@ type Organization implements Node {
 
   """The organization's project statuses."""
   projectStatuses: [ProjectStatus!]!
-
-  """
-  The n-weekly frequency at which to prompt for project updates. When not set, reminders are off.
-  """
-  projectUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which to prompt for project updates."""
-  projectUpdateRemindersDay: Day!
-
-  """The hour at which to prompt for project updates."""
-  projectUpdateRemindersHour: Float!
-
-  """[DEPRECATED] The frequency at which to prompt for project updates."""
-  projectUpdatesReminderFrequency: ProjectUpdateReminderFrequency! @deprecated(reason: "Use organization.projectUpdatesReminderFrequencyInWeeks instead")
-
-  """The feature release channel the organization belongs to."""
-  releaseChannel: ReleaseChannel!
 
   """
   Whether workspace label creation, update, and deletion is restricted to admins.
@@ -6628,12 +6578,6 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): TeamConnection!
 
-
-  """[ALPHA] Theme settings for the organization."""
-  themeSettings: JSONObject
-
-  """The time at which the trial will end."""
-  trialEndsAt: DateTime
 
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
@@ -6856,22 +6800,7 @@ type OrganizationPayload {
   success: Boolean!
 }
 
-input OrganizationStartTrialInput {
-  """The plan type to trial."""
-  planType: String!
-}
-
-type OrganizationStartTrialPayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
 input OrganizationUpdateInput {
-  """[INTERNAL] Whether the organization has enabled the AI add-on."""
-  aiAddonEnabled: Boolean
-
-  """[INTERNAL] Whether the organization has opted in to AI telemetry."""
-  aiTelemetryEnabled: Boolean
 
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
@@ -6885,46 +6814,12 @@ input OrganizationUpdateInput {
   """Whether the organization has enabled the feed feature."""
   feedEnabled: Boolean
 
-  """The month at which the fiscal year starts."""
-  fiscalYearStartMonth: Float
-
-
-  """
-  [ALPHA] The n-weekly frequency at which to prompt for initiative updates.
-  """
-  initiativeUpdateReminderFrequencyInWeeks: Float
-
-  """[ALPHA] The day at which initiative updates are sent."""
-  initiativeUpdateRemindersDay: Day
-
-  """[ALPHA] The hour at which initiative updates are sent."""
-  initiativeUpdateRemindersHour: Float
-
-  """
-  IP restriction configurations controlling allowed access the workspace.
-  """
-  ipRestrictions: [OrganizationIpRestrictionInput!]
-
-  """The logo of the organization."""
-  logoUrl: String
-
   """The name of the organization."""
   name: String
 
   """[INTERNAL] Whether the organization has enabled the member API keys."""
   personalApiKeysEnabled: Boolean
 
-  """The n-weekly frequency at which to prompt for project updates."""
-  projectUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which project updates are sent."""
-  projectUpdateRemindersDay: Day
-
-  """The hour at which project updates are sent."""
-  projectUpdateRemindersHour: Float
-
-  """Whether agent invocation is restricted to full workspace members."""
-  restrictAgentInvocationToMembers: Boolean
 
   """Whether label creation is restricted to admins."""
   restrictLabelManagementToAdmins: Boolean
