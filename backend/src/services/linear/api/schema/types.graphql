@@ -127,12 +127,6 @@ type Comment implements Node {
   """
   quotedText: String
 
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """Reactions associated with the comment."""
-  reactions: [Reaction!]!
-
   """The time the resolvingUser resolved the thread."""
   resolvedAt: DateTime
 
@@ -192,9 +186,6 @@ input CommentCollectionFilter {
 
   """Filters that the comment's project update must satisfy."""
   projectUpdate: NullableProjectUpdateFilter
-
-  """Filters that the comment's reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """Filters that needs to be matched by some comments."""
   some: CommentFilter
@@ -301,9 +292,6 @@ input CommentFilter {
 
   """Filters that the comment's project update must satisfy."""
   projectUpdate: NullableProjectUpdateFilter
-
-  """Filters that the comment's reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """Comparator for the updated at date."""
   updatedAt: DateComparator
@@ -1878,11 +1866,6 @@ type InitiativeUpdate implements Node {
   """Whether the initiative update is stale."""
   isStale: Boolean!
 
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """Reactions associated with the initiative update."""
-  reactions: [Reaction!]!
 
   """The update's unique URL slug."""
   slugId: String!
@@ -1968,9 +1951,6 @@ input InitiativeUpdateFilter {
   Compound filters, one of which need to be matched by the InitiativeUpdate.
   """
   or: [InitiativeUpdateFilter!]
-
-  """Filters that the initiative updates reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """Comparator for the updated at date."""
   updatedAt: DateComparator
@@ -2345,12 +2325,6 @@ type Issue implements Node {
   """The projectMilestone that the issue is associated with."""
   projectMilestone: ProjectMilestone
 
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """Reactions associated with the issue."""
-  reactions: [Reaction!]!
-
 
   """Relations associated with this issue."""
   relations(
@@ -2630,9 +2604,6 @@ input IssueCollectionFilter {
 
   """Filters that the issues project milestone must satisfy."""
   projectMilestone: NullableProjectMilestoneFilter
-
-  """Filters that the issues reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """[Internal] Comparator for the issues content."""
   searchableContent: ContentComparator
@@ -2920,9 +2891,6 @@ input IssueFilter {
 
   """Filters that the issues project milestone must satisfy."""
   projectMilestone: NullableProjectMilestoneFilter
-
-  """Filters that the issues reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """[Internal] Comparator for the issues content."""
   searchableContent: ContentComparator
@@ -3910,12 +3878,6 @@ type IssueSearchResult implements Node {
 
   """The projectMilestone that the issue is associated with."""
   projectMilestone: ProjectMilestone
-
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """Reactions associated with the issue."""
-  reactions: [Reaction!]!
 
   """Relations associated with this issue."""
   relations(
@@ -4941,19 +4903,6 @@ type Mutation {
     input: ProjectUpdateUpdateInput!
   ): ProjectUpdatePayload!
 
-  """Creates a new reaction."""
-  reactionCreate(
-    """The reaction object to create."""
-    input: ReactionCreateInput!
-  ): ReactionPayload!
-
-  """Deletes a reaction."""
-  reactionDelete(
-    """The identifier of the reaction to delete."""
-    id: String!
-  ): DeletePayload!
-
-
   """Re-send an organization invite."""
   resendOrganizationInvite(
     """The identifier of the organization invite to re-send."""
@@ -5258,9 +5207,6 @@ input NullableCommentFilter {
   """Filters that the comment's project update must satisfy."""
   projectUpdate: NullableProjectUpdateFilter
 
-  """Filters that the comment's reactions must satisfy."""
-  reactions: ReactionCollectionFilter
-
   """Comparator for the updated at date."""
   updatedAt: DateComparator
 
@@ -5468,9 +5414,6 @@ input NullableIssueFilter {
 
   """Filters that the issues project milestone must satisfy."""
   projectMilestone: NullableProjectMilestoneFilter
-
-  """Filters that the issues reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """[Internal] Comparator for the issues content."""
   searchableContent: ContentComparator
@@ -5727,9 +5670,6 @@ input NullableProjectUpdateFilter {
 
   """Filters that the project update project must satisfy."""
   project: ProjectFilter
-
-  """Filters that the project updates reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """Comparator for the updated at date."""
   updatedAt: DateComparator
@@ -9025,12 +8965,6 @@ type ProjectUpdate implements Node {
   """The project that the update is associated with."""
   project: Project!
 
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """Reactions associated with the project update."""
-  reactions: [Reaction!]!
-
   """The update's unique URL slug."""
   slugId: String!
 
@@ -9115,9 +9049,6 @@ input ProjectUpdateFilter {
 
   """Filters that the project update project must satisfy."""
   project: ProjectFilter
-
-  """Filters that the project updates reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """Comparator for the updated at date."""
   updatedAt: DateComparator
@@ -10491,145 +10422,6 @@ type RateLimitResultPayload {
 
   """What is being rate limited."""
   type: String!
-}
-
-"""A reaction associated with a comment or a project update."""
-type Reaction implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The comment that the reaction is associated with."""
-  comment: Comment
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """Name of the reaction's emoji."""
-  emoji: String!
-
-  """The external user that created the reaction."""
-  externalUser: ExternalUser
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The initiative update that the reaction is associated with."""
-  initiativeUpdate: InitiativeUpdate
-
-  """The issue that the reaction is associated with."""
-  issue: Issue
-
-  """The post that the reaction is associated with."""
-  post: Post
-
-  """The project update that the reaction is associated with."""
-  projectUpdate: ProjectUpdate
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The user that created the reaction."""
-  user: User
-}
-
-"""Reaction filtering options."""
-input ReactionCollectionFilter {
-  """Compound filters, all of which need to be matched by the reaction."""
-  and: [ReactionCollectionFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Comparator for the reactions custom emoji."""
-  customEmojiId: IDComparator
-
-  """Comparator for the reactions emoji."""
-  emoji: StringComparator
-
-  """Filters that needs to be matched by all reactions."""
-  every: ReactionFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the collection length."""
-  length: NumberComparator
-
-  """Compound filters, one of which need to be matched by the reaction."""
-  or: [ReactionCollectionFilter!]
-
-  """Filters that needs to be matched by some reactions."""
-  some: ReactionFilter
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-input ReactionCreateInput {
-  """The comment to associate the reaction with."""
-  commentId: String
-
-  """The emoji the user reacted with."""
-  emoji: String!
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The update to associate the reaction with."""
-  initiativeUpdateId: String
-
-  """The issue to associate the reaction with."""
-  issueId: String
-
-  """[Internal] The post to associate the reaction with."""
-  postId: String
-
-  """The project update to associate the reaction with."""
-  projectUpdateId: String
-
-  """[Internal] The pull request comment to associate the reaction with."""
-  pullRequestCommentId: String
-
-  """[Internal] The pull request to associate the reaction with."""
-  pullRequestId: String
-}
-
-"""Reaction filtering options."""
-input ReactionFilter {
-  """Compound filters, all of which need to be matched by the reaction."""
-  and: [ReactionFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Comparator for the reactions custom emoji."""
-  customEmojiId: IDComparator
-
-  """Comparator for the reactions emoji."""
-  emoji: StringComparator
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Compound filters, one of which need to be matched by the reaction."""
-  or: [ReactionFilter!]
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-type ReactionPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-  reaction: Reaction!
-  success: Boolean!
 }
 
 """Comparator for relation existence."""
