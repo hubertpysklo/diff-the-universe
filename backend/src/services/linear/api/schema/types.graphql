@@ -9952,24 +9952,6 @@ type Query {
     term: String!
   ): ProjectSearchPayload!
 
-  """Search for various resources using natural language."""
-  semanticSearch(
-    """Filters to apply to the semantic search results of each type."""
-    filters: SemanticSearchFilters
-
-    """Whether to include archived results in the search (default: false)."""
-    includeArchived: Boolean
-
-    """The maximum number of results to return (default: 50)."""
-    maxResults: Int
-
-    """Search query to look for."""
-    query: String!
-
-    """The types of results to return (default: all)."""
-    types: [SemanticSearchResultType!]
-  ): SemanticSearchPayload!
-
   """Fetch SSO login URL for the email provided."""
   ssoUrlFromEmail(
     """Email to query the SSO login URL by."""
@@ -10310,54 +10292,6 @@ input RootIssueSort {
 enum SLADayCountType {
   all
   onlyBusinessDays
-}
-
-
-"""Filters for semantic search results."""
-input SemanticSearchFilters {
-  """Filters applied to initiatives."""
-  initiatives: InitiativeFilter
-
-  """Filters applied to issues."""
-  issues: IssueFilter
-
-  """Filters applied to projects."""
-  projects: ProjectFilter
-}
-
-"""Payload returned by semantic search."""
-type SemanticSearchPayload {
-  """Whether the semantic search is enabled."""
-  enabled: Boolean! @deprecated(reason: "Always true.")
-  results: [SemanticSearchResult!]!
-}
-
-"""A semantic search result reference."""
-type SemanticSearchResult implements Node {
-  """The document related to the semantic search result."""
-  document: Document
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The initiative related to the semantic search result."""
-  initiative: Initiative
-
-  """The issue related to the semantic search result."""
-  issue: Issue
-
-  """The project related to the semantic search result."""
-  project: Project
-
-  """The type of the semantic search result."""
-  type: SemanticSearchResultType!
-}
-
-"""The type of the semantic search result."""
-enum SemanticSearchResultType {
-  initiative
-  issue
-  project
 }
 
 enum SendStrategy {
