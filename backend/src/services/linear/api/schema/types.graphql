@@ -324,9 +324,6 @@ type Comment implements Node {
   """The time at which the entity was created."""
   createdAt: DateTime!
 
-  """The document content that the comment is associated with."""
-  documentContent: DocumentContent
-
   """The time user edited the comment."""
   editedAt: DateTime
 
@@ -404,9 +401,6 @@ input CommentCollectionFilter {
   """Comparator for the created at date."""
   createdAt: DateComparator
 
-  """Filters that the comment's document content must satisfy."""
-  documentContent: NullableDocumentContentFilter
-
   """Filters that needs to be matched by all comments."""
   every: CommentFilter
 
@@ -474,10 +468,6 @@ input CommentCreateInput {
   """
   displayIconUrl: String
 
-
-  """The document content to associate the comment with."""
-  documentContentId: String
-
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
   """
@@ -525,9 +515,6 @@ input CommentFilter {
 
   """Comparator for the created at date."""
   createdAt: DateComparator
-
-  """Filters that the comment's document content must satisfy."""
-  documentContent: NullableDocumentContentFilter
 
   """Comparator for the identifier."""
   id: IDComparator
@@ -1107,12 +1094,6 @@ type Document implements Node {
     orderBy: PaginationOrderBy
   ): CommentConnection!
 
-  """The documents content in markdown format."""
-  content: String
-
-  """[Internal] The documents content as YJS state."""
-  contentState: String
-
   """The time at which the entity was created."""
   createdAt: DateTime!
 
@@ -1347,168 +1328,6 @@ type DocumentPayload {
 
   """Whether the operation was successful."""
   success: Boolean!
-}
-
-type DocumentSearchPayload {
-  """
-  Archived entities matching the search term along with all their dependencies.
-  """
-  archivePayload: ArchiveResponse!
-  edges: [DocumentSearchResultEdge!]!
-  nodes: [DocumentSearchResult!]!
-  pageInfo: PageInfo!
-
-  """Total number of results for query without filters applied."""
-  totalCount: Float!
-}
-
-type DocumentSearchResult implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The color of the icon."""
-  color: String
-
-  """Comments associated with the document."""
-  comments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned comments."""
-    filter: CommentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CommentConnection!
-
-  """The documents content in markdown format."""
-  content: String
-
-  """[Internal] The documents content as YJS state."""
-  contentState: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who created the document."""
-  creator: User
-
-  """The ID of the document content associated with the document."""
-  documentContentId: String
-
-  """
-  The time at which the document was hidden. Null if the entity has not been hidden.
-  """
-  hiddenAt: DateTime
-
-  """The icon of the document."""
-  icon: String
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The initiative that the document is associated with."""
-  initiative: Initiative
-
-  """Metadata related to search result."""
-  metadata: JSONObject!
-
-  """The project that the document is associated with."""
-  project: Project
-
-  """The document's unique URL slug."""
-  slugId: String!
-
-  """The order of the item in the resources list."""
-  sortOrder: Float!
-
-  """[Internal] The team that the document is associated with."""
-  team: Team
-
-  """The document title."""
-  title: String!
-
-  """A flag that indicates whether the document is in the trash bin."""
-  trashed: Boolean
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The user who last updated the document."""
-  updatedBy: User
-
-  """The canonical url for the document."""
-  url: String!
-}
-
-type DocumentSearchResultEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: DocumentSearchResult!
-}
-
-input DocumentUpdateInput {
-  """The color of the icon."""
-  color: String
-
-  """The document content as markdown."""
-  content: String
-
-  """[Internal] The document content as a Prosemirror document."""
-  contentData: JSONObject @deprecated(reason: "Use content instead")
-
-  """The time at which the document was hidden."""
-  hiddenAt: DateTime
-
-  """The icon of the document."""
-  icon: String
-
-  """[Internal] Related initiative for the document."""
-  initiativeId: String
-
-  """Related project for the document."""
-  projectId: String
-
-  """[Internal] The resource folder containing the document."""
-  resourceFolderId: String
-
-  """The order of the item in the resources list."""
-  sortOrder: Float
-
-  """[INTERNAL] The identifiers of the users subscribing to this document."""
-  subscriberIds: [String!]
-
-  """[Internal] Related team for the document."""
-  teamId: String
-
-  """The title of the document."""
-  title: String
-
-  """Whether the document has been trashed."""
-  trashed: Boolean
 }
 
 """Issue due date sorting options."""
@@ -1904,39 +1723,6 @@ type Initiative implements Node {
 
   """The description of the initiative."""
   description: String
-
-  """The content of the initiative description."""
-  documentContent: DocumentContent
-
-  """Documents associated with the initiative."""
-  documents(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned documents."""
-    filter: DocumentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): DocumentConnection!
 
   """The resolution of the reminder frequency."""
   frequencyResolution: FrequencyResolutionType!
@@ -3050,9 +2836,6 @@ type Issue implements Node {
 
   """[Internal] The issue's description content as YJS state."""
   descriptionState: String
-
-  """[ALPHA] The document content representing this issue description."""
-  documentContent: DocumentContent
 
   """The date at which the issue is due."""
   dueDate: TimelessDate
@@ -4740,9 +4523,6 @@ type IssueSearchResult implements Node {
   """[Internal] The issue's description content as YJS state."""
   descriptionState: String
 
-  """[ALPHA] The document content representing this issue description."""
-  documentContent: DocumentContent
-
   """The date at which the issue is due."""
   dueDate: TimelessDate
 
@@ -5440,35 +5220,6 @@ type Mutation {
     """A partial cycle object to update the cycle with."""
     input: CycleUpdateInput!
   ): CyclePayload!
-
-  """Creates a new document."""
-  documentCreate(
-    """The document to create."""
-    input: DocumentCreateInput!
-  ): DocumentPayload!
-
-  """Deletes (trashes) a document."""
-  documentDelete(
-    """The identifier of the document to delete."""
-    id: String!
-  ): DocumentArchivePayload!
-
-  """Restores a document."""
-  documentUnarchive(
-    """The identifier of the document to restore."""
-    id: String!
-  ): DocumentArchivePayload!
-
-  """Updates a document."""
-  documentUpdate(
-    """
-    The identifier of the document to update. Also the identifier from the URL is accepted.
-    """
-    id: String!
-
-    """A partial document object to update the document with."""
-    input: DocumentUpdateInput!
-  ): DocumentPayload!
 
   """Creates a new email intake address."""
   emailIntakeAddressCreate(
@@ -6575,33 +6326,6 @@ input NullableDateComparator {
   Null constraint. Matches any non-null values if the given value is false, otherwise it matches null values.
   """
   null: Boolean
-}
-
-"""Document content filtering options."""
-input NullableDocumentContentFilter {
-  """Compound filters, all of which need to be matched by the user."""
-  and: [NullableDocumentContentFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the document content document must satisfy."""
-  document: DocumentFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Filter based on the existence of the relation."""
-  null: Boolean
-
-  """Compound filters, one of which need to be matched by the user."""
-  or: [NullableDocumentContentFilter!]
-
-  """Filters that the document content project must satisfy."""
-  project: ProjectFilter
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
 }
 
 """Nullable comparator for optional durations."""
@@ -7936,39 +7660,6 @@ type Project implements Node {
   """The project's description."""
   description: String!
 
-  """The content of the project description."""
-  documentContent: DocumentContent
-
-  """Documents associated with the project."""
-  documents(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned documents."""
-    filter: DocumentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): DocumentConnection!
-
   """External links associated with the project."""
   externalLinks(
     """A cursor to be used with first for forward pagination"""
@@ -9121,9 +8812,6 @@ type ProjectMilestone implements Node {
   """[Internal] The project milestone's description as YJS state."""
   descriptionState: String
 
-  """The content of the project milestone description."""
-  documentContent: DocumentContent
-
   """The unique identifier of the entity."""
   id: ID!
 
@@ -9660,39 +9348,6 @@ type ProjectSearchResult implements Node {
 
   """The project's description."""
   description: String!
-
-  """The content of the project description."""
-  documentContent: DocumentContent
-
-  """Documents associated with the project."""
-  documents(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned documents."""
-    filter: DocumentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): DocumentConnection!
 
   """External links associated with the project."""
   externalLinks(
@@ -10373,7 +10028,6 @@ input ProjectStatusUpdateInput {
 
 """Different tabs available inside a project."""
 enum ProjectTab {
-  documents
   issues
   updates
 }
@@ -11003,44 +10657,6 @@ type Query {
     orderBy: PaginationOrderBy
   ): CycleConnection!
 
-  """One specific document."""
-  document(id: String!): Document!
-
-  """A collection of document content history entries."""
-  documentContentHistory(id: String!): DocumentContentHistoryPayload!
-
-  """All documents in the workspace."""
-  documents(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned documents."""
-    filter: DocumentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): DocumentConnection!
-
-  """One specific email intake address."""
-  emailIntakeAddress(id: String!): EmailIntakeAddress!
 
   """A specific emoji."""
   emoji(
@@ -11704,45 +11320,6 @@ type Query {
     """
     orderBy: PaginationOrderBy
   ): RoadmapConnection! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """Search documents."""
-  searchDocuments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """Should associated comments be searched (default: false)."""
-    includeComments: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-
-    """Size of search snippet to return (default: 100)"""
-    snippetSize: Float @deprecated(reason: "No longer supported.")
-
-    """UUID of a team to use as a boost."""
-    teamId: String
-
-    """Search string to look for."""
-    term: String!
-  ): DocumentSearchPayload!
 
   """Search issues."""
   searchIssues(
@@ -12586,9 +12163,6 @@ enum SLADayCountType {
 
 """Filters for semantic search results."""
 input SemanticSearchFilters {
-  """Filters applied to documents."""
-  documents: DocumentFilter
-
   """Filters applied to initiatives."""
   initiatives: InitiativeFilter
 
@@ -12629,7 +12203,6 @@ type SemanticSearchResult implements Node {
 
 """The type of the semantic search result."""
 enum SemanticSearchResultType {
-  document
   initiative
   issue
   project
