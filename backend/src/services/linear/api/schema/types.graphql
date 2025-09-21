@@ -9834,8 +9834,6 @@ input ProjectUpdatesFilter {
   updatedAt: DateComparator
 }
 
-
-
 type Query {
   """
   All teams you the user can administrate. Administrable teams are teams whose settings the user can change, but to whose issues the user doesn't necessarily have access to.
