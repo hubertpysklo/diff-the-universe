@@ -6010,11 +6010,6 @@ input NullableProjectFilter {
   """Filters that the project's team must satisfy."""
   accessibleTeams: TeamCollectionFilter
 
-  """
-  [ALPHA] Comparator for the project activity type: buzzin, active, some, none
-  """
-  activityType: StringComparator
-
   """Compound filters, all of which need to be matched by the project."""
   and: [NullableProjectFilter!]
 
@@ -6435,14 +6430,10 @@ input NumberComparator {
   nin: [Float!]
 }
 
-
-
 """
 An organization. Organizations are root-level objects that contain user accounts and teams.
 """
 type Organization implements Node {
-  """[INTERNAL] Whether the organization has enabled the AI add-on."""
-  aiAddonEnabled: Boolean!
 
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
@@ -6470,28 +6461,8 @@ type Organization implements Node {
   """Whether the organization has enabled the feed feature."""
   feedEnabled: Boolean!
 
-  """The month at which the fiscal year starts. Defaults to January (0)."""
-  fiscalYearStartMonth: Float!
-
-  """Whether HIPAA compliance is enabled for organization."""
-  hipaaComplianceEnabled: Boolean!
-
   """The unique identifier of the entity."""
   id: ID!
-
-  """
-  The n-weekly frequency at which to prompt for initiative updates. When not set, reminders are off.
-  """
-  initiativeUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which to prompt for initiative updates."""
-  initiativeUpdateRemindersDay: Day!
-
-  """The hour at which to prompt for initiative updates."""
-  initiativeUpdateRemindersHour: Float!
-
-  """IP restriction configurations."""
-  ipRestrictions: [OrganizationIpRestriction!]
 
   """Labels associated with the organization."""
   labels(
@@ -6523,19 +6494,8 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
 
-  """The organization's logo URL."""
-  logoUrl: String
-
   """The organization's name."""
   name: String!
-
-  """Rolling 30-day total upload volume for the organization, in megabytes."""
-  periodUploadVolume: Float!
-
-  """
-  Previously used URL keys for the organization (last 3 are kept and redirected).
-  """
-  previousUrlKeys: [String!]!
 
   """Project labels associated with the organization."""
   projectLabels(
@@ -6569,23 +6529,6 @@ type Organization implements Node {
 
   """The organization's project statuses."""
   projectStatuses: [ProjectStatus!]!
-
-  """
-  The n-weekly frequency at which to prompt for project updates. When not set, reminders are off.
-  """
-  projectUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which to prompt for project updates."""
-  projectUpdateRemindersDay: Day!
-
-  """The hour at which to prompt for project updates."""
-  projectUpdateRemindersHour: Float!
-
-  """[DEPRECATED] The frequency at which to prompt for project updates."""
-  projectUpdatesReminderFrequency: ProjectUpdateReminderFrequency! @deprecated(reason: "Use organization.projectUpdatesReminderFrequencyInWeeks instead")
-
-  """The feature release channel the organization belongs to."""
-  releaseChannel: ReleaseChannel!
 
   """
   Whether workspace label creation, update, and deletion is restricted to admins.
@@ -6628,12 +6571,6 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): TeamConnection!
 
-
-  """[ALPHA] Theme settings for the organization."""
-  themeSettings: JSONObject
-
-  """The time at which the trial will end."""
-  trialEndsAt: DateTime
 
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
@@ -6856,22 +6793,7 @@ type OrganizationPayload {
   success: Boolean!
 }
 
-input OrganizationStartTrialInput {
-  """The plan type to trial."""
-  planType: String!
-}
-
-type OrganizationStartTrialPayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
 input OrganizationUpdateInput {
-  """[INTERNAL] Whether the organization has enabled the AI add-on."""
-  aiAddonEnabled: Boolean
-
-  """[INTERNAL] Whether the organization has opted in to AI telemetry."""
-  aiTelemetryEnabled: Boolean
 
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
@@ -6885,46 +6807,12 @@ input OrganizationUpdateInput {
   """Whether the organization has enabled the feed feature."""
   feedEnabled: Boolean
 
-  """The month at which the fiscal year starts."""
-  fiscalYearStartMonth: Float
-
-
-  """
-  [ALPHA] The n-weekly frequency at which to prompt for initiative updates.
-  """
-  initiativeUpdateReminderFrequencyInWeeks: Float
-
-  """[ALPHA] The day at which initiative updates are sent."""
-  initiativeUpdateRemindersDay: Day
-
-  """[ALPHA] The hour at which initiative updates are sent."""
-  initiativeUpdateRemindersHour: Float
-
-  """
-  IP restriction configurations controlling allowed access the workspace.
-  """
-  ipRestrictions: [OrganizationIpRestrictionInput!]
-
-  """The logo of the organization."""
-  logoUrl: String
-
   """The name of the organization."""
   name: String
 
   """[INTERNAL] Whether the organization has enabled the member API keys."""
   personalApiKeysEnabled: Boolean
 
-  """The n-weekly frequency at which to prompt for project updates."""
-  projectUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which project updates are sent."""
-  projectUpdateRemindersDay: Day
-
-  """The hour at which project updates are sent."""
-  projectUpdateRemindersHour: Float
-
-  """Whether agent invocation is restricted to full workspace members."""
-  restrictAgentInvocationToMembers: Boolean
 
   """Whether label creation is restricted to admins."""
   restrictLabelManagementToAdmins: Boolean
@@ -11922,18 +11810,11 @@ input TargetDateSort {
 
 """An organizational unit that contains issues."""
 type Team implements Node {
-  """Whether to enable resolved thread AI summaries."""
-  aiThreadSummariesEnabled: Boolean!
 
   """
   The time at which the entity was archived. Null if the entity has not been archived.
   """
   archivedAt: DateTime
-
-  """
-  Period after which automatically closed and completed issues are automatically archived in months.
-  """
-  autoArchivePeriod: Float!
 
   """
   Whether child issues should automatically close when their parent issue is closed
@@ -11953,22 +11834,10 @@ type Team implements Node {
   """
   The canceled workflow state which auto closed issues will be set to. Defaults to the first canceled state.
   """
-  autoCloseStateId: String
-
-  """[Internal] The team's sub-teams."""
-  children: [Team!]!
-
-  """The team's color."""
-  color: String
+  autoCloseStateId: Strings
 
   """The time at which the entity was created."""
   createdAt: DateTime!
-
-  """[Internal] The current progress of the team."""
-  currentProgress: JSONObject!
-
-  """What to use as a default estimate for unestimated issues."""
-  defaultIssueEstimate: Float!
 
   """
   The default workflow state into which issues are set when they are opened by team members.
@@ -11984,9 +11853,6 @@ type Team implements Node {
 
   """Whether to group recent issue history entries."""
   groupIssueHistory: Boolean!
-
-  """The icon of the team."""
-  icon: String
 
   """The unique identifier of the entity."""
   id: ID!
@@ -12022,13 +11888,6 @@ type Team implements Node {
   """
   issueEstimationType: String!
 
-  """[DEPRECATED] Whether issues without priority should be sorted first."""
-  issueOrderingNoPriorityFirst: Boolean! @deprecated(reason: "This setting is no longer in use.")
-
-  """
-  [DEPRECATED] Whether to move issues to bottom of the column when changing state.
-  """
-  issueSortOrderDefaultToBottom: Boolean! @deprecated(reason: "Use setIssueSortOrderOnStateChange instead.")
 
   """Issues associated with the team."""
   issues(
@@ -12181,14 +12040,8 @@ type Team implements Node {
   """[Internal] The team's parent team."""
   parent: Team
 
-  """[Internal] Posts associated with the team."""
-  posts: [Post!]!
-
   """Whether the team is private or not."""
   private: Boolean!
-
-  """[Internal] The progress history of the team."""
-  progressHistory: JSONObject!
 
   """Projects associated with the team."""
   projects(
@@ -12284,33 +12137,6 @@ type Team implements Node {
       been updated after creation.
   """
   updatedAt: DateTime!
-
-  """Webhooks associated with the team."""
-  webhooks(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): WebhookConnection!
 }
 
 """A generic payload return from entity archive mutations."""
@@ -12370,9 +12196,6 @@ input TeamCreateInput {
   """The canceled workflow state which auto closed issues will be set to."""
   autoCloseStateId: String
 
-  """The color of the team."""
-  color: String
-
   """What to use as an default estimate for unestimated issues."""
   defaultIssueEstimate: Float
 
@@ -12381,9 +12204,6 @@ input TeamCreateInput {
 
   """Whether to group recent issue history entries."""
   groupIssueHistory: Boolean
-
-  """The icon of the team."""
-  icon: String
 
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
@@ -12394,11 +12214,6 @@ input TeamCreateInput {
   Whether the team should inherit estimation settings from its parent. Only applies to sub-teams.
   """
   inheritIssueEstimation: Boolean
-
-  """
-  [Internal] Whether the team should inherit its product intelligence scope from its parent. Only applies to sub-teams.
-  """
-  inheritProductIntelligenceScope: Boolean
 
   """
   [Internal] Whether the team should inherit workflow statuses from its parent.
@@ -12415,9 +12230,6 @@ input TeamCreateInput {
   The issue estimation type to use. Must be one of "notUsed", "exponential", "fibonacci", "linear", "tShirt".
   """
   issueEstimationType: String
-
-  """[DEPRECATED] Whether issues without priority should be sorted first."""
-  issueOrderingNoPriorityFirst: Boolean @deprecated(reason: "This setting is no longer in use.")
 
   """
   The key of the team. If not given, the key will be generated based on the name of the team.
