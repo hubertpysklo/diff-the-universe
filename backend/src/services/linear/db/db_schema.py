@@ -37,6 +37,12 @@ class Team(LinearBase):
     color: Mapped[str | None] = mapped_column(String(7))  # HEX color
     icon: Mapped[str | None] = mapped_column(String(50))
     private: Mapped[bool] = mapped_column(Boolean, default=False)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime)
+    default_issue_state_id: Mapped[int] = mapped_column(
+        ForeignKey("workflow_states.state_id")
+    )
+    invite_hash: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 

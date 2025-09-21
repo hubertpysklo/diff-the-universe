@@ -11799,26 +11799,6 @@ type Team implements Node {
   """
   archivedAt: DateTime
 
-  """
-  Whether child issues should automatically close when their parent issue is closed
-  """
-  autoCloseChildIssues: Boolean
-
-  """
-  Whether parent issues should automatically close when all child issues are closed
-  """
-  autoCloseParentIssues: Boolean
-
-  """
-  Period after which issues are automatically closed in months. Null/undefined means disabled.
-  """
-  autoClosePeriod: Float
-
-  """
-  The canceled workflow state which auto closed issues will be set to. Defaults to the first canceled state.
-  """
-  autoCloseStateId: Strings
-
   """The time at which the entity was created."""
   createdAt: DateTime!
 
@@ -11840,17 +11820,6 @@ type Team implements Node {
   """The unique identifier of the entity."""
   id: ID!
 
-  """
-  Whether the team should inherit its estimation settings from its parent. Only applies to sub-teams.
-  """
-  inheritIssueEstimation: Boolean!
-
-  """
-  Whether the team should inherit its workflow statuses from its parent. Only applies to sub-teams.
-  """
-  inheritWorkflowStatuses: Boolean!
-
-
   """Unique hash for the team to be used in invite URLs."""
   inviteHash: String!
 
@@ -11859,18 +11828,6 @@ type Team implements Node {
     """Include archived issues in the count."""
     includeArchived: Boolean = false
   ): Int!
-
-  """Whether to allow zeros in issues estimates."""
-  issueEstimationAllowZero: Boolean!
-
-  """Whether to add additional points to the estimate scale."""
-  issueEstimationExtended: Boolean!
-
-  """
-  The issue estimation type to use. Must be one of "notUsed", "exponential", "fibonacci", "linear", "tShirt".
-  """
-  issueEstimationType: String!
-
 
   """Issues associated with the team."""
   issues(
