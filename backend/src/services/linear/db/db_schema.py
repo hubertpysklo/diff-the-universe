@@ -13,6 +13,14 @@ class Organization(LinearBase):
     organization_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     url_key: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    allow_members_to_invite: Mapped[bool] = mapped_column(Boolean, default=True)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime)
+    restrict_label_management_to_admins: Mapped[bool] = mapped_column(
+        Boolean, default=False
+    )
+    restrict_team_creation_to_admins: Mapped[bool] = mapped_column(
+        Boolean, default=False
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 

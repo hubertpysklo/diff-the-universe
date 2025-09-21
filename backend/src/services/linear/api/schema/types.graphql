@@ -6438,9 +6438,6 @@ type Organization implements Node {
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
 
-  """Allowed file upload content types"""
-  allowedFileUploadContentTypes: [String!]
-
   """
   The time at which the entity was archived. Null if the entity has not been archived.
   """
@@ -6451,15 +6448,6 @@ type Organization implements Node {
 
   """Number of issues in the organization."""
   createdIssueCount: Int!
-
-  """Default schedule for how often feed summaries are generated."""
-  defaultFeedSummarySchedule: FeedSummarySchedule
-
-  """The time at which deletion of the organization was requested."""
-  deletionRequestedAt: DateTime
-
-  """Whether the organization has enabled the feed feature."""
-  feedEnabled: Boolean!
 
   """The unique identifier of the entity."""
   id: ID!
@@ -6538,9 +6526,6 @@ type Organization implements Node {
   """Whether team creation is restricted to admins."""
   restrictTeamCreationToAdmins: Boolean
 
-  """Whether the organization is using a roadmap."""
-  roadmapEnabled: Boolean!
-
   """Teams associated with the organization."""
   teams(
     """A cursor to be used with first for forward pagination"""
@@ -6614,8 +6599,6 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): UserConnection!
 
-  """[Internal] The list of working days. Sunday is 0, Monday is 1, etc."""
-  workingDays: [Float!]!
 }
 
 type OrganizationAcceptedOrExpiredInviteDetailsPayload {
