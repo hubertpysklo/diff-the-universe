@@ -7,235 +7,6 @@ input AssigneeSort {
   order: PaginationSortOrder
 }
 
-"""Issue attachment (e.g. support ticket, pull request)."""
-type Attachment implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The body data of the attachment, if any."""
-  bodyData: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The creator of the attachment."""
-  creator: User
-
-  """The non-Linear user who created the attachment."""
-  externalUserCreator: ExternalUser
-
-  """
-  Indicates if attachments for the same source application should be grouped in the Linear UI.
-  """
-  groupBySource: Boolean!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The issue this attachment belongs to."""
-  issue: Issue!
-
-  """Custom metadata related to the attachment."""
-  metadata: JSONObject!
-
-  """
-  The issue this attachment was originally created on. Will be undefined if the attachment hasn't been moved.
-  """
-  originalIssue: Issue
-
-  """Information about the source which created the attachment."""
-  source: JSONObject
-
-  """
-  An accessor helper to source.type, defines the source type of the attachment.
-  """
-  sourceType: String
-
-  """Content for the subtitle line in the Linear attachment widget."""
-  subtitle: String
-
-  """Content for the title line in the Linear attachment widget."""
-  title: String!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """Location of the attachment which is also used as an identifier."""
-  url: String!
-}
-
-"""Attachment collection filtering options."""
-input AttachmentCollectionFilter {
-  """Compound filters, all of which need to be matched by the attachment."""
-  and: [AttachmentCollectionFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the attachments creator must satisfy."""
-  creator: NullableUserFilter
-
-  """Filters that needs to be matched by all attachments."""
-  every: AttachmentFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the collection length."""
-  length: NumberComparator
-
-  """Compound filters, one of which need to be matched by the attachment."""
-  or: [AttachmentCollectionFilter!]
-
-  """Filters that needs to be matched by some attachments."""
-  some: AttachmentFilter
-
-  """Comparator for the source type."""
-  sourceType: SourceTypeComparator
-
-  """Comparator for the subtitle."""
-  subtitle: NullableStringComparator
-
-  """Comparator for the title."""
-  title: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-
-  """Comparator for the url."""
-  url: StringComparator
-}
-
-type AttachmentConnection {
-  edges: [AttachmentEdge!]!
-  nodes: [Attachment!]!
-  pageInfo: PageInfo!
-}
-
-input AttachmentCreateInput {
-  """Create a linked comment with markdown body."""
-  commentBody: String
-
-  """
-  [Internal] Create a linked comment with Prosemirror body. Please use `commentBody` instead.
-  """
-  commentBodyData: JSONObject
-
-  """
-  Create attachment as a user with the provided name. This option is only available to OAuth applications creating attachments in `actor=application` mode.
-  """
-  createAsUser: String
-
-  """
-  Indicates if attachments for the same source application should be grouped in the Linear UI.
-  """
-  groupBySource: Boolean
-
-  """
-  An icon url to display with the attachment. Should be of jpg or png format. Maximum of 1MB in size. Dimensions should be 20x20px for optimal display quality.
-  """
-  iconUrl: String
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The issue to associate the attachment with."""
-  issueId: String!
-
-  """Attachment metadata object with string and number values."""
-  metadata: JSONObject
-
-  """The attachment subtitle."""
-  subtitle: String
-
-  """The attachment title."""
-  title: String!
-
-  """
-  Attachment location which is also used as an unique identifier for the attachment. If another attachment is created with the same `url` value, existing record is updated instead.
-  """
-  url: String!
-}
-
-type AttachmentEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Attachment!
-}
-
-"""Attachment filtering options."""
-input AttachmentFilter {
-  """Compound filters, all of which need to be matched by the attachment."""
-  and: [AttachmentFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the attachments creator must satisfy."""
-  creator: NullableUserFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Compound filters, one of which need to be matched by the attachment."""
-  or: [AttachmentFilter!]
-
-  """Comparator for the source type."""
-  sourceType: SourceTypeComparator
-
-  """Comparator for the subtitle."""
-  subtitle: NullableStringComparator
-
-  """Comparator for the title."""
-  title: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-
-  """Comparator for the url."""
-  url: StringComparator
-}
-
-type AttachmentPayload {
-  """The issue attachment that was created."""
-  attachment: Attachment!
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type AttachmentSourcesPayload {
-  """A unique list of all source types used in this workspace."""
-  sources: JSONObject!
-}
-
-input AttachmentUpdateInput {
-  """
-  An icon url to display with the attachment. Should be of jpg or png format. Maximum of 1MB in size. Dimensions should be 20x20px for optimal display quality.
-  """
-  iconUrl: String
-
-  """Attachment metadata object with string and number values."""
-  metadata: JSONObject
-
-  """The attachment subtitle."""
-  subtitle: String
-
-  """The attachment title."""
-  title: String!
-}
-
-
 """Comparator for booleans."""
 input BooleanComparator {
   """Equals constraint."""
@@ -1268,17 +1039,6 @@ type FileUploadDeletePayload {
 enum FrequencyResolutionType {
   daily
   weekly
-}
-
-type FrontAttachmentPayload {
-  """The issue attachment that was created."""
-  attachment: Attachment!
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
 }
 
 input FrontSettingsInput {
@@ -2355,36 +2115,6 @@ type Issue implements Node {
   """The user to whom the issue is assigned to."""
   assignee: User
 
-  """Attachments associated with the issue."""
-  attachments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned attachments."""
-    filter: AttachmentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AttachmentConnection!
-
   """
   The time at which the issue was automatically archived by the auto pruning process.
   """
@@ -2493,38 +2223,6 @@ type Issue implements Node {
 
   """The external user who created the issue."""
   externalUserCreator: ExternalUser
-
-  """
-  Attachments previously associated with the issue before being moved to another issue.
-  """
-  formerAttachments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned attachments."""
-    filter: AttachmentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AttachmentConnection!
 
   """History entries associated with the issue."""
   history(
@@ -2824,9 +2522,6 @@ input IssueCollectionFilter {
   """Filters that the issues assignee must satisfy."""
   assignee: NullableUserFilter
 
-  """Filters that the issues attachments must satisfy."""
-  attachments: AttachmentCollectionFilter
-
   """Comparator for the issues auto archived at date."""
   autoArchivedAt: NullableDateComparator
 
@@ -3124,9 +2819,6 @@ input IssueFilter {
   """Filters that the issues assignee must satisfy."""
   assignee: NullableUserFilter
 
-  """Filters that the issues attachments must satisfy."""
-  attachments: AttachmentCollectionFilter
-
   """Comparator for the issues auto archived at date."""
   autoArchivedAt: NullableDateComparator
 
@@ -3302,12 +2994,6 @@ type IssueHistory implements Node {
   The time at which the entity was archived. Null if the entity has not been archived.
   """
   archivedAt: DateTime
-
-  """The linked attachment."""
-  attachment: Attachment
-
-  """The id of linked attachment."""
-  attachmentId: String
 
   """Whether the issue was auto-archived."""
   autoArchived: Boolean
@@ -3992,36 +3678,6 @@ type IssueSearchResult implements Node {
   """The user to whom the issue is assigned to."""
   assignee: User
 
-  """Attachments associated with the issue."""
-  attachments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned attachments."""
-    filter: AttachmentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AttachmentConnection!
-
   """
   The time at which the issue was automatically archived by the auto pruning process.
   """
@@ -4130,38 +3786,6 @@ type IssueSearchResult implements Node {
 
   """The external user who created the issue."""
   externalUserCreator: ExternalUser
-
-  """
-  Attachments previously associated with the issue before being moved to another issue.
-  """
-  formerAttachments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned attachments."""
-    filter: AttachmentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AttachmentConnection!
 
   """History entries associated with the issue."""
   history(
@@ -4664,79 +4288,6 @@ input MilestoneSort {
 }
 
 type Mutation {
-  """
-  Creates a new attachment, or updates existing if the same `url` and `issueId` is used.
-  """
-  attachmentCreate(
-    """The attachment object to create."""
-    input: AttachmentCreateInput!
-  ): AttachmentPayload!
-
-  """Deletes an issue attachment."""
-  attachmentDelete(
-    """The identifier of the attachment to delete."""
-    id: String!
-  ): DeletePayload!
-
-  """Link an existing Front conversation to an issue."""
-  attachmentLinkFront(
-    """The Front conversation ID to link."""
-    conversationId: String!
-
-    """
-    Create attachment as a user with the provided name. This option is only available to OAuth applications creating attachments in `actor=app` mode.
-    """
-    createAsUser: String
-
-    """
-    Provide an external user avatar URL. Can only be used in conjunction with the `createAsUser` options. This option is only available to OAuth applications creating comments in `actor=app` mode.
-    """
-    displayIconUrl: String
-
-    """Optional attachment ID that may be provided through the API."""
-    id: String
-
-    """The issue for which to link the Front conversation."""
-    issueId: String!
-
-    """The title to use for the attachment."""
-    title: String
-  ): FrontAttachmentPayload!
-
-
-  """Link any url to an issue."""
-  attachmentLinkURL(
-    """
-    Create attachment as a user with the provided name. This option is only available to OAuth applications creating attachments in `actor=app` mode.
-    """
-    createAsUser: String
-
-    """
-    Provide an external user avatar URL. Can only be used in conjunction with the `createAsUser` options. This option is only available to OAuth applications creating comments in `actor=app` mode.
-    """
-    displayIconUrl: String
-
-    """The id for the attachment."""
-    id: String
-
-    """The issue for which to link the url."""
-    issueId: String!
-
-    """The title to use for the attachment."""
-    title: String
-
-    """The url to link."""
-    url: String!
-  ): AttachmentPayload!
-
-  """Updates an existing issue attachment."""
-  attachmentUpdate(
-    """The identifier of the attachment to update."""
-    id: String!
-
-    """A partial attachment object to update the attachment with."""
-    input: AttachmentUpdateInput!
-  ): AttachmentPayload!
 
   """Creates a new comment."""
   commentCreate(
@@ -5812,9 +5363,6 @@ input NullableIssueFilter {
 
   """Filters that the issues assignee must satisfy."""
   assignee: NullableUserFilter
-
-  """Filters that the issues attachments must satisfy."""
-  attachments: AttachmentCollectionFilter
 
   """Comparator for the issues auto archived at date."""
   autoArchivedAt: NullableDateComparator
@@ -7523,49 +7071,6 @@ type ProjectArchivePayload implements ArchivePayload {
 
   """Whether the operation was successful."""
   success: Boolean!
-}
-
-"""Project attachment"""
-type ProjectAttachment implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The creator of the attachment."""
-  creator: User
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """Custom metadata related to the attachment."""
-  metadata: JSONObject!
-
-  """Information about the external source which created the attachment."""
-  source: JSONObject
-
-  """
-  An accessor helper to source.type, defines the source type of the attachment.
-  """
-  sourceType: String
-
-  """Optional subtitle of the attachment"""
-  subtitle: String
-
-  """Title of the attachment."""
-  title: String!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """URL of the attachment."""
-  url: String!
 }
 
 """Project filtering options."""
@@ -9904,91 +9409,6 @@ type Query {
 
   """[Internal] All archived teams of the organization."""
   archivedTeams: [Team!]!
-
-  "\nOne specific issue attachment.\n[Deprecated] 'url' can no longer be used as the 'id' parameter. Use 'attachmentsForUrl' instead"
-  attachment(id: String!): Attachment!
-
-  "\nQuery an issue by its associated attachment, and its id.\n"
-  attachmentIssue(
-    """
-    `id` of the attachment for which you'll want to get the issue for. [Deprecated] `url` as the `id` parameter.
-    """
-    id: String!
-  ): Issue! @deprecated(reason: "Will be removed in near future, please use `attachmentsForURL` to get attachments and their issues instead.")
-
-  """
-  [Internal] Get a list of all unique attachment sources in the workspace.
-  """
-  attachmentSources(
-    """
-    (optional) if provided will only return attachment sources for the given team.
-    """
-    teamId: String
-  ): AttachmentSourcesPayload!
-
-  """
-  All issue attachments.
-  
-  To get attachments for a given URL, use `attachmentsForURL` query.
-  """
-  attachments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned attachments."""
-    filter: AttachmentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AttachmentConnection!
-
-  """Returns issue attachments for a given `url`."""
-  attachmentsForURL(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-
-    """The attachment URL."""
-    url: String!
-  ): AttachmentConnection!
 
   """Fetch users belonging to this user account."""
   availableUsers: AuthResolverResponse!
