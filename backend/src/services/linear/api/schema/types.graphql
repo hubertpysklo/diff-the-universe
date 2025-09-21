@@ -2494,9 +2494,6 @@ type Issue implements Node {
   """The external user who created the issue."""
   externalUserCreator: ExternalUser
 
-  """The users favorite associated with this issue."""
-  favorite: Favorite
-
   """
   Attachments previously associated with the issue before being moved to another issue.
   """
@@ -4134,9 +4131,6 @@ type IssueSearchResult implements Node {
   """The external user who created the issue."""
   externalUserCreator: ExternalUser
 
-  """The users favorite associated with this issue."""
-  favorite: Favorite
-
   """
   Attachments previously associated with the issue before being moved to another issue.
   """
@@ -4810,27 +4804,6 @@ type Mutation {
     """The entity link object to update."""
     input: EntityExternalLinkUpdateInput!
   ): EntityExternalLinkPayload!
-
-  """Creates a new favorite (project, cycle etc)."""
-  favoriteCreate(
-    """The favorite object to create."""
-    input: FavoriteCreateInput!
-  ): FavoritePayload!
-
-  """Deletes a favorite reference."""
-  favoriteDelete(
-    """The identifier of the favorite reference to delete."""
-    id: String!
-  ): DeletePayload!
-
-  """Updates a favorite."""
-  favoriteUpdate(
-    """The identifier of the favorite to update."""
-    id: String!
-
-    """A partial favorite object to update the favorite with."""
-    input: FavoriteUpdateInput!
-  ): FavoritePayload!
 
   """
   XHR request payload to upload an images, video and other attachments directly to Linear's cloud storage.
@@ -7132,9 +7105,6 @@ type Project implements Node {
   ): EntityExternalLinkConnection!
 
 
-  """The user's favorite associated with this project."""
-  favorite: Favorite
-
   """The resolution of the reminder frequency."""
   frequencyResolution: FrequencyResolutionType!
 
@@ -8820,9 +8790,6 @@ type ProjectSearchResult implements Node {
     orderBy: PaginationOrderBy
   ): EntityExternalLinkConnection!
 
-  """The user's favorite associated with this project."""
-  favorite: Favorite
-
   """The resolution of the reminder frequency."""
   frequencyResolution: FrequencyResolutionType!
 
@@ -10103,37 +10070,6 @@ type Query {
 
   """One specific entity link."""
   entityExternalLink(id: String!): EntityExternalLink!
-
-
-  """One specific favorite."""
-  favorite(id: String!): Favorite!
-
-  """The user's favorites."""
-  favorites(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): FavoriteConnection!
 
   """
   [Internal] Fetch an arbitrary set of data using natural language query. Be specific about what you want including properties for each entity, sort order, filters, limit and properties.
