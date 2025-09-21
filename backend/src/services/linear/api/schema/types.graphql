@@ -4915,60 +4915,6 @@ type Mutation {
     email: String!
   ): DeletePayload!
 
-  """Archives a roadmap."""
-  roadmapArchive(
-    """The identifier of the roadmap to archive."""
-    id: String!
-  ): RoadmapArchivePayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """Creates a new roadmap."""
-  roadmapCreate(
-    """The properties of the roadmap to create."""
-    input: RoadmapCreateInput!
-  ): RoadmapPayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """Deletes a roadmap."""
-  roadmapDelete(
-    """The identifier of the roadmap to delete."""
-    id: String!
-  ): DeletePayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """Creates a new roadmapToProject join."""
-  roadmapToProjectCreate(
-    """The properties of the roadmapToProject to create."""
-    input: RoadmapToProjectCreateInput!
-  ): RoadmapToProjectPayload!
-
-  """Deletes a roadmapToProject."""
-  roadmapToProjectDelete(
-    """The identifier of the roadmapToProject to delete."""
-    id: String!
-  ): DeletePayload!
-
-  """Updates a roadmapToProject."""
-  roadmapToProjectUpdate(
-    """The identifier of the roadmapToProject to update."""
-    id: String!
-
-    """The properties of the roadmapToProject to update."""
-    input: RoadmapToProjectUpdateInput!
-  ): RoadmapToProjectPayload!
-
-  """Unarchives a roadmap."""
-  roadmapUnarchive(
-    """The identifier of the roadmap to unarchive."""
-    id: String!
-  ): RoadmapArchivePayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """Updates a roadmap."""
-  roadmapUpdate(
-    """The identifier of the roadmap to update."""
-    id: String!
-
-    """The properties of the roadmap to update."""
-    input: RoadmapUpdateInput!
-  ): RoadmapPayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
   """
   Creates a new team. The user who creates the team will automatically be added as a member to the newly created team.
   """
@@ -5590,9 +5536,6 @@ input NullableProjectFilter {
 
   """Comparator for the project updates."""
   projectUpdates: ProjectUpdatesCollectionFilter
-
-  """Filters that the projects roadmaps must satisfy."""
-  roadmaps: RoadmapCollectionFilter
 
   """[Internal] Comparator for the project's content."""
   searchableContent: ContentComparator
@@ -6397,9 +6340,6 @@ input OrganizationUpdateInput {
   """Whether team creation is restricted to admins."""
   restrictTeamCreationToAdmins: Boolean
 
-  """Whether the organization is using roadmap."""
-  roadmapEnabled: Boolean
-
   """Internal. Whether SLAs have been enabled for the organization."""
   slaEnabled: Boolean
 
@@ -7088,9 +7028,6 @@ input ProjectCollectionFilter {
   """Comparator for the project updates."""
   projectUpdates: ProjectUpdatesCollectionFilter
 
-  """Filters that the projects roadmaps must satisfy."""
-  roadmaps: RoadmapCollectionFilter
-
   """[Internal] Comparator for the project's content."""
   searchableContent: ContentComparator
 
@@ -7298,9 +7235,6 @@ input ProjectFilter {
 
   """Comparator for the project updates."""
   projectUpdates: ProjectUpdatesCollectionFilter
-
-  """Filters that the projects roadmaps must satisfy."""
-  roadmaps: RoadmapCollectionFilter
 
   """[Internal] Comparator for the project's content."""
   searchableContent: ContentComparator
@@ -9937,64 +9871,6 @@ type Query {
   """The status of the rate limiter."""
   rateLimitStatus: RateLimitPayload!
 
-  """One specific roadmap."""
-  roadmap(id: String!): Roadmap! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """One specific roadmapToProject."""
-  roadmapToProject(id: String!): RoadmapToProject! @deprecated(reason: "RoadmapToProject is deprecated, use InitiativeToProject instead.")
-  roadmapToProjects(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): RoadmapToProjectConnection! @deprecated(reason: "RoadmapToProject is deprecated, use InitiativeToProject instead.")
-
-  """All roadmaps in the workspace."""
-  roadmaps(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): RoadmapConnection! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
   """Search issues."""
   searchIssues(
     """A cursor to be used with first for forward pagination"""
@@ -10417,265 +10293,6 @@ enum ReleaseChannel {
   internal
   preRelease
   public
-}
-
-"""[Deprecated] A roadmap for projects."""
-type Roadmap implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The roadmap's color."""
-  color: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who created the roadmap."""
-  creator: User!
-
-  """The description of the roadmap."""
-  description: String
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The name of the roadmap."""
-  name: String!
-
-  """The organization of the roadmap."""
-  organization: Organization!
-
-  """The user who owns the roadmap."""
-  owner: User
-
-  """Projects associated with the roadmap."""
-  projects(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned projects."""
-    filter: ProjectFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): ProjectConnection!
-
-  """The roadmap's unique URL slug."""
-  slugId: String!
-
-  """The sort order of the roadmap within the organization."""
-  sortOrder: Float!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The canonical url for the roadmap."""
-  url: String!
-}
-
-"""A generic payload return from entity archive mutations."""
-type RoadmapArchivePayload implements ArchivePayload {
-  """The archived/unarchived entity. Null if entity was deleted."""
-  entity: Roadmap
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-"""Roadmap collection filtering options."""
-input RoadmapCollectionFilter {
-  """Compound filters, all of which need to be matched by the roadmap."""
-  and: [RoadmapCollectionFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the roadmap creator must satisfy."""
-  creator: UserFilter
-
-  """Filters that needs to be matched by all roadmaps."""
-  every: RoadmapFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the collection length."""
-  length: NumberComparator
-
-  """Comparator for the roadmap name."""
-  name: StringComparator
-
-  """Compound filters, one of which need to be matched by the roadmap."""
-  or: [RoadmapCollectionFilter!]
-
-  """Comparator for the roadmap slug ID."""
-  slugId: StringComparator
-
-  """Filters that needs to be matched by some roadmaps."""
-  some: RoadmapFilter
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-type RoadmapConnection {
-  edges: [RoadmapEdge!]!
-  nodes: [Roadmap!]!
-  pageInfo: PageInfo!
-}
-
-input RoadmapCreateInput {
-  """The roadmap's color."""
-  color: String
-
-  """The description of the roadmap."""
-  description: String
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The name of the roadmap."""
-  name: String!
-
-  """The owner of the roadmap."""
-  ownerId: String
-
-  """The sort order of the roadmap within the organization."""
-  sortOrder: Float
-}
-
-type RoadmapEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Roadmap!
-}
-
-"""Roadmap filtering options."""
-input RoadmapFilter {
-  """Compound filters, all of which need to be matched by the roadmap."""
-  and: [RoadmapFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the roadmap creator must satisfy."""
-  creator: UserFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the roadmap name."""
-  name: StringComparator
-
-  """Compound filters, one of which need to be matched by the roadmap."""
-  or: [RoadmapFilter!]
-
-  """Comparator for the roadmap slug ID."""
-  slugId: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-type RoadmapPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """The roadmap that was created or updated."""
-  roadmap: Roadmap!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-
-type RoadmapToProjectConnection {
-  edges: [RoadmapToProjectEdge!]!
-  nodes: [RoadmapToProject!]!
-  pageInfo: PageInfo!
-}
-
-input RoadmapToProjectCreateInput {
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The identifier of the project."""
-  projectId: String!
-
-  """The identifier of the roadmap."""
-  roadmapId: String!
-
-  """The sort order for the project within its organization."""
-  sortOrder: Float
-}
-
-type RoadmapToProjectEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: RoadmapToProject!
-}
-
-type RoadmapToProjectPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """The roadmapToProject that was created or updated."""
-  roadmapToProject: RoadmapToProject!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-input RoadmapToProjectUpdateInput {
-  """The sort order for the project within its organization."""
-  sortOrder: Float
-}
-
-input RoadmapUpdateInput {
-  """The roadmap's color."""
-  color: String
-
-  """The description of the roadmap."""
-  description: String
-
-  """The name of the roadmap."""
-  name: String
-
-  """The owner of the roadmap."""
-  ownerId: String
-
-  """The sort order of the roadmap within the organization."""
-  sortOrder: Float
 }
 
 """Issue root-issue sorting options."""
