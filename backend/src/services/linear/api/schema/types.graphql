@@ -7,235 +7,6 @@ input AssigneeSort {
   order: PaginationSortOrder
 }
 
-"""Issue attachment (e.g. support ticket, pull request)."""
-type Attachment implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The body data of the attachment, if any."""
-  bodyData: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The creator of the attachment."""
-  creator: User
-
-  """The non-Linear user who created the attachment."""
-  externalUserCreator: ExternalUser
-
-  """
-  Indicates if attachments for the same source application should be grouped in the Linear UI.
-  """
-  groupBySource: Boolean!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The issue this attachment belongs to."""
-  issue: Issue!
-
-  """Custom metadata related to the attachment."""
-  metadata: JSONObject!
-
-  """
-  The issue this attachment was originally created on. Will be undefined if the attachment hasn't been moved.
-  """
-  originalIssue: Issue
-
-  """Information about the source which created the attachment."""
-  source: JSONObject
-
-  """
-  An accessor helper to source.type, defines the source type of the attachment.
-  """
-  sourceType: String
-
-  """Content for the subtitle line in the Linear attachment widget."""
-  subtitle: String
-
-  """Content for the title line in the Linear attachment widget."""
-  title: String!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """Location of the attachment which is also used as an identifier."""
-  url: String!
-}
-
-"""Attachment collection filtering options."""
-input AttachmentCollectionFilter {
-  """Compound filters, all of which need to be matched by the attachment."""
-  and: [AttachmentCollectionFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the attachments creator must satisfy."""
-  creator: NullableUserFilter
-
-  """Filters that needs to be matched by all attachments."""
-  every: AttachmentFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the collection length."""
-  length: NumberComparator
-
-  """Compound filters, one of which need to be matched by the attachment."""
-  or: [AttachmentCollectionFilter!]
-
-  """Filters that needs to be matched by some attachments."""
-  some: AttachmentFilter
-
-  """Comparator for the source type."""
-  sourceType: SourceTypeComparator
-
-  """Comparator for the subtitle."""
-  subtitle: NullableStringComparator
-
-  """Comparator for the title."""
-  title: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-
-  """Comparator for the url."""
-  url: StringComparator
-}
-
-type AttachmentConnection {
-  edges: [AttachmentEdge!]!
-  nodes: [Attachment!]!
-  pageInfo: PageInfo!
-}
-
-input AttachmentCreateInput {
-  """Create a linked comment with markdown body."""
-  commentBody: String
-
-  """
-  [Internal] Create a linked comment with Prosemirror body. Please use `commentBody` instead.
-  """
-  commentBodyData: JSONObject
-
-  """
-  Create attachment as a user with the provided name. This option is only available to OAuth applications creating attachments in `actor=application` mode.
-  """
-  createAsUser: String
-
-  """
-  Indicates if attachments for the same source application should be grouped in the Linear UI.
-  """
-  groupBySource: Boolean
-
-  """
-  An icon url to display with the attachment. Should be of jpg or png format. Maximum of 1MB in size. Dimensions should be 20x20px for optimal display quality.
-  """
-  iconUrl: String
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The issue to associate the attachment with."""
-  issueId: String!
-
-  """Attachment metadata object with string and number values."""
-  metadata: JSONObject
-
-  """The attachment subtitle."""
-  subtitle: String
-
-  """The attachment title."""
-  title: String!
-
-  """
-  Attachment location which is also used as an unique identifier for the attachment. If another attachment is created with the same `url` value, existing record is updated instead.
-  """
-  url: String!
-}
-
-type AttachmentEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Attachment!
-}
-
-"""Attachment filtering options."""
-input AttachmentFilter {
-  """Compound filters, all of which need to be matched by the attachment."""
-  and: [AttachmentFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the attachments creator must satisfy."""
-  creator: NullableUserFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Compound filters, one of which need to be matched by the attachment."""
-  or: [AttachmentFilter!]
-
-  """Comparator for the source type."""
-  sourceType: SourceTypeComparator
-
-  """Comparator for the subtitle."""
-  subtitle: NullableStringComparator
-
-  """Comparator for the title."""
-  title: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-
-  """Comparator for the url."""
-  url: StringComparator
-}
-
-type AttachmentPayload {
-  """The issue attachment that was created."""
-  attachment: Attachment!
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type AttachmentSourcesPayload {
-  """A unique list of all source types used in this workspace."""
-  sources: JSONObject!
-}
-
-input AttachmentUpdateInput {
-  """
-  An icon url to display with the attachment. Should be of jpg or png format. Maximum of 1MB in size. Dimensions should be 20x20px for optimal display quality.
-  """
-  iconUrl: String
-
-  """Attachment metadata object with string and number values."""
-  metadata: JSONObject
-
-  """The attachment subtitle."""
-  subtitle: String
-
-  """The attachment title."""
-  title: String!
-}
-
-
 """Comparator for booleans."""
 input BooleanComparator {
   """Equals constraint."""
@@ -356,12 +127,6 @@ type Comment implements Node {
   """
   quotedText: String
 
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """Reactions associated with the comment."""
-  reactions: [Reaction!]!
-
   """The time the resolvingUser resolved the thread."""
   resolvedAt: DateTime
 
@@ -421,9 +186,6 @@ input CommentCollectionFilter {
 
   """Filters that the comment's project update must satisfy."""
   projectUpdate: NullableProjectUpdateFilter
-
-  """Filters that the comment's reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """Filters that needs to be matched by some comments."""
   some: CommentFilter
@@ -530,9 +292,6 @@ input CommentFilter {
 
   """Filters that the comment's project update must satisfy."""
   projectUpdate: NullableProjectUpdateFilter
-
-  """Filters that the comment's reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """Comparator for the updated at date."""
   updatedAt: DateComparator
@@ -1268,17 +1027,6 @@ type FileUploadDeletePayload {
 enum FrequencyResolutionType {
   daily
   weekly
-}
-
-type FrontAttachmentPayload {
-  """The issue attachment that was created."""
-  attachment: Attachment!
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
 }
 
 input FrontSettingsInput {
@@ -2118,11 +1866,6 @@ type InitiativeUpdate implements Node {
   """Whether the initiative update is stale."""
   isStale: Boolean!
 
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """Reactions associated with the initiative update."""
-  reactions: [Reaction!]!
 
   """The update's unique URL slug."""
   slugId: String!
@@ -2208,9 +1951,6 @@ input InitiativeUpdateFilter {
   Compound filters, one of which need to be matched by the InitiativeUpdate.
   """
   or: [InitiativeUpdateFilter!]
-
-  """Filters that the initiative updates reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """Comparator for the updated at date."""
   updatedAt: DateComparator
@@ -2355,36 +2095,6 @@ type Issue implements Node {
   """The user to whom the issue is assigned to."""
   assignee: User
 
-  """Attachments associated with the issue."""
-  attachments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned attachments."""
-    filter: AttachmentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AttachmentConnection!
-
   """
   The time at which the issue was automatically archived by the auto pruning process.
   """
@@ -2493,38 +2203,6 @@ type Issue implements Node {
 
   """The external user who created the issue."""
   externalUserCreator: ExternalUser
-
-  """
-  Attachments previously associated with the issue before being moved to another issue.
-  """
-  formerAttachments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned attachments."""
-    filter: AttachmentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AttachmentConnection!
 
   """History entries associated with the issue."""
   history(
@@ -2646,12 +2324,6 @@ type Issue implements Node {
 
   """The projectMilestone that the issue is associated with."""
   projectMilestone: ProjectMilestone
-
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """Reactions associated with the issue."""
-  reactions: [Reaction!]!
 
 
   """Relations associated with this issue."""
@@ -2824,9 +2496,6 @@ input IssueCollectionFilter {
   """Filters that the issues assignee must satisfy."""
   assignee: NullableUserFilter
 
-  """Filters that the issues attachments must satisfy."""
-  attachments: AttachmentCollectionFilter
-
   """Comparator for the issues auto archived at date."""
   autoArchivedAt: NullableDateComparator
 
@@ -2935,9 +2604,6 @@ input IssueCollectionFilter {
 
   """Filters that the issues project milestone must satisfy."""
   projectMilestone: NullableProjectMilestoneFilter
-
-  """Filters that the issues reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """[Internal] Comparator for the issues content."""
   searchableContent: ContentComparator
@@ -3124,9 +2790,6 @@ input IssueFilter {
   """Filters that the issues assignee must satisfy."""
   assignee: NullableUserFilter
 
-  """Filters that the issues attachments must satisfy."""
-  attachments: AttachmentCollectionFilter
-
   """Comparator for the issues auto archived at date."""
   autoArchivedAt: NullableDateComparator
 
@@ -3229,9 +2892,6 @@ input IssueFilter {
   """Filters that the issues project milestone must satisfy."""
   projectMilestone: NullableProjectMilestoneFilter
 
-  """Filters that the issues reactions must satisfy."""
-  reactions: ReactionCollectionFilter
-
   """[Internal] Comparator for the issues content."""
   searchableContent: ContentComparator
 
@@ -3302,12 +2962,6 @@ type IssueHistory implements Node {
   The time at which the entity was archived. Null if the entity has not been archived.
   """
   archivedAt: DateTime
-
-  """The linked attachment."""
-  attachment: Attachment
-
-  """The id of linked attachment."""
-  attachmentId: String
 
   """Whether the issue was auto-archived."""
   autoArchived: Boolean
@@ -3992,36 +3646,6 @@ type IssueSearchResult implements Node {
   """The user to whom the issue is assigned to."""
   assignee: User
 
-  """Attachments associated with the issue."""
-  attachments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned attachments."""
-    filter: AttachmentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AttachmentConnection!
-
   """
   The time at which the issue was automatically archived by the auto pruning process.
   """
@@ -4130,38 +3754,6 @@ type IssueSearchResult implements Node {
 
   """The external user who created the issue."""
   externalUserCreator: ExternalUser
-
-  """
-  Attachments previously associated with the issue before being moved to another issue.
-  """
-  formerAttachments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned attachments."""
-    filter: AttachmentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AttachmentConnection!
 
   """History entries associated with the issue."""
   history(
@@ -4286,12 +3878,6 @@ type IssueSearchResult implements Node {
 
   """The projectMilestone that the issue is associated with."""
   projectMilestone: ProjectMilestone
-
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """Reactions associated with the issue."""
-  reactions: [Reaction!]!
 
   """Relations associated with this issue."""
   relations(
@@ -4664,79 +4250,6 @@ input MilestoneSort {
 }
 
 type Mutation {
-  """
-  Creates a new attachment, or updates existing if the same `url` and `issueId` is used.
-  """
-  attachmentCreate(
-    """The attachment object to create."""
-    input: AttachmentCreateInput!
-  ): AttachmentPayload!
-
-  """Deletes an issue attachment."""
-  attachmentDelete(
-    """The identifier of the attachment to delete."""
-    id: String!
-  ): DeletePayload!
-
-  """Link an existing Front conversation to an issue."""
-  attachmentLinkFront(
-    """The Front conversation ID to link."""
-    conversationId: String!
-
-    """
-    Create attachment as a user with the provided name. This option is only available to OAuth applications creating attachments in `actor=app` mode.
-    """
-    createAsUser: String
-
-    """
-    Provide an external user avatar URL. Can only be used in conjunction with the `createAsUser` options. This option is only available to OAuth applications creating comments in `actor=app` mode.
-    """
-    displayIconUrl: String
-
-    """Optional attachment ID that may be provided through the API."""
-    id: String
-
-    """The issue for which to link the Front conversation."""
-    issueId: String!
-
-    """The title to use for the attachment."""
-    title: String
-  ): FrontAttachmentPayload!
-
-
-  """Link any url to an issue."""
-  attachmentLinkURL(
-    """
-    Create attachment as a user with the provided name. This option is only available to OAuth applications creating attachments in `actor=app` mode.
-    """
-    createAsUser: String
-
-    """
-    Provide an external user avatar URL. Can only be used in conjunction with the `createAsUser` options. This option is only available to OAuth applications creating comments in `actor=app` mode.
-    """
-    displayIconUrl: String
-
-    """The id for the attachment."""
-    id: String
-
-    """The issue for which to link the url."""
-    issueId: String!
-
-    """The title to use for the attachment."""
-    title: String
-
-    """The url to link."""
-    url: String!
-  ): AttachmentPayload!
-
-  """Updates an existing issue attachment."""
-  attachmentUpdate(
-    """The identifier of the attachment to update."""
-    id: String!
-
-    """A partial attachment object to update the attachment with."""
-    input: AttachmentUpdateInput!
-  ): AttachmentPayload!
 
   """Creates a new comment."""
   commentCreate(
@@ -5390,19 +4903,6 @@ type Mutation {
     input: ProjectUpdateUpdateInput!
   ): ProjectUpdatePayload!
 
-  """Creates a new reaction."""
-  reactionCreate(
-    """The reaction object to create."""
-    input: ReactionCreateInput!
-  ): ReactionPayload!
-
-  """Deletes a reaction."""
-  reactionDelete(
-    """The identifier of the reaction to delete."""
-    id: String!
-  ): DeletePayload!
-
-
   """Re-send an organization invite."""
   resendOrganizationInvite(
     """The identifier of the organization invite to re-send."""
@@ -5707,9 +5207,6 @@ input NullableCommentFilter {
   """Filters that the comment's project update must satisfy."""
   projectUpdate: NullableProjectUpdateFilter
 
-  """Filters that the comment's reactions must satisfy."""
-  reactions: ReactionCollectionFilter
-
   """Comparator for the updated at date."""
   updatedAt: DateComparator
 
@@ -5812,9 +5309,6 @@ input NullableIssueFilter {
 
   """Filters that the issues assignee must satisfy."""
   assignee: NullableUserFilter
-
-  """Filters that the issues attachments must satisfy."""
-  attachments: AttachmentCollectionFilter
 
   """Comparator for the issues auto archived at date."""
   autoArchivedAt: NullableDateComparator
@@ -5921,9 +5415,6 @@ input NullableIssueFilter {
   """Filters that the issues project milestone must satisfy."""
   projectMilestone: NullableProjectMilestoneFilter
 
-  """Filters that the issues reactions must satisfy."""
-  reactions: ReactionCollectionFilter
-
   """[Internal] Comparator for the issues content."""
   searchableContent: ContentComparator
 
@@ -6009,6 +5500,11 @@ input NullableNumberComparator {
 input NullableProjectFilter {
   """Filters that the project's team must satisfy."""
   accessibleTeams: TeamCollectionFilter
+
+  """
+  [ALPHA] Comparator for the project activity type: buzzin, active, some, none
+  """
+  activityType: StringComparator
 
   """Compound filters, all of which need to be matched by the project."""
   and: [NullableProjectFilter!]
@@ -6174,9 +5670,6 @@ input NullableProjectUpdateFilter {
 
   """Filters that the project update project must satisfy."""
   project: ProjectFilter
-
-  """Filters that the project updates reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """Comparator for the updated at date."""
   updatedAt: DateComparator
@@ -6430,10 +5923,14 @@ input NumberComparator {
   nin: [Float!]
 }
 
+
+
 """
 An organization. Organizations are root-level objects that contain user accounts and teams.
 """
 type Organization implements Node {
+  """[INTERNAL] Whether the organization has enabled the AI add-on."""
+  aiAddonEnabled: Boolean!
 
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
@@ -6451,6 +5948,20 @@ type Organization implements Node {
 
   """The unique identifier of the entity."""
   id: ID!
+
+  """
+  The n-weekly frequency at which to prompt for initiative updates. When not set, reminders are off.
+  """
+  initiativeUpdateReminderFrequencyInWeeks: Float
+
+  """The day at which to prompt for initiative updates."""
+  initiativeUpdateRemindersDay: Day!
+
+  """The hour at which to prompt for initiative updates."""
+  initiativeUpdateRemindersHour: Float!
+
+  """IP restriction configurations."""
+  ipRestrictions: [OrganizationIpRestriction!]
 
   """Labels associated with the organization."""
   labels(
@@ -6482,8 +5993,19 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
 
+  """The organization's logo URL."""
+  logoUrl: String
+
   """The organization's name."""
   name: String!
+
+  """Rolling 30-day total upload volume for the organization, in megabytes."""
+  periodUploadVolume: Float!
+
+  """
+  Previously used URL keys for the organization (last 3 are kept and redirected).
+  """
+  previousUrlKeys: [String!]!
 
   """Project labels associated with the organization."""
   projectLabels(
@@ -6517,6 +6039,23 @@ type Organization implements Node {
 
   """The organization's project statuses."""
   projectStatuses: [ProjectStatus!]!
+
+  """
+  The n-weekly frequency at which to prompt for project updates. When not set, reminders are off.
+  """
+  projectUpdateReminderFrequencyInWeeks: Float
+
+  """The day at which to prompt for project updates."""
+  projectUpdateRemindersDay: Day!
+
+  """The hour at which to prompt for project updates."""
+  projectUpdateRemindersHour: Float!
+
+  """[DEPRECATED] The frequency at which to prompt for project updates."""
+  projectUpdatesReminderFrequency: ProjectUpdateReminderFrequency! @deprecated(reason: "Use organization.projectUpdatesReminderFrequencyInWeeks instead")
+
+  """The feature release channel the organization belongs to."""
+  releaseChannel: ReleaseChannel!
 
   """
   Whether workspace label creation, update, and deletion is restricted to admins.
@@ -6556,6 +6095,12 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): TeamConnection!
 
+
+  """[ALPHA] Theme settings for the organization."""
+  themeSettings: JSONObject
+
+  """The time at which the trial will end."""
+  trialEndsAt: DateTime
 
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
@@ -6776,7 +6321,22 @@ type OrganizationPayload {
   success: Boolean!
 }
 
+input OrganizationStartTrialInput {
+  """The plan type to trial."""
+  planType: String!
+}
+
+type OrganizationStartTrialPayload {
+  """Whether the operation was successful."""
+  success: Boolean!
+}
+
 input OrganizationUpdateInput {
+  """[INTERNAL] Whether the organization has enabled the AI add-on."""
+  aiAddonEnabled: Boolean
+
+  """[INTERNAL] Whether the organization has opted in to AI telemetry."""
+  aiTelemetryEnabled: Boolean
 
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
@@ -6790,12 +6350,46 @@ input OrganizationUpdateInput {
   """Whether the organization has enabled the feed feature."""
   feedEnabled: Boolean
 
+  """The month at which the fiscal year starts."""
+  fiscalYearStartMonth: Float
+
+
+  """
+  [ALPHA] The n-weekly frequency at which to prompt for initiative updates.
+  """
+  initiativeUpdateReminderFrequencyInWeeks: Float
+
+  """[ALPHA] The day at which initiative updates are sent."""
+  initiativeUpdateRemindersDay: Day
+
+  """[ALPHA] The hour at which initiative updates are sent."""
+  initiativeUpdateRemindersHour: Float
+
+  """
+  IP restriction configurations controlling allowed access the workspace.
+  """
+  ipRestrictions: [OrganizationIpRestrictionInput!]
+
+  """The logo of the organization."""
+  logoUrl: String
+
   """The name of the organization."""
   name: String
 
   """[INTERNAL] Whether the organization has enabled the member API keys."""
   personalApiKeysEnabled: Boolean
 
+  """The n-weekly frequency at which to prompt for project updates."""
+  projectUpdateReminderFrequencyInWeeks: Float
+
+  """The day at which project updates are sent."""
+  projectUpdateRemindersDay: Day
+
+  """The hour at which project updates are sent."""
+  projectUpdateRemindersHour: Float
+
+  """Whether agent invocation is restricted to full workspace members."""
+  restrictAgentInvocationToMembers: Boolean
 
   """Whether label creation is restricted to admins."""
   restrictLabelManagementToAdmins: Boolean
@@ -7394,49 +6988,6 @@ type ProjectArchivePayload implements ArchivePayload {
 
   """Whether the operation was successful."""
   success: Boolean!
-}
-
-"""Project attachment"""
-type ProjectAttachment implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The creator of the attachment."""
-  creator: User
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """Custom metadata related to the attachment."""
-  metadata: JSONObject!
-
-  """Information about the external source which created the attachment."""
-  source: JSONObject
-
-  """
-  An accessor helper to source.type, defines the source type of the attachment.
-  """
-  sourceType: String
-
-  """Optional subtitle of the attachment"""
-  subtitle: String
-
-  """Title of the attachment."""
-  title: String!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """URL of the attachment."""
-  url: String!
 }
 
 """Project filtering options."""
@@ -9391,12 +8942,6 @@ type ProjectUpdate implements Node {
   """The project that the update is associated with."""
   project: Project!
 
-  """Emoji reaction summary, grouped by emoji type."""
-  reactionData: JSONObject!
-
-  """Reactions associated with the project update."""
-  reactions: [Reaction!]!
-
   """The update's unique URL slug."""
   slugId: String!
 
@@ -9481,9 +9026,6 @@ input ProjectUpdateFilter {
 
   """Filters that the project update project must satisfy."""
   project: ProjectFilter
-
-  """Filters that the project updates reactions must satisfy."""
-  reactions: ReactionCollectionFilter
 
   """Comparator for the updated at date."""
   updatedAt: DateComparator
@@ -9705,6 +9247,8 @@ input ProjectUpdatesFilter {
   updatedAt: DateComparator
 }
 
+
+
 type Query {
   """
   All teams you the user can administrate. Administrable teams are teams whose settings the user can change, but to whose issues the user doesn't necessarily have access to.
@@ -9773,91 +9317,6 @@ type Query {
 
   """[Internal] All archived teams of the organization."""
   archivedTeams: [Team!]!
-
-  "\nOne specific issue attachment.\n[Deprecated] 'url' can no longer be used as the 'id' parameter. Use 'attachmentsForUrl' instead"
-  attachment(id: String!): Attachment!
-
-  "\nQuery an issue by its associated attachment, and its id.\n"
-  attachmentIssue(
-    """
-    `id` of the attachment for which you'll want to get the issue for. [Deprecated] `url` as the `id` parameter.
-    """
-    id: String!
-  ): Issue! @deprecated(reason: "Will be removed in near future, please use `attachmentsForURL` to get attachments and their issues instead.")
-
-  """
-  [Internal] Get a list of all unique attachment sources in the workspace.
-  """
-  attachmentSources(
-    """
-    (optional) if provided will only return attachment sources for the given team.
-    """
-    teamId: String
-  ): AttachmentSourcesPayload!
-
-  """
-  All issue attachments.
-  
-  To get attachments for a given URL, use `attachmentsForURL` query.
-  """
-  attachments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned attachments."""
-    filter: AttachmentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AttachmentConnection!
-
-  """Returns issue attachments for a given `url`."""
-  attachmentsForURL(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-
-    """The attachment URL."""
-    url: String!
-  ): AttachmentConnection!
 
   """Fetch users belonging to this user account."""
   availableUsers: AuthResolverResponse!
@@ -10942,145 +10401,6 @@ type RateLimitResultPayload {
   type: String!
 }
 
-"""A reaction associated with a comment or a project update."""
-type Reaction implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The comment that the reaction is associated with."""
-  comment: Comment
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """Name of the reaction's emoji."""
-  emoji: String!
-
-  """The external user that created the reaction."""
-  externalUser: ExternalUser
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The initiative update that the reaction is associated with."""
-  initiativeUpdate: InitiativeUpdate
-
-  """The issue that the reaction is associated with."""
-  issue: Issue
-
-  """The post that the reaction is associated with."""
-  post: Post
-
-  """The project update that the reaction is associated with."""
-  projectUpdate: ProjectUpdate
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The user that created the reaction."""
-  user: User
-}
-
-"""Reaction filtering options."""
-input ReactionCollectionFilter {
-  """Compound filters, all of which need to be matched by the reaction."""
-  and: [ReactionCollectionFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Comparator for the reactions custom emoji."""
-  customEmojiId: IDComparator
-
-  """Comparator for the reactions emoji."""
-  emoji: StringComparator
-
-  """Filters that needs to be matched by all reactions."""
-  every: ReactionFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the collection length."""
-  length: NumberComparator
-
-  """Compound filters, one of which need to be matched by the reaction."""
-  or: [ReactionCollectionFilter!]
-
-  """Filters that needs to be matched by some reactions."""
-  some: ReactionFilter
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-input ReactionCreateInput {
-  """The comment to associate the reaction with."""
-  commentId: String
-
-  """The emoji the user reacted with."""
-  emoji: String!
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The update to associate the reaction with."""
-  initiativeUpdateId: String
-
-  """The issue to associate the reaction with."""
-  issueId: String
-
-  """[Internal] The post to associate the reaction with."""
-  postId: String
-
-  """The project update to associate the reaction with."""
-  projectUpdateId: String
-
-  """[Internal] The pull request comment to associate the reaction with."""
-  pullRequestCommentId: String
-
-  """[Internal] The pull request to associate the reaction with."""
-  pullRequestId: String
-}
-
-"""Reaction filtering options."""
-input ReactionFilter {
-  """Compound filters, all of which need to be matched by the reaction."""
-  and: [ReactionFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Comparator for the reactions custom emoji."""
-  customEmojiId: IDComparator
-
-  """Comparator for the reactions emoji."""
-  emoji: StringComparator
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Compound filters, one of which need to be matched by the reaction."""
-  or: [ReactionFilter!]
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-type ReactionPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-  reaction: Reaction!
-  success: Boolean!
-}
-
 """Comparator for relation existence."""
 input RelationExistsComparator {
   """Equals constraint."""
@@ -11793,11 +11113,18 @@ input TargetDateSort {
 
 """An organizational unit that contains issues."""
 type Team implements Node {
+  """Whether to enable resolved thread AI summaries."""
+  aiThreadSummariesEnabled: Boolean!
 
   """
   The time at which the entity was archived. Null if the entity has not been archived.
   """
   archivedAt: DateTime
+
+  """
+  Period after which automatically closed and completed issues are automatically archived in months.
+  """
+  autoArchivePeriod: Float!
 
   """
   Whether child issues should automatically close when their parent issue is closed
@@ -11817,10 +11144,22 @@ type Team implements Node {
   """
   The canceled workflow state which auto closed issues will be set to. Defaults to the first canceled state.
   """
-  autoCloseStateId: Strings
+  autoCloseStateId: String
+
+  """[Internal] The team's sub-teams."""
+  children: [Team!]!
+
+  """The team's color."""
+  color: String
 
   """The time at which the entity was created."""
   createdAt: DateTime!
+
+  """[Internal] The current progress of the team."""
+  currentProgress: JSONObject!
+
+  """What to use as a default estimate for unestimated issues."""
+  defaultIssueEstimate: Float!
 
   """
   The default workflow state into which issues are set when they are opened by team members.
@@ -11836,6 +11175,9 @@ type Team implements Node {
 
   """Whether to group recent issue history entries."""
   groupIssueHistory: Boolean!
+
+  """The icon of the team."""
+  icon: String
 
   """The unique identifier of the entity."""
   id: ID!
@@ -11871,6 +11213,13 @@ type Team implements Node {
   """
   issueEstimationType: String!
 
+  """[DEPRECATED] Whether issues without priority should be sorted first."""
+  issueOrderingNoPriorityFirst: Boolean! @deprecated(reason: "This setting is no longer in use.")
+
+  """
+  [DEPRECATED] Whether to move issues to bottom of the column when changing state.
+  """
+  issueSortOrderDefaultToBottom: Boolean! @deprecated(reason: "Use setIssueSortOrderOnStateChange instead.")
 
   """Issues associated with the team."""
   issues(
@@ -12023,8 +11372,14 @@ type Team implements Node {
   """[Internal] The team's parent team."""
   parent: Team
 
+  """[Internal] Posts associated with the team."""
+  posts: [Post!]!
+
   """Whether the team is private or not."""
   private: Boolean!
+
+  """[Internal] The progress history of the team."""
+  progressHistory: JSONObject!
 
   """Projects associated with the team."""
   projects(
@@ -12120,6 +11475,33 @@ type Team implements Node {
       been updated after creation.
   """
   updatedAt: DateTime!
+
+  """Webhooks associated with the team."""
+  webhooks(
+    """A cursor to be used with first for forward pagination"""
+    after: String
+
+    """A cursor to be used with last for backward pagination."""
+    before: String
+
+    """
+    The number of items to forward paginate (used with after). Defaults to 50.
+    """
+    first: Int
+
+    """Should archived resources be included (default: false)"""
+    includeArchived: Boolean
+
+    """
+    The number of items to backward paginate (used with before). Defaults to 50.
+    """
+    last: Int
+
+    """
+    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
+    """
+    orderBy: PaginationOrderBy
+  ): WebhookConnection!
 }
 
 """A generic payload return from entity archive mutations."""
@@ -12179,6 +11561,9 @@ input TeamCreateInput {
   """The canceled workflow state which auto closed issues will be set to."""
   autoCloseStateId: String
 
+  """The color of the team."""
+  color: String
+
   """What to use as an default estimate for unestimated issues."""
   defaultIssueEstimate: Float
 
@@ -12187,6 +11572,9 @@ input TeamCreateInput {
 
   """Whether to group recent issue history entries."""
   groupIssueHistory: Boolean
+
+  """The icon of the team."""
+  icon: String
 
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
@@ -12197,6 +11585,11 @@ input TeamCreateInput {
   Whether the team should inherit estimation settings from its parent. Only applies to sub-teams.
   """
   inheritIssueEstimation: Boolean
+
+  """
+  [Internal] Whether the team should inherit its product intelligence scope from its parent. Only applies to sub-teams.
+  """
+  inheritProductIntelligenceScope: Boolean
 
   """
   [Internal] Whether the team should inherit workflow statuses from its parent.
@@ -12213,6 +11606,9 @@ input TeamCreateInput {
   The issue estimation type to use. Must be one of "notUsed", "exponential", "fibonacci", "linear", "tShirt".
   """
   issueEstimationType: String
+
+  """[DEPRECATED] Whether issues without priority should be sorted first."""
+  issueOrderingNoPriorityFirst: Boolean @deprecated(reason: "This setting is no longer in use.")
 
   """
   The key of the team. If not given, the key will be generated based on the name of the team.
