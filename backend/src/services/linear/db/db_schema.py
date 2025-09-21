@@ -42,7 +42,10 @@ class Team(LinearBase):
         ForeignKey("workflow_states.state_id")
     )
     invite_hash: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-
+    key: Mapped[str] = mapped_column(String(10), nullable=False)  # e.g., "ENG"
+    join_by_default: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_private: Mapped[bool] = mapped_column(Boolean, default=False)
+    timezone: Mapped[str] = mapped_column(String(100), default="America/Los_Angeles")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 

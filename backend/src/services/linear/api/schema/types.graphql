@@ -11813,10 +11813,6 @@ type Team implements Node {
   """The name of the team including its parent team name if it has one."""
   displayName: String!
 
-
-  """Whether to group recent issue history entries."""
-  groupIssueHistory: Boolean!
-
   """The unique identifier of the entity."""
   id: ID!
 
@@ -11898,11 +11894,6 @@ type Team implements Node {
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
 
-  """
-  The workflow state into which issues are moved when they are marked as a duplicate of another issue. Defaults to the first canceled state.
-  """
-  markedAsDuplicateWorkflowState: WorkflowState
-
   """Users who are members of this team."""
   members(
     """A cursor to be used with first for forward pagination"""
@@ -11977,9 +11968,6 @@ type Team implements Node {
   """The organization that the team is associated with."""
   organization: Organization!
 
-  """[Internal] The team's parent team."""
-  parent: Team
-
   """Whether the team is private or not."""
   private: Boolean!
 
@@ -12019,12 +12007,6 @@ type Team implements Node {
     sort: [ProjectSortInput!]
   ): ProjectConnection!
 
-  """Whether an issue needs to have a priority set before leaving triage."""
-  requirePriorityToLeaveTriage: Boolean!
-
-  """Where to move issues when changing state."""
-  setIssueSortOrderOnStateChange: String!
-
   """The states that define the workflow associated with the team."""
   states(
     """A cursor to be used with first for forward pagination"""
@@ -12055,23 +12037,10 @@ type Team implements Node {
     orderBy: PaginationOrderBy
   ): WorkflowStateConnection!
 
-
   """
   The timezone of the team. Defaults to "America/Los_Angeles"
   """
   timezone: String!
-
-  """Whether triage mode is enabled for the team or not."""
-  triageEnabled: Boolean!
-
-  """
-  The workflow state into which issues are set when they are opened by non-team members or integrations if triage is enabled.
-  """
-  triageIssueState: WorkflowState
-
-  """Team's triage responsibility."""
-  triageResponsibility: TriageResponsibility
-
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
