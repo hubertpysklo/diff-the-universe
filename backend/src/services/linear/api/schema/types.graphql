@@ -11122,11 +11122,6 @@ type Team implements Node {
   archivedAt: DateTime
 
   """
-  Period after which automatically closed and completed issues are automatically archived in months.
-  """
-  autoArchivePeriod: Float!
-
-  """
   Whether child issues should automatically close when their parent issue is closed
   """
   autoCloseChildIssues: Boolean
@@ -11144,13 +11139,7 @@ type Team implements Node {
   """
   The canceled workflow state which auto closed issues will be set to. Defaults to the first canceled state.
   """
-  autoCloseStateId: String
-
-  """[Internal] The team's sub-teams."""
-  children: [Team!]!
-
-  """The team's color."""
-  color: String
+  autoCloseStateId: Strings
 
   """The time at which the entity was created."""
   createdAt: DateTime!
@@ -11176,22 +11165,8 @@ type Team implements Node {
   """Whether to group recent issue history entries."""
   groupIssueHistory: Boolean!
 
-  """The icon of the team."""
-  icon: String
-
   """The unique identifier of the entity."""
   id: ID!
-
-  """
-  Whether the team should inherit its estimation settings from its parent. Only applies to sub-teams.
-  """
-  inheritIssueEstimation: Boolean!
-
-  """
-  Whether the team should inherit its workflow statuses from its parent. Only applies to sub-teams.
-  """
-  inheritWorkflowStatuses: Boolean!
-
 
   """Unique hash for the team to be used in invite URLs."""
   inviteHash: String!
@@ -11213,13 +11188,6 @@ type Team implements Node {
   """
   issueEstimationType: String!
 
-  """[DEPRECATED] Whether issues without priority should be sorted first."""
-  issueOrderingNoPriorityFirst: Boolean! @deprecated(reason: "This setting is no longer in use.")
-
-  """
-  [DEPRECATED] Whether to move issues to bottom of the column when changing state.
-  """
-  issueSortOrderDefaultToBottom: Boolean! @deprecated(reason: "Use setIssueSortOrderOnStateChange instead.")
 
   """Issues associated with the team."""
   issues(
@@ -11289,11 +11257,6 @@ type Team implements Node {
     """
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
-
-  """
-  The workflow state into which issues are moved when they are marked as a duplicate of another issue. Defaults to the first canceled state.
-  """
-  markedAsDuplicateWorkflowState: WorkflowState
 
   """Users who are members of this team."""
   members(
@@ -11372,9 +11335,6 @@ type Team implements Node {
   """[Internal] The team's parent team."""
   parent: Team
 
-  """[Internal] Posts associated with the team."""
-  posts: [Post!]!
-
   """Whether the team is private or not."""
   private: Boolean!
 
@@ -11417,12 +11377,6 @@ type Team implements Node {
     sort: [ProjectSortInput!]
   ): ProjectConnection!
 
-  """Whether an issue needs to have a priority set before leaving triage."""
-  requirePriorityToLeaveTriage: Boolean!
-
-  """Where to move issues when changing state."""
-  setIssueSortOrderOnStateChange: String!
-
   """The states that define the workflow associated with the team."""
   states(
     """A cursor to be used with first for forward pagination"""
@@ -11453,23 +11407,10 @@ type Team implements Node {
     orderBy: PaginationOrderBy
   ): WorkflowStateConnection!
 
-
   """
   The timezone of the team. Defaults to "America/Los_Angeles"
   """
   timezone: String!
-
-  """Whether triage mode is enabled for the team or not."""
-  triageEnabled: Boolean!
-
-  """
-  The workflow state into which issues are set when they are opened by non-team members or integrations if triage is enabled.
-  """
-  triageIssueState: WorkflowState
-
-  """Team's triage responsibility."""
-  triageResponsibility: TriageResponsibility
-
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
