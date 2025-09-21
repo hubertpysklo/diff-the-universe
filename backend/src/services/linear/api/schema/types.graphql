@@ -584,11 +584,9 @@ input CompletedAtSort {
 }
 
 enum ContextViewType {
-  activeCycle
   activeIssues
   backlog
   triage
-  upcomingCycle
 }
 
 
@@ -619,350 +617,6 @@ input CreatedAtSort {
   """The order for the individual sort"""
   order: PaginationSortOrder
 }
-
-
-"""A set of issues to be resolved in a specified amount of time."""
-type Cycle implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """
-  The time at which the cycle was automatically archived by the auto pruning process.
-  """
-  autoArchivedAt: DateTime
-
-  """
-  The completion time of the cycle. If null, the cycle hasn't been completed.
-  """
-  completedAt: DateTime
-
-  """The number of completed issues in the cycle after each day."""
-  completedIssueCountHistory: [Float!]!
-
-  """The number of completed estimation points after each day."""
-  completedScopeHistory: [Float!]!
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """[Internal] The current progress of the cycle."""
-  currentProgress: JSONObject!
-
-  """The cycle's description."""
-  description: String
-
-  """The end time of the cycle."""
-  endsAt: DateTime!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The number of in progress estimation points after each day."""
-  inProgressScopeHistory: [Float!]!
-
-  """The cycle inherited from."""
-  inheritedFrom: Cycle
-
-  """Whether the cycle is currently active."""
-  isActive: Boolean!
-
-  """Whether the cycle is in the future."""
-  isFuture: Boolean!
-
-  """Whether the cycle is the next cycle for the team."""
-  isNext: Boolean!
-
-  """Whether the cycle is in the past."""
-  isPast: Boolean!
-
-  """Whether the cycle is the previous cycle for the team."""
-  isPrevious: Boolean!
-
-  """The total number of issues in the cycle after each day."""
-  issueCountHistory: [Float!]!
-
-  """Issues associated with the cycle."""
-  issues(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned issues."""
-    filter: IssueFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): IssueConnection!
-
-  """The custom name of the cycle."""
-  name: String
-
-  """The number of the cycle."""
-  number: Float!
-
-  """
-  The overall progress of the cycle. This is the (completed estimate points + 0.25 * in progress estimate points) / total estimate points.
-  """
-  progress: Float!
-
-  """[Internal] The progress history of the cycle."""
-  progressHistory: JSONObject!
-
-  """The total number of estimation points after each day."""
-  scopeHistory: [Float!]!
-
-  """The start time of the cycle."""
-  startsAt: DateTime!
-
-  """The team that the cycle is associated with."""
-  team: Team!
-
-  """Issues that weren't completed when the cycle was closed."""
-  uncompletedIssuesUponClose(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned issues."""
-    filter: IssueFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): IssueConnection!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-"""A generic payload return from entity archive mutations."""
-type CycleArchivePayload implements ArchivePayload {
-  """The archived/unarchived entity. Null if entity was deleted."""
-  entity: Cycle
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type CycleConnection {
-  edges: [CycleEdge!]!
-  nodes: [Cycle!]!
-  pageInfo: PageInfo!
-}
-
-input CycleCreateInput {
-  """
-  The completion time of the cycle. If null, the cycle hasn't been completed.
-  """
-  completedAt: DateTime
-
-  """The description of the cycle."""
-  description: String
-
-  """The end date of the cycle."""
-  endsAt: DateTime!
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The custom name of the cycle."""
-  name: String
-
-  """The start date of the cycle."""
-  startsAt: DateTime!
-
-  """The team to associate the cycle with."""
-  teamId: String!
-}
-
-type CycleEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Cycle!
-}
-
-"""Cycle filtering options."""
-input CycleFilter {
-  """Compound filters, all of which need to be matched by the cycle."""
-  and: [CycleFilter!]
-
-  """Comparator for the cycle completed at date."""
-  completedAt: DateComparator
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Comparator for the cycle ends at date."""
-  endsAt: DateComparator
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the filtering active cycle."""
-  isActive: BooleanComparator
-
-  """Comparator for the filtering future cycles."""
-  isFuture: BooleanComparator
-
-  """
-  Comparator for filtering for whether the cycle is currently in cooldown.
-  """
-  isInCooldown: BooleanComparator
-
-  """Comparator for the filtering next cycle."""
-  isNext: BooleanComparator
-
-  """Comparator for the filtering past cycles."""
-  isPast: BooleanComparator
-
-  """Comparator for the filtering previous cycle."""
-  isPrevious: BooleanComparator
-
-  """Filters that the cycles issues must satisfy."""
-  issues: IssueCollectionFilter
-
-  """Comparator for the cycle name."""
-  name: StringComparator
-
-  """Comparator for the cycle number."""
-  number: NumberComparator
-
-  """Compound filters, one of which need to be matched by the cycle."""
-  or: [CycleFilter!]
-
-  """Comparator for the cycle start date."""
-  startsAt: DateComparator
-
-  """Filters that the cycles team must satisfy."""
-  team: TeamFilter
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-
-type CyclePayload {
-  """The Cycle that was created or updated."""
-  cycle: Cycle
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-enum CyclePeriod {
-  after
-  before
-  during
-}
-
-"""Comparator for period when issue was added to a cycle."""
-input CyclePeriodComparator {
-  """Equals constraint."""
-  eq: CyclePeriod
-
-  """In-array constraint."""
-  in: [CyclePeriod!]
-
-  """Not-equals constraint."""
-  neq: CyclePeriod
-
-  """Not-in-array constraint."""
-  nin: [CyclePeriod!]
-
-  """
-  Null constraint. Matches any non-null values if the given value is false, otherwise it matches null values.
-  """
-  null: Boolean
-}
-
-"""
-Input for shifting all cycles from a certain cycle onwards by a certain number of days
-"""
-input CycleShiftAllInput {
-  """The number of days to shift the cycles by."""
-  daysToShift: Float!
-
-  """The cycle ID at which to start the shift."""
-  id: String!
-}
-
-"""Issue cycle sorting options."""
-input CycleSort {
-  """
-  When set to true, cycles will be ordered with a custom order. Current cycle comes first, followed by upcoming cycles in ASC order, followed by previous cycles in DESC order.
-  """
-  currentCycleFirst: Boolean = false
-
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
-}
-
-input CycleUpdateInput {
-  """The end date of the cycle."""
-  completedAt: DateTime
-
-  """The description of the cycle."""
-  description: String
-
-  """The end date of the cycle."""
-  endsAt: DateTime
-
-  """The custom name of the cycle."""
-  name: String
-
-  """The start date of the cycle."""
-  startsAt: DateTime
-}
-
 
 """Comparator for dates."""
 input DateComparator {
@@ -2677,9 +2331,6 @@ type Issue implements Node {
   """[Internal] The activity summary information for this issue."""
   activitySummary: JSONObject
 
-  """The time at which the issue was added to a cycle."""
-  addedToCycleAt: DateTime
-
   """The time at which the issue was added to a project."""
   addedToProjectAt: DateTime
 
@@ -2824,9 +2475,6 @@ type Issue implements Node {
 
   """The user who created the issue."""
   creator: User
-
-  """The cycle that the issue is associated with."""
-  cycle: Cycle
 
   """The agent user that is delegated to work on this issue."""
   delegate: User
@@ -3165,12 +2813,6 @@ type IssueBatchPayload {
 
 """Issue filtering options."""
 input IssueCollectionFilter {
-  """Comparator for the issues added to cycle at date."""
-  addedToCycleAt: NullableDateComparator
-
-  """Comparator for the period when issue was added to a cycle."""
-  addedToCyclePeriod: CyclePeriodComparator
-
   """
   [Internal] Age (created -> now) comparator, defined if the issue is still open.
   """
@@ -3211,12 +2853,6 @@ input IssueCollectionFilter {
 
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
-
-  """Filters that the issues cycle must satisfy."""
-  cycle: NullableCycleFilter
-
-  """[Internal] Cycle time (started -> completed) comparator."""
-  cycleTime: NullableDurationComparator
 
   """Filters that the issue's delegated agent must satisfy."""
   delegate: NullableUserFilter
@@ -3377,9 +3013,6 @@ input IssueCreateInput {
   """
   createdAt: DateTime
 
-  """The cycle associated with the issue."""
-  cycleId: String
-
   """The identifier of the agent user to delegate the issue to."""
   delegateId: String
 
@@ -3480,12 +3113,6 @@ type IssueEdge {
 
 """Issue filtering options."""
 input IssueFilter {
-  """Comparator for the issues added to cycle at date."""
-  addedToCycleAt: NullableDateComparator
-
-  """Comparator for the period when issue was added to a cycle."""
-  addedToCyclePeriod: CyclePeriodComparator
-
   """
   [Internal] Age (created -> now) comparator, defined if the issue is still open.
   """
@@ -3526,12 +3153,6 @@ input IssueFilter {
 
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
-
-  """Filters that the issues cycle must satisfy."""
-  cycle: NullableCycleFilter
-
-  """[Internal] Cycle time (started -> completed) comparator."""
-  cycleTime: NullableDurationComparator
 
   """Filters that the issue's delegated agent must satisfy."""
   delegate: NullableUserFilter
@@ -3717,12 +3338,6 @@ type IssueHistory implements Node {
   """The id of user from whom the issue was re-assigned from."""
   fromAssigneeId: String
 
-  """The cycle that the issue was moved from."""
-  fromCycle: Cycle
-
-  """The id of previous cycle of the issue."""
-  fromCycleId: String
-
   """The app user from whom the issue delegation was transferred."""
   fromDelegate: User
 
@@ -3791,12 +3406,6 @@ type IssueHistory implements Node {
 
   """The id of new project created from the issue."""
   toConvertedProjectId: String
-
-  """The cycle that the issue was moved to."""
-  toCycle: Cycle
-
-  """The id of new cycle of the issue."""
-  toCycleId: String
 
   """The app user to whom the issue delegation was transferred."""
   toDelegate: User
@@ -4362,9 +3971,6 @@ type IssueSearchResult implements Node {
   """[Internal] The activity summary information for this issue."""
   activitySummary: JSONObject
 
-  """The time at which the issue was added to a cycle."""
-  addedToCycleAt: DateTime
-
   """The time at which the issue was added to a project."""
   addedToProjectAt: DateTime
 
@@ -4509,10 +4115,6 @@ type IssueSearchResult implements Node {
 
   """The user who created the issue."""
   creator: User
-
-
-  """The cycle that the issue is associated with."""
-  cycle: Cycle
 
   """The agent user that is delegated to work on this issue."""
   delegate: User
@@ -4841,9 +4443,6 @@ input IssueSortInput {
   """Sort by issue creation date"""
   createdAt: CreatedAtSort
 
-  """Sort by Cycle start date"""
-  cycle: CycleSort
-
   """Sort by delegate name"""
   delegate: DelegateSort
 
@@ -4908,9 +4507,6 @@ input IssueUpdateInput {
 
   """The position of the issue in its column on the board view."""
   boardOrder: Float @deprecated(reason: "Will be removed in near future, please use `sortOrder` instead")
-
-  """The cycle associated with the issue."""
-  cycleId: String
 
   """The identifier of the agent user to delegate the issue to."""
   delegateId: String
@@ -5181,78 +4777,6 @@ type Mutation {
     """A partial comment object to update the comment with."""
     input: CommentUpdateInput!
   ): CommentPayload!
-
-  """Archives a cycle."""
-  cycleArchive(
-    """The identifier of the cycle to archive."""
-    id: String!
-  ): CycleArchivePayload!
-
-  """Creates a new cycle."""
-  cycleCreate(
-    """The cycle object to create."""
-    input: CycleCreateInput!
-  ): CyclePayload!
-
-  """
-  Shifts all cycles starts and ends by a certain number of days, starting from the provided cycle onwards.
-  """
-  cycleShiftAll(
-    """A partial cycle object to update the cycle with."""
-    input: CycleShiftAllInput!
-  ): CyclePayload!
-
-  """
-  Shifts all cycles starts and ends by a certain number of days, starting from the provided cycle onwards.
-  """
-  cycleStartUpcomingCycleToday(
-    """
-    The identifier of the cycle to start as of midnight today. Must be the upcoming cycle.
-    """
-    id: String!
-  ): CyclePayload!
-
-  """Updates a cycle."""
-  cycleUpdate(
-    """The identifier of the cycle to update."""
-    id: String!
-
-    """A partial cycle object to update the cycle with."""
-    input: CycleUpdateInput!
-  ): CyclePayload!
-
-  """Creates a new email intake address."""
-  emailIntakeAddressCreate(
-    """The email intake address object to create."""
-    input: EmailIntakeAddressCreateInput!
-  ): EmailIntakeAddressPayload!
-
-  """Deletes an email intake address object."""
-  emailIntakeAddressDelete(
-    """The identifier of the email intake address to delete."""
-    id: String!
-  ): DeletePayload!
-
-  """Rotates an existing email intake address."""
-  emailIntakeAddressRotate(
-    """The identifier of the email intake address."""
-    id: String!
-  ): EmailIntakeAddressPayload!
-
-  """Updates an existing email intake address."""
-  emailIntakeAddressUpdate(
-    """The identifier of the email intake address."""
-    id: String!
-
-    """The properties of the email intake address to update."""
-    input: EmailIntakeAddressUpdateInput!
-  ): EmailIntakeAddressPayload!
-
-  """Unsubscribes the user from one type of email."""
-  emailUnsubscribe(
-    """Unsubscription details."""
-    input: EmailUnsubscribeInput!
-  ): EmailUnsubscribePayload!
 
   """Creates a custom emoji."""
   emojiCreate(
@@ -5983,12 +5507,6 @@ type Mutation {
     input: TeamCreateInput!
   ): TeamPayload!
 
-  """Deletes team's cycles data"""
-  teamCyclesDelete(
-    """The identifier of the team, which cycles will be deleted."""
-    id: String!
-  ): TeamPayload!
-
   """Deletes a team."""
   teamDelete(
     """The identifier of the team to delete."""
@@ -6226,68 +5744,6 @@ input NullableCommentFilter {
   user: UserFilter
 }
 
-"""Cycle filtering options."""
-input NullableCycleFilter {
-  """Compound filters, all of which need to be matched by the cycle."""
-  and: [NullableCycleFilter!]
-
-  """Comparator for the cycle completed at date."""
-  completedAt: DateComparator
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Comparator for the cycle ends at date."""
-  endsAt: DateComparator
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the filtering active cycle."""
-  isActive: BooleanComparator
-
-  """Comparator for the filtering future cycles."""
-  isFuture: BooleanComparator
-
-  """
-  Comparator for filtering for whether the cycle is currently in cooldown.
-  """
-  isInCooldown: BooleanComparator
-
-  """Comparator for the filtering next cycle."""
-  isNext: BooleanComparator
-
-  """Comparator for the filtering past cycles."""
-  isPast: BooleanComparator
-
-  """Comparator for the filtering previous cycle."""
-  isPrevious: BooleanComparator
-
-  """Filters that the cycles issues must satisfy."""
-  issues: IssueCollectionFilter
-
-  """Comparator for the cycle name."""
-  name: StringComparator
-
-  """Filter based on the existence of the relation."""
-  null: Boolean
-
-  """Comparator for the cycle number."""
-  number: NumberComparator
-
-  """Compound filters, one of which need to be matched by the cycle."""
-  or: [NullableCycleFilter!]
-
-  """Comparator for the cycle start date."""
-  startsAt: DateComparator
-
-  """Filters that the cycles team must satisfy."""
-  team: TeamFilter
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
 """Comparator for optional dates."""
 input NullableDateComparator {
   """Equals constraint."""
@@ -6370,12 +5826,6 @@ input NullableDurationComparator {
 
 """Issue filtering options."""
 input NullableIssueFilter {
-  """Comparator for the issues added to cycle at date."""
-  addedToCycleAt: NullableDateComparator
-
-  """Comparator for the period when issue was added to a cycle."""
-  addedToCyclePeriod: CyclePeriodComparator
-
   """
   [Internal] Age (created -> now) comparator, defined if the issue is still open.
   """
@@ -6416,12 +5866,6 @@ input NullableIssueFilter {
 
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
-
-  """Filters that the issues cycle must satisfy."""
-  cycle: NullableCycleFilter
-
-  """[Internal] Cycle time (started -> completed) comparator."""
-  cycleTime: NullableDurationComparator
 
   """Filters that the issue's delegated agent must satisfy."""
   delegate: NullableUserFilter
@@ -10624,40 +10068,6 @@ type Query {
     orderBy: PaginationOrderBy
   ): CommentConnection!
 
-  """One specific cycle."""
-  cycle(id: String!): Cycle!
-
-  """All cycles."""
-  cycles(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned users."""
-    filter: CycleFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CycleConnection!
-
-
   """A specific emoji."""
   emoji(
     """The identifier or the name of the emoji to retrieve."""
@@ -12578,9 +11988,6 @@ input TargetDateSort {
 
 """An organizational unit that contains issues."""
 type Team implements Node {
-  """Team's currently active cycle."""
-  activeCycle: Cycle
-
   """Whether to enable resolved thread AI summaries."""
   aiThreadSummariesEnabled: Boolean!
 
@@ -12625,60 +12032,6 @@ type Team implements Node {
 
   """[Internal] The current progress of the team."""
   currentProgress: JSONObject!
-
-  """Calendar feed URL (iCal) for cycles."""
-  cycleCalenderUrl: String!
-
-  """The cooldown time after each cycle in weeks."""
-  cycleCooldownTime: Float!
-
-  """The duration of a cycle in weeks."""
-  cycleDuration: Float!
-
-  """Auto assign completed issues to current cycle."""
-  cycleIssueAutoAssignCompleted: Boolean!
-
-  """Auto assign started issues to current cycle."""
-  cycleIssueAutoAssignStarted: Boolean!
-
-  """Auto assign issues to current cycle if in active status."""
-  cycleLockToActive: Boolean!
-
-  """The day of the week that a new cycle starts."""
-  cycleStartDay: Float!
-
-  """Cycles associated with the team."""
-  cycles(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned cycles."""
-    filter: CycleFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CycleConnection!
-
-  """Whether the team uses cycles."""
-  cyclesEnabled: Boolean!
 
   """What to use as a default estimate for unestimated issues."""
   defaultIssueEstimate: Float!
@@ -12992,9 +12345,6 @@ type Team implements Node {
   """Team's triage responsibility."""
   triageResponsibility: TriageResponsibility
 
-  """How many upcoming cycles to create."""
-  upcomingCycleCount: Float!
-
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
@@ -13089,27 +12439,6 @@ input TeamCreateInput {
   """The color of the team."""
   color: String
 
-  """The cooldown time after each cycle in weeks."""
-  cycleCooldownTime: Int
-
-  """The duration of each cycle in weeks."""
-  cycleDuration: Int
-
-  """Auto assign completed issues to current active cycle setting."""
-  cycleIssueAutoAssignCompleted: Boolean
-
-  """Auto assign started issues to current active cycle setting."""
-  cycleIssueAutoAssignStarted: Boolean
-
-  """Only allow issues issues with cycles in Active Issues."""
-  cycleLockToActive: Boolean
-
-  """The day of the week that a new cycle starts."""
-  cycleStartDay: Float
-
-  """Whether the team uses cycles."""
-  cyclesEnabled: Boolean
-
   """What to use as an default estimate for unestimated issues."""
   defaultIssueEstimate: Float
 
@@ -13190,8 +12519,6 @@ input TeamCreateInput {
   """Whether triage mode is enabled for the team."""
   triageEnabled: Boolean
 
-  """How many upcoming cycles to create."""
-  upcomingCycleCount: Float
 }
 
 type TeamEdge {
@@ -13367,30 +12694,6 @@ input TeamUpdateInput {
   """The color of the team."""
   color: String
 
-  """The cooldown time after each cycle in weeks."""
-  cycleCooldownTime: Int
-
-  """The duration of each cycle in weeks."""
-  cycleDuration: Int
-
-  """The date to begin cycles on."""
-  cycleEnabledStartDate: DateTime
-
-  """Auto assign completed issues to current active cycle setting."""
-  cycleIssueAutoAssignCompleted: Boolean
-
-  """Auto assign started issues to current active cycle setting."""
-  cycleIssueAutoAssignStarted: Boolean
-
-  """Only allow issues with cycles in Active Issues."""
-  cycleLockToActive: Boolean
-
-  """The day of the week that a new cycle starts."""
-  cycleStartDay: Float
-
-  """Whether the team uses cycles."""
-  cyclesEnabled: Boolean
-
   """What to use as an default estimate for unestimated issues."""
   defaultIssueEstimate: Float
 
@@ -13469,8 +12772,6 @@ input TeamUpdateInput {
   """Whether triage mode is enabled for the team."""
   triageEnabled: Boolean
 
-  """How many upcoming cycles to create."""
-  upcomingCycleCount: Float
 }
 
 """A time schedule."""
@@ -14181,7 +13482,6 @@ enum UserFlagType {
   canPlayTetris
   commandMenuClearShortcutTip
   completedOnboarding
-  cycleWelcomeDismissed
   desktopDownloadToastDismissed
   desktopInstalled
   desktopTabsOnboardingDismissed
@@ -14214,7 +13514,6 @@ enum UserFlagType {
   teamsPageIntroductionDismissed
   threadedCommentsNudgeIsSeen
   triageWelcomeDismissed
-  tryCyclesDismissed
   tryGithubDismissed
   tryInvitePeopleDismissed
   tryRoadmapsDismissed
