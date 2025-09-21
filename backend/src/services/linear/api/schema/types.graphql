@@ -12154,8 +12154,6 @@ type UploadPayload {
 
 """A user that has access to the the resources of an organization."""
 type User implements Node {
-  """Whether the user account is active or disabled (suspended)."""
-  active: Boolean!
 
   """Whether the user is an organization administrator."""
   admin: Boolean!
@@ -12275,10 +12273,6 @@ type User implements Node {
 
   """The unique identifier of the entity."""
   id: ID!
-
-
-  """The initials of the user."""
-  initials: String!
 
   """Whether the user is assignable."""
   isAssignable: Boolean!
@@ -12526,8 +12520,6 @@ type UserPayload {
 """The different permission roles available to users on an organization."""
 enum UserRoleType {
   admin
-  app
-  guest
   user
 }
 
