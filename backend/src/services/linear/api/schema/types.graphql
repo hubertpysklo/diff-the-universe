@@ -5935,9 +5935,6 @@ type Organization implements Node {
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
 
-  """Allowed file upload content types"""
-  allowedFileUploadContentTypes: [String!]
-
   """
   The time at which the entity was archived. Null if the entity has not been archived.
   """
@@ -5948,21 +5945,6 @@ type Organization implements Node {
 
   """Number of issues in the organization."""
   createdIssueCount: Int!
-
-  """Default schedule for how often feed summaries are generated."""
-  defaultFeedSummarySchedule: FeedSummarySchedule
-
-  """The time at which deletion of the organization was requested."""
-  deletionRequestedAt: DateTime
-
-  """Whether the organization has enabled the feed feature."""
-  feedEnabled: Boolean!
-
-  """The month at which the fiscal year starts. Defaults to January (0)."""
-  fiscalYearStartMonth: Float!
-
-  """Whether HIPAA compliance is enabled for organization."""
-  hipaaComplianceEnabled: Boolean!
 
   """The unique identifier of the entity."""
   id: ID!
@@ -6083,9 +6065,6 @@ type Organization implements Node {
   """Whether team creation is restricted to admins."""
   restrictTeamCreationToAdmins: Boolean
 
-  """Whether the organization is using a roadmap."""
-  roadmapEnabled: Boolean!
-
   """Teams associated with the organization."""
   teams(
     """A cursor to be used with first for forward pagination"""
@@ -6165,8 +6144,6 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): UserConnection!
 
-  """[Internal] The list of working days. Sunday is 0, Monday is 1, etc."""
-  workingDays: [Float!]!
 }
 
 type OrganizationAcceptedOrExpiredInviteDetailsPayload {
@@ -12242,9 +12219,6 @@ type User implements Node {
   """Whether the user is an organization administrator."""
   admin: Boolean!
 
-  """Whether the user is an app."""
-  app: Boolean!
-
   """
   The time at which the entity was archived. Null if the entity has not been archived.
   """
@@ -12279,15 +12253,6 @@ type User implements Node {
     """
     orderBy: PaginationOrderBy
   ): IssueConnection!
-
-  """The background color of the avatar for users without set avatar."""
-  avatarBackgroundColor: String!
-
-  """An URL to the user's avatar image."""
-  avatarUrl: String
-
-  """[DEPRECATED] Hash for the user to be used in calendar URLs."""
-  calendarHash: String
 
   """Whether this user can access any public team in the organization."""
   canAccessAnyPublicTeam: Boolean!
@@ -12361,18 +12326,11 @@ type User implements Node {
   """A short description of the user, either its title or bio."""
   description: String
 
-  """Reason why is the account disabled."""
-  disableReason: String
-
   """The user's display (nick) name. Unique within each organization."""
   displayName: String!
 
   """The user's email address."""
   email: String!
-  """
-  Whether the user is a guest in the workspace and limited to accessing a subset of teams.
-  """
-  guest: Boolean!
 
   """The unique identifier of the entity."""
   id: ID!
@@ -12380,9 +12338,6 @@ type User implements Node {
 
   """The initials of the user."""
   initials: String!
-
-  """[DEPRECATED] Unique hash for the user to be used in invite URLs."""
-  inviteHash: String! @deprecated(reason: "This hash is not in use anymore, this value will always be empty.")
 
   """Whether the user is assignable."""
   isAssignable: Boolean!
@@ -12393,17 +12348,11 @@ type User implements Node {
   """Whether the user is mentionable."""
   isMentionable: Boolean!
 
-  """The last time the user was seen online."""
-  lastSeen: DateTime
-
   """The user's full name."""
   name: String!
 
   """Organization the user belongs to."""
   organization: Organization!
-
-  """The emoji to represent the user current status."""
-  statusEmoji: String
 
   """The label of the user current status."""
   statusLabel: String
@@ -12499,9 +12448,6 @@ input UserCollectionFilter {
   """Compound filters, all of which need to be matched by the user."""
   and: [UserCollectionFilter!]
 
-  """Comparator for the user's app status."""
-  app: BooleanComparator
-
   """Filters that the users assigned issues must satisfy."""
   assignedIssues: IssueCollectionFilter
 
@@ -12553,10 +12499,6 @@ type UserConnection {
   pageInfo: PageInfo!
 }
 
-enum UserContextViewType {
-  assigned
-}
-
 """User display name sorting options."""
 input UserDisplayNameSort {
   """Whether nulls should be sorted first or last"""
@@ -12582,9 +12524,6 @@ input UserFilter {
 
   """Compound filters, all of which need to be matched by the user."""
   and: [UserFilter!]
-
-  """Comparator for the user's app status."""
-  app: BooleanComparator
 
   """Filters that the users assigned issues must satisfy."""
   assignedIssues: IssueCollectionFilter
@@ -12622,59 +12561,6 @@ input UserFilter {
   updatedAt: DateComparator
 }
 
-"""The types of flags that the user can have."""
-enum UserFlagType {
-  all
-  analyticsWelcomeDismissed
-  canPlaySnake
-  canPlayTetris
-  commandMenuClearShortcutTip
-  completedOnboarding
-  desktopDownloadToastDismissed
-  desktopInstalled
-  desktopTabsOnboardingDismissed
-  dueDateShortcutMigration
-  editorSlashCommandUsed
-  emptyActiveIssuesDismissed
-  emptyBacklogDismissed
-  emptyCustomViewsDismissed
-  emptyMyIssuesDismissed
-  emptyParagraphSlashCommandTip
-  figmaPluginBannerDismissed
-  figmaPromptDismissed
-  helpIslandFeatureInsightsDismissed
-  importBannerDismissed
-  initiativesBannerDismissed
-  insightsHelpDismissed
-  insightsWelcomeDismissed
-  issueLabelSuggestionUsed
-  issueMovePromptCompleted
-  joinTeamIntroductionDismissed
-  listSelectionTip
-  migrateThemePreference
-  milestoneOnboardingIsSeenAndDismissed
-  projectBacklogWelcomeDismissed
-  projectBoardOnboardingIsSeenAndDismissed
-  projectUpdatesWelcomeDismissed
-  projectWelcomeDismissed
-  pulseWelcomeDismissed
-  rewindBannerDismissed
-  teamsPageIntroductionDismissed
-  threadedCommentsNudgeIsSeen
-  triageWelcomeDismissed
-  tryGithubDismissed
-  tryInvitePeopleDismissed
-  tryRoadmapsDismissed
-  tryTriageDismissed
-}
-
-"""Operations that can be applied to UserFlagType."""
-enum UserFlagUpdateOperation {
-  clear
-  decr
-  incr
-  lock
-}
 
 """User name sorting options."""
 input UserNameSort {
@@ -12714,8 +12600,6 @@ input UserSortInput {
 }
 
 input UserUpdateInput {
-  """The avatar image URL of the user."""
-  avatarUrl: String
 
   """The user description or a short bio."""
   description: String
@@ -12725,9 +12609,6 @@ input UserUpdateInput {
 
   """The name of the user."""
   name: String
-
-  """The emoji part of the user status."""
-  statusEmoji: String
 
   """The label part of the user status."""
   statusLabel: String
