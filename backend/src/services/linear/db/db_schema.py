@@ -32,7 +32,6 @@ class Team(LinearBase):
         ForeignKey("organizations.organization_id")
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    key: Mapped[str] = mapped_column(String(10), nullable=False)  # e.g., "ENG"
     description: Mapped[str | None] = mapped_column(Text)
     color: Mapped[str | None] = mapped_column(String(7))  # HEX color
     icon: Mapped[str | None] = mapped_column(String(50))
@@ -45,7 +44,6 @@ class Team(LinearBase):
     key: Mapped[str] = mapped_column(String(10), nullable=False)  # e.g., "ENG"
     join_by_default: Mapped[bool] = mapped_column(Boolean, default=True)
     is_private: Mapped[bool] = mapped_column(Boolean, default=False)
-    timezone: Mapped[str] = mapped_column(String(100), default="America/Los_Angeles")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
@@ -58,10 +56,13 @@ class User(LinearBase):
     )
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    avatar_url: Mapped[str | None] = mapped_column(String(255))
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
-    admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime)
+    can_access_any_public_team: Mapped[bool] = mapped_column(Boolean, default=False)
+    url: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
