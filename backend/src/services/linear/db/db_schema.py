@@ -25,25 +25,29 @@ class Organization(LinearBase):
 
 class Team(LinearBase):
     __tablename__ = "teams"
-    team_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    organization_id: Mapped[int] = mapped_column(
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organizationId: Mapped[int] = mapped_column(
         ForeignKey("organizations.organization_id")
-    )
+    )  # Used ID instead of name for foreign key
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
-    color: Mapped[str | None] = mapped_column(String(7))  # HEX color
-    icon: Mapped[str | None] = mapped_column(String(50))
+    displayName: Mapped[str] = mapped_column(String(100), nullable=False)
     private: Mapped[bool] = mapped_column(Boolean, default=False)
-    archived_at: Mapped[datetime | None] = mapped_column(DateTime)
-    default_issue_state_id: Mapped[int] = mapped_column(
-        ForeignKey("workflow_states.state_id")
+    defaultIssueStateId: Mapped[int] = mapped_column(
+        ForeignKey(
+            "workflow_states.state_id"
+        )  # Used ID instead of name for foreign key
     )
-    invite_hash: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    key: Mapped[str] = mapped_column(String(10), nullable=False)  # e.g., "ENG"
-    join_by_default: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_private: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    inviteHash: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    key: Mapped[str] = mapped_column(
+        String(10), nullable=False
+    )  # e.g., "ENG" The team's unique key. The key is used in URLs.
+
+    joinByDefault: Mapped[bool] = mapped_column(Boolean, default=True)
+    isPrivate: Mapped[bool] = mapped_column(Boolean, default=False)
+    archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
 class User(LinearBase):
