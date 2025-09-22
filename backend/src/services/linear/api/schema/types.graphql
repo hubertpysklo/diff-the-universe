@@ -1586,7 +1586,6 @@ input InitiativeNameSort {
   order: PaginationSortOrder
 }
 
-
 """A relation representing the dependency between two initiatives."""
 type InitiativeRelation implements Node {
   """
