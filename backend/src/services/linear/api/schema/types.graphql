@@ -60,9 +60,6 @@ type Comment implements Node {
   """The time at which the entity was created."""
   createdAt: DateTime!
 
-  """The time user edited the comment."""
-  editedAt: DateTime
-
   """The unique identifier of the entity."""
   id: ID!
 
@@ -75,25 +72,8 @@ type Comment implements Node {
   """The parent comment under which the current comment is nested."""
   parent: Comment
 
-  """The post that the comment is associated with."""
-  post: Post
-
   """The project update that the comment is associated with."""
   projectUpdate: ProjectUpdate
-
-  """
-  The text that this comment references. Only defined for inline comments.
-  """
-  quotedText: String
-
-  """The time the resolvingUser resolved the thread."""
-  resolvedAt: DateTime
-
-  """The comment that resolved the thread."""
-  resolvingComment: Comment
-
-  """The user that resolved the thread."""
-  resolvingUser: User
 
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
@@ -184,21 +164,8 @@ input CommentCreateInput {
   """The parent comment under which to nest a current comment."""
   parentId: String
 
-  """The post to associate the comment with."""
-  postId: String
-
   """The project update to associate the comment with."""
   projectUpdateId: String
-
-  """
-  The text that this comment references. Only defined for inline comments.
-  """
-  quotedText: String
-
-  """
-  [INTERNAL] The identifiers of the users subscribing to this comment thread.
-  """
-  subscriberIds: [String!]
 }
 
 type CommentEdge {
@@ -254,20 +221,6 @@ type CommentPayload {
 input CommentUpdateInput {
   """The comment content."""
   body: String
-
-  """
-  The text that this comment references. Only defined for inline comments.
-  """
-  quotedText: String
-
-  """[INTERNAL] The child comment that resolves this thread."""
-  resolvingCommentId: String
-
-  """[INTERNAL] The user who resolved this thread."""
-  resolvingUserId: String
-
-  """[INTERNAL] The identifiers of the users subscribing to this comment."""
-  subscriberIds: [String!]
 }
 
 """Issue completion date sorting options."""
@@ -2276,12 +2229,8 @@ type IssueLabel implements Node {
     orderBy: PaginationOrderBy
   ): IssueConnection!
 
-  """The date when the label was last applied to an issue or project."""
-  lastAppliedAt: DateTime
-
   """The label's name."""
   name: String!
-  organization: Organization! @deprecated(reason: "Workspace labels are identified by their team being null.")
 
   """The parent label."""
   parent: IssueLabel
@@ -5382,9 +5331,6 @@ type Project implements Node {
 
   """The estimated completion date of the project."""
   targetDate: TimelessDate
-
-  """The resolution of the project's estimated completion date."""
-  targetDateResolution: DateResolutionType
 
   """Teams associated with this project."""
   teams(

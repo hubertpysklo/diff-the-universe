@@ -122,9 +122,9 @@ class Project(LinearBase):
     url: Mapped[str] = mapped_column(String(255), nullable=False)
     creatorId: Mapped[int] = mapped_column(ForeignKey("users.id"))
     leadId: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
-
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
     priority: Mapped[int] = mapped_column(Integer, default=0)
     labelIds: Mapped[list[str]] = mapped_column(JSONB)
     slugId: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
@@ -143,58 +143,51 @@ class Project(LinearBase):
 
 class Comment(LinearBase):
     __tablename__ = "comments"
-    comment_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    issue_id: Mapped[int] = mapped_column(ForeignKey("issues.issue_id"))
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"))
-    parent_id: Mapped[int | None] = mapped_column(ForeignKey("comments.comment_id"))
-
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    issueId: Mapped[int | None] = mapped_column(ForeignKey("issues.id"))
+    url: Mapped[str] = mapped_column(String(255), nullable=False)
+    userId: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    parentId: Mapped[int | None] = mapped_column(ForeignKey("comments.id"))
+    projectUpdateId: Mapped[int | None] = mapped_column(
+        ForeignKey("project_updates.id")
+    )
+    initiativeUpdateId: Mapped[int | None] = mapped_column(
+        ForeignKey("initiative_updates.id")
+    )
     body: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    edited_at: Mapped[datetime | None] = mapped_column(DateTime)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
 
 
 class Label(LinearBase):
     __tablename__ = "labels"
-    label_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    team_id: Mapped[int | None] = mapped_column(
-        ForeignKey("teams.team_id")
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    teamId: Mapped[int | None] = mapped_column(
+        ForeignKey("teams.id")
     )  # Null for workspace labels
-    creator_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"))
-    parent_id: Mapped[int | None] = mapped_column(ForeignKey("labels.label_id"))
-
+    creatorId: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    parentId: Mapped[int | None] = mapped_column(ForeignKey("labels.id"))
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
-    color: Mapped[str] = mapped_column(String(7), nullable=False)
-    is_group: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-
-
-class IssueLabel(LinearBase):
-    __tablename__ = "issue_labels"
-    issue_id: Mapped[int] = mapped_column(
-        ForeignKey("issues.issue_id"), primary_key=True
-    )
-    label_id: Mapped[int] = mapped_column(
-        ForeignKey("labels.label_id"), primary_key=True
-    )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
 
 
 class WorkflowState(LinearBase):
     __tablename__ = "workflow_states"
-    state_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    team_id: Mapped[int] = mapped_column(ForeignKey("teams.team_id"))
-
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    teamId: Mapped[int] = mapped_column(ForeignKey("teams.id"))
+    inheritedFromId: Mapped[int | None] = mapped_column(
+        ForeignKey("workflow_states.id")
+    )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
-    color: Mapped[str] = mapped_column(String(7), nullable=False)
     type: Mapped[str] = mapped_column(
         String(20), nullable=False
-    )  # triage, backlog, unstarted, started, completed, canceled
+    )  # Backlog, Todo, In Progress, In Review, Done, Canceled, Duplicate
     position: Mapped[float] = mapped_column(Float, nullable=False)
-
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
