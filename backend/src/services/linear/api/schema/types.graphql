@@ -18,35 +18,6 @@ input BooleanComparator {
 
 """A comment associated with an issue."""
 type Comment implements Node {
-  """Agent session associated with this comment."""
-  agentSession: AgentSession
-
-  """[Internal] Agent sessions associated with this comment."""
-  agentSessions(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AgentSessionConnection!
 
   """
   The time at which the entity was archived. Null if the entity has not been archived.
@@ -2390,8 +2361,6 @@ input IssueCollectionFilter {
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
 
-  """Filters that the issue's delegated agent must satisfy."""
-  delegate: NullableUserFilter
 
   """Comparator for the issues description."""
   description: NullableStringComparator
@@ -2512,8 +2481,6 @@ input IssueCreateInput {
   """
   createdAt: DateTime
 
-  """The identifier of the agent user to delegate the issue to."""
-  delegateId: String
 
   """The issue description in markdown format."""
   description: String
@@ -2627,9 +2594,6 @@ input IssueFilter {
 
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
-
-  """Filters that the issue's delegated agent must satisfy."""
-  delegate: NullableUserFilter
 
   """Comparator for the issues description."""
   description: NullableStringComparator
@@ -4775,9 +4739,6 @@ input NullableIssueFilter {
 
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
-
-  """Filters that the issue's delegated agent must satisfy."""
-  delegate: NullableUserFilter
 
   """Comparator for the issues description."""
   description: NullableStringComparator
