@@ -10645,42 +10645,14 @@ input TargetDateSort {
 
 """An organizational unit that contains issues."""
 type Team implements Node {
-  """Whether to enable resolved thread AI summaries."""
-  aiThreadSummariesEnabled: Boolean!
 
   """
   The time at which the entity was archived. Null if the entity has not been archived.
   """
   archivedAt: DateTime
 
-  """
-  Whether child issues should automatically close when their parent issue is closed
-  """
-  autoCloseChildIssues: Boolean
-
-  """
-  Whether parent issues should automatically close when all child issues are closed
-  """
-  autoCloseParentIssues: Boolean
-
-  """
-  Period after which issues are automatically closed in months. Null/undefined means disabled.
-  """
-  autoClosePeriod: Float
-
-  """
-  The canceled workflow state which auto closed issues will be set to. Defaults to the first canceled state.
-  """
-  autoCloseStateId: Strings
-
   """The time at which the entity was created."""
   createdAt: DateTime!
-
-  """[Internal] The current progress of the team."""
-  currentProgress: JSONObject!
-
-  """What to use as a default estimate for unestimated issues."""
-  defaultIssueEstimate: Float!
 
   """
   The default workflow state into which issues are set when they are opened by team members.
@@ -10693,10 +10665,6 @@ type Team implements Node {
   """The name of the team including its parent team name if it has one."""
   displayName: String!
 
-
-  """Whether to group recent issue history entries."""
-  groupIssueHistory: Boolean!
-
   """The unique identifier of the entity."""
   id: ID!
 
@@ -10708,18 +10676,6 @@ type Team implements Node {
     """Include archived issues in the count."""
     includeArchived: Boolean = false
   ): Int!
-
-  """Whether to allow zeros in issues estimates."""
-  issueEstimationAllowZero: Boolean!
-
-  """Whether to add additional points to the estimate scale."""
-  issueEstimationExtended: Boolean!
-
-  """
-  The issue estimation type to use. Must be one of "notUsed", "exponential", "fibonacci", "linear", "tShirt".
-  """
-  issueEstimationType: String!
-
 
   """Issues associated with the team."""
   issues(
@@ -10864,14 +10820,8 @@ type Team implements Node {
   """The organization that the team is associated with."""
   organization: Organization!
 
-  """[Internal] The team's parent team."""
-  parent: Team
-
   """Whether the team is private or not."""
   private: Boolean!
-
-  """[Internal] The progress history of the team."""
-  progressHistory: JSONObject!
 
   """Projects associated with the team."""
   projects(
@@ -10944,33 +10894,6 @@ type Team implements Node {
       been updated after creation.
   """
   updatedAt: DateTime!
-
-  """Webhooks associated with the team."""
-  webhooks(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): WebhookConnection!
 }
 
 """A generic payload return from entity archive mutations."""
@@ -11019,65 +10942,13 @@ type TeamConnection {
 }
 
 input TeamCreateInput {
-  """
-  Period after which closed and completed issues are automatically archived, in months. 0 means disabled.
-  """
-  autoArchivePeriod: Float
-
-  """Period after which issues are automatically closed, in months."""
-  autoClosePeriod: Float
-
-  """The canceled workflow state which auto closed issues will be set to."""
-  autoCloseStateId: String
-
-  """The color of the team."""
-  color: String
-
-  """What to use as an default estimate for unestimated issues."""
-  defaultIssueEstimate: Float
-
   """The description of the team."""
   description: String
-
-  """Whether to group recent issue history entries."""
-  groupIssueHistory: Boolean
-
-  """The icon of the team."""
-  icon: String
 
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
   """
   id: String
-
-  """
-  Whether the team should inherit estimation settings from its parent. Only applies to sub-teams.
-  """
-  inheritIssueEstimation: Boolean
-
-  """
-  [Internal] Whether the team should inherit its product intelligence scope from its parent. Only applies to sub-teams.
-  """
-  inheritProductIntelligenceScope: Boolean
-
-  """
-  [Internal] Whether the team should inherit workflow statuses from its parent.
-  """
-  inheritWorkflowStatuses: Boolean
-
-  """Whether to allow zeros in issues estimates."""
-  issueEstimationAllowZero: Boolean
-
-  """Whether to add additional points to the estimate scale."""
-  issueEstimationExtended: Boolean
-
-  """
-  The issue estimation type to use. Must be one of "notUsed", "exponential", "fibonacci", "linear", "tShirt".
-  """
-  issueEstimationType: String
-
-  """[DEPRECATED] Whether issues without priority should be sorted first."""
-  issueOrderingNoPriorityFirst: Boolean @deprecated(reason: "This setting is no longer in use.")
 
   """
   The key of the team. If not given, the key will be generated based on the name of the team.
@@ -11143,9 +11014,6 @@ input TeamFilter {
 
   """Compound filters, one of which need to be matched by the team."""
   or: [TeamFilter!]
-
-  """Filters that the teams parent must satisfy."""
-  parent: NullableTeamFilter
 
   """Comparator for the team privacy."""
   private: BooleanComparator
