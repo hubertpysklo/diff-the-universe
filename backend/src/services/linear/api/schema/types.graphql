@@ -356,9 +356,6 @@ input CreateOrganizationInput {
   """The name of the organization."""
   name: String!
 
-  """The timezone of the organization, passed in by client."""
-  timezone: String
-
   """The URL key of the organization."""
   urlKey: String!
 
@@ -5036,37 +5033,6 @@ type Mutation {
     mapping: InheritanceEntityMapping
   ): TeamPayload!
 
-  """Creates a new time schedule."""
-  timeScheduleCreate(
-    """The properties of the time schedule to create."""
-    input: TimeScheduleCreateInput!
-  ): TimeSchedulePayload!
-
-  """Deletes a time schedule."""
-  timeScheduleDelete(
-    """The identifier of the time schedule to delete."""
-    id: String!
-  ): DeletePayload!
-
-
-  """Updates a time schedule."""
-  timeScheduleUpdate(
-    """The identifier of the time schedule to update."""
-    id: String!
-
-    """The properties of the time schedule to update."""
-    input: TimeScheduleUpdateInput!
-  ): TimeSchedulePayload!
-
-  """Upsert an external time schedule."""
-  timeScheduleUpsertExternal(
-    """The unique identifier of the external schedule."""
-    externalId: String!
-
-    """The properties of the time schedule to insert or update."""
-    input: TimeScheduleUpdateInput!
-  ): TimeSchedulePayload!
-
   """Creates a new triage responsibility."""
   triageResponsibilityCreate(
     """The properties of the triage responsibility to create."""
@@ -6343,9 +6309,6 @@ input OrganizationUpdateInput {
 
   """Allowed file upload content types."""
   allowedFileUploadContentTypes: [String!]
-
-  """Default schedule for how often feed summaries are generated."""
-  defaultFeedSummarySchedule: FeedSummarySchedule
 
   """Whether the organization has enabled the feed feature."""
   feedEnabled: Boolean
@@ -10176,40 +10139,6 @@ type Query {
     orderBy: PaginationOrderBy
   ): TeamConnection!
 
-
-  """A specific time schedule."""
-  timeSchedule(
-    """The identifier of the time schedule to retrieve."""
-    id: String!
-  ): TimeSchedule!
-
-  """All time schedules."""
-  timeSchedules(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): TimeScheduleConnection!
-
   """All triage responsibilities."""
   triageResponsibilities(
     """A cursor to be used with first for forward pagination"""
@@ -11408,10 +11337,6 @@ type Team implements Node {
   ): WorkflowStateConnection!
 
   """
-  The timezone of the team. Defaults to "America/Los_Angeles"
-  """
-  timezone: String!
-  """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
   """
@@ -11578,9 +11503,6 @@ input TeamCreateInput {
 
   """Whether to move issues to bottom of the column when changing state."""
   setIssueSortOrderOnStateChange: String
-
-  """The timezone of the team."""
-  timezone: String
 
   """Whether triage mode is enabled for the team."""
   triageEnabled: Boolean
@@ -11832,137 +11754,9 @@ input TeamUpdateInput {
   """Whether to move issues to bottom of the column when changing state."""
   setIssueSortOrderOnStateChange: String
 
-  """The timezone of the team."""
-  timezone: String
-
   """Whether triage mode is enabled for the team."""
   triageEnabled: Boolean
 
-}
-
-"""A time schedule."""
-type TimeSchedule implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The schedule entries."""
-  entries: [TimeScheduleEntry!]
-
-  """The identifier of the external schedule."""
-  externalId: String
-
-  """The URL to the external schedule."""
-  externalUrl: String
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The name of the schedule."""
-  name: String!
-
-  """The organization of the schedule."""
-  organization: Organization!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-type TimeScheduleConnection {
-  edges: [TimeScheduleEdge!]!
-  nodes: [TimeSchedule!]!
-  pageInfo: PageInfo!
-}
-
-input TimeScheduleCreateInput {
-  """The schedule entries."""
-  entries: [TimeScheduleEntryInput!]!
-
-  """The unique identifier of the external schedule."""
-  externalId: String
-
-  """The URL to the external schedule."""
-  externalUrl: String
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The name of the schedule."""
-  name: String!
-}
-
-type TimeScheduleEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: TimeSchedule!
-}
-
-type TimeScheduleEntry {
-  """The end date of the schedule in ISO 8601 date-time format."""
-  endsAt: DateTime!
-
-  """The start date of the schedule in ISO 8601 date-time format."""
-  startsAt: DateTime!
-
-  """
-  The email, name or reference to the user on schedule. This is used in case the external user could not be mapped to a Linear user id.
-  """
-  userEmail: String
-
-  """
-  The Linear user id of the user on schedule. If the user cannot be mapped to a Linear user then `userEmail` can be used as a reference.
-  """
-  userId: String
-}
-
-input TimeScheduleEntryInput {
-  """The end date of the schedule in ISO 8601 date-time format."""
-  endsAt: DateTime!
-
-  """The start date of the schedule in ISO 8601 date-time format."""
-  startsAt: DateTime!
-
-  """
-  The email, name or reference to the user on schedule. This is used in case the external user could not be mapped to a Linear user id.
-  """
-  userEmail: String
-
-  """
-  The Linear user id of the user on schedule. If the user cannot be mapped to a Linear user then `userEmail` can be used as a reference.
-  """
-  userId: String
-}
-
-type TimeSchedulePayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-  timeSchedule: TimeSchedule!
-}
-
-input TimeScheduleUpdateInput {
-  """The schedule entries."""
-  entries: [TimeScheduleEntryInput!]
-
-  """The unique identifier of the external schedule."""
-  externalId: String
-
-  """The URL to the external schedule."""
-  externalUrl: String
-
-  """The name of the schedule."""
-  name: String
 }
 
 """
@@ -12009,9 +11803,6 @@ type TriageResponsibility implements Node {
   """The team to which the triage responsibility belongs to."""
   team: Team!
 
-  """The time schedule used for scheduling."""
-  timeSchedule: TimeSchedule
-
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
@@ -12046,10 +11837,6 @@ input TriageResponsibilityCreateInput {
   """The identifier of the team associated with the triage responsibility."""
   teamId: String!
 
-  """
-  The identifier of the time schedule used for scheduling triage responsibility
-  """
-  timeScheduleId: String
 }
 
 type TriageResponsibilityEdge {
@@ -12095,10 +11882,6 @@ input TriageResponsibilityUpdateInput {
   """The manual selection of users responsible for triage."""
   manualSelection: TriageResponsibilityManualSelectionInput
 
-  """
-  The identifier of the time schedule used for scheduling triage responsibility.
-  """
-  timeScheduleId: String
 }
 
 """A universally unique identifier as specified by RFC 4122."""
@@ -12354,9 +12137,6 @@ type User implements Node {
     orderBy: PaginationOrderBy
   ): TeamConnection!
 
-  """The local timezone of the user."""
-  timezone: String
-
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
@@ -12548,9 +12328,6 @@ input UserUpdateInput {
 
   """When the user status should be cleared."""
   statusUntilAt: DateTime
-
-  """The local timezone of the user."""
-  timezone: String
 }
 
 
