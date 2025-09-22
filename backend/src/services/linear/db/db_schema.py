@@ -52,21 +52,27 @@ class Team(LinearBase):
 
 class User(LinearBase):
     __tablename__ = "users"
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    organization_id: Mapped[int] = mapped_column(
-        ForeignKey("organizations.organization_id")
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organizationId: Mapped[int] = mapped_column(
+        ForeignKey(
+            "organizations.organization_id"
+        )  # Used ID instead of name for foreign key
     )
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
-    display_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    displayName: Mapped[str] = mapped_column(String(100), nullable=False)
+    isAdmin: Mapped[bool] = mapped_column(
+        Boolean, default=False
+    )  # used isAdmin instead of admin
     active: Mapped[bool] = mapped_column(Boolean, default=True)
-    archived_at: Mapped[datetime | None] = mapped_column(DateTime)
-    can_access_any_public_team: Mapped[bool] = mapped_column(Boolean, default=False)
-    url: Mapped[str] = mapped_column(String(255), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    canAccessAnyPublicTeam: Mapped[bool] = mapped_column(Boolean, default=False)
+    isAssignable: Mapped[bool] = mapped_column(Boolean, default=True)
+    isMentionable: Mapped[bool] = mapped_column(Boolean, default=True)
+    url: Mapped[str] = mapped_column(String(255), nullable=False)  # User's profile URL.
+    archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
 class Issue(LinearBase):
