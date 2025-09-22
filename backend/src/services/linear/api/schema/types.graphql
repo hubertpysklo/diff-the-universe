@@ -2049,8 +2049,6 @@ input InitiativeUpdatedAtSort {
 
 """An issue."""
 type Issue implements Node {
-  """[Internal] The activity summary information for this issue."""
-  activitySummary: JSONObject
 
   """The time at which the issue was added to a project."""
   addedToProjectAt: DateTime
@@ -2063,37 +2061,8 @@ type Issue implements Node {
   """
   archivedAt: DateTime
 
-  """
-  The external user who requested creation of the Asks issue on behalf of the creator.
-  """
-  asksExternalUserRequester: ExternalUser
-
-  """
-  The internal user who requested creation of the Asks issue on behalf of the creator.
-  """
-  asksRequester: User
-
   """The user to whom the issue is assigned to."""
   assignee: User
-
-  """
-  The time at which the issue was automatically archived by the auto pruning process.
-  """
-  autoArchivedAt: DateTime
-
-  """
-  The time at which the issue was automatically closed by the auto pruning process.
-  """
-  autoClosedAt: DateTime
-
-  """The order of the item in its column on the board."""
-  boardOrder: Float! @deprecated(reason: "Will be removed in near future, please use `sortOrder` instead")
-
-  """The bot that created the issue, if applicable."""
-  botActor: ActorBot
-
-  """Suggested branch name for the issue."""
-  branchName: String!
 
   """The time at which the issue was moved into canceled state."""
   canceledAt: DateTime
@@ -2173,17 +2142,8 @@ type Issue implements Node {
   """The issue's description in markdown format."""
   description: String
 
-  """[Internal] The issue's description content as YJS state."""
-  descriptionState: String
-
   """The date at which the issue is due."""
   dueDate: TimelessDate
-
-  """The estimate of the complexity of the issue.."""
-  estimate: Float
-
-  """The external user who created the issue."""
-  externalUserCreator: ExternalUser
 
   """History entries associated with the issue."""
   history(
@@ -2375,42 +2335,6 @@ type Issue implements Node {
   """
   subIssueSortOrder: Float
 
-  """Users who are subscribed to the issue."""
-  subscribers(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned subscribers."""
-    filter: UserFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """Should query return disabled/suspended users (default: false)."""
-    includeDisabled: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): UserConnection!
-
-  """The external services the issue is synced with."""
-  syncedWith: [ExternalEntityInfo!]
-
   """The team that the issue is associated with."""
   team: Team!
 
@@ -2477,12 +2401,6 @@ input IssueCollectionFilter {
   """Filters that the issues assignee must satisfy."""
   assignee: NullableUserFilter
 
-  """Comparator for the issues auto archived at date."""
-  autoArchivedAt: NullableDateComparator
-
-  """Comparator for the issues auto closed at date."""
-  autoClosedAt: NullableDateComparator
-
   """Comparator for the issues canceled at date."""
   canceledAt: NullableDateComparator
 
@@ -2510,9 +2428,6 @@ input IssueCollectionFilter {
   """Comparator for the issues due date."""
   dueDate: NullableTimelessDateComparator
 
-  """Comparator for the issues estimate."""
-  estimate: EstimateComparator
-
   """Filters that needs to be matched by all issues."""
   every: IssueFilter
 
@@ -2527,31 +2442,6 @@ input IssueCollectionFilter {
 
   """Comparator for filtering issues with relations."""
   hasRelatedRelations: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested assignees.
-  """
-  hasSuggestedAssignees: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested labels.
-  """
-  hasSuggestedLabels: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested projects.
-  """
-  hasSuggestedProjects: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested related issues.
-  """
-  hasSuggestedRelatedIssues: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested similar issues.
-  """
-  hasSuggestedSimilarIssues: RelationExistsComparator
 
   """Comparator for the identifier."""
   id: IDComparator
@@ -2586,9 +2476,6 @@ input IssueCollectionFilter {
   """Filters that the issues project milestone must satisfy."""
   projectMilestone: NullableProjectMilestoneFilter
 
-  """[Internal] Comparator for the issues content."""
-  searchableContent: ContentComparator
-
   """Comparator for the issues sla status."""
   slaStatus: SlaStatusComparator
 
@@ -2609,9 +2496,6 @@ input IssueCollectionFilter {
 
   """Filters that the issues state must satisfy."""
   state: WorkflowStateFilter
-
-  """Filters that issue subscribers must satisfy."""
-  subscribers: UserCollectionFilter
 
   """Filters that the issues team must satisfy."""
   team: TeamFilter
@@ -2663,14 +2547,6 @@ input IssueCreateInput {
   """The issue description in markdown format."""
   description: String
 
-  """[Internal] The issue description as a Prosemirror document."""
-  descriptionData: JSON
-
-  """
-  Provide an external user avatar URL. Can only be used in conjunction with the `createAsUser` options. This option is only available to OAuth applications creating comments in `actor=app` mode.
-  """
-  displayIconUrl: String
-
   """The date at which the issue is due."""
   dueDate: TimelessDate
 
@@ -2714,14 +2590,6 @@ input IssueCreateInput {
   [Internal] The timestamp at which an issue will be considered in breach of SLA.
   """
   slaBreachesAt: DateTime
-
-  """[Internal] The timestamp at which the issue's SLA was started."""
-  slaStartedAt: DateTime
-
-  """
-  The SLA day count type for the issue. Whether SLA should be business days only or calendar days (default).
-  """
-  slaType: SLADayCountType
 
   """The position of the issue related to other issues."""
   sortOrder: Float
@@ -2771,12 +2639,6 @@ input IssueFilter {
   """Filters that the issues assignee must satisfy."""
   assignee: NullableUserFilter
 
-  """Comparator for the issues auto archived at date."""
-  autoArchivedAt: NullableDateComparator
-
-  """Comparator for the issues auto closed at date."""
-  autoClosedAt: NullableDateComparator
-
   """Comparator for the issues canceled at date."""
   canceledAt: NullableDateComparator
 
@@ -2818,31 +2680,6 @@ input IssueFilter {
 
   """Comparator for filtering issues with relations."""
   hasRelatedRelations: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested assignees.
-  """
-  hasSuggestedAssignees: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested labels.
-  """
-  hasSuggestedLabels: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested projects.
-  """
-  hasSuggestedProjects: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested related issues.
-  """
-  hasSuggestedRelatedIssues: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested similar issues.
-  """
-  hasSuggestedSimilarIssues: RelationExistsComparator
 
   """Comparator for the identifier."""
   id: IDComparator
@@ -3156,62 +2993,6 @@ type IssueImport implements Node {
   updatedAt: DateTime!
 }
 
-type IssueImportCheckPayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type IssueImportDeletePayload {
-  """The import job that was deleted."""
-  issueImport: IssueImport
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-"""Whether a custom JQL query is valid or not"""
-type IssueImportJqlCheckPayload {
-  """
-  Returns an approximate number of issues matching the JQL query, if available
-  """
-  count: Float
-
-  """An error message returned by Jira when validating the JQL query."""
-  error: String
-
-  """
-  Returns true if the JQL query has been validated successfully, false otherwise
-  """
-  success: Boolean!
-}
-
-type IssueImportPayload {
-  """The import job that was created or updated."""
-  issueImport: IssueImport
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-"""Whether an issue import can be synced at the end of an import or not"""
-type IssueImportSyncCheckPayload {
-  """Returns true if the import can be synced, false otherwise"""
-  canSync: Boolean!
-
-  """An error message with a root cause of why the import cannot be synced"""
-  error: String
-}
-
-input IssueImportUpdateInput {
-  """The mapping configuration for the import."""
-  mapping: JSONObject!
-}
 
 """Labels that can be associated with issues."""
 type IssueLabel implements Node {
@@ -5833,8 +5614,6 @@ input NumberComparator {
 An organization. Organizations are root-level objects that contain user accounts and teams.
 """
 type Organization implements Node {
-  """[INTERNAL] Whether the organization has enabled the AI add-on."""
-  aiAddonEnabled: Boolean!
 
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
@@ -5852,20 +5631,6 @@ type Organization implements Node {
 
   """The unique identifier of the entity."""
   id: ID!
-
-  """
-  The n-weekly frequency at which to prompt for initiative updates. When not set, reminders are off.
-  """
-  initiativeUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which to prompt for initiative updates."""
-  initiativeUpdateRemindersDay: Day!
-
-  """The hour at which to prompt for initiative updates."""
-  initiativeUpdateRemindersHour: Float!
-
-  """IP restriction configurations."""
-  ipRestrictions: [OrganizationIpRestriction!]
 
   """Labels associated with the organization."""
   labels(
@@ -5897,16 +5662,8 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
 
-  """The organization's logo URL."""
-  logoUrl: String
-
   """The organization's name."""
   name: String!
-  
-  """
-  Previously used URL keys for the organization (last 3 are kept and redirected).
-  """
-  previousUrlKeys: [String!]!
 
   """Project labels associated with the organization."""
   projectLabels(
@@ -5940,23 +5697,6 @@ type Organization implements Node {
 
   """The organization's project statuses."""
   projectStatuses: [ProjectStatus!]!
-
-  """
-  The n-weekly frequency at which to prompt for project updates. When not set, reminders are off.
-  """
-  projectUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which to prompt for project updates."""
-  projectUpdateRemindersDay: Day!
-
-  """The hour at which to prompt for project updates."""
-  projectUpdateRemindersHour: Float!
-
-  """[DEPRECATED] The frequency at which to prompt for project updates."""
-  projectUpdatesReminderFrequency: ProjectUpdateReminderFrequency! @deprecated(reason: "Use organization.projectUpdatesReminderFrequencyInWeeks instead")
-
-  """The feature release channel the organization belongs to."""
-  releaseChannel: ReleaseChannel!
 
   """
   Whether workspace label creation, update, and deletion is restricted to admins.
@@ -5995,13 +5735,6 @@ type Organization implements Node {
     """
     orderBy: PaginationOrderBy
   ): TeamConnection!
-
-
-  """[ALPHA] Theme settings for the organization."""
-  themeSettings: JSONObject
-
-  """The time at which the trial will end."""
-  trialEndsAt: DateTime
 
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
@@ -6222,69 +5955,15 @@ type OrganizationPayload {
   success: Boolean!
 }
 
-input OrganizationStartTrialInput {
-  """The plan type to trial."""
-  planType: String!
-}
-
-type OrganizationStartTrialPayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
 input OrganizationUpdateInput {
-  """[INTERNAL] Whether the organization has enabled the AI add-on."""
-  aiAddonEnabled: Boolean
-
-  """[INTERNAL] Whether the organization has opted in to AI telemetry."""
-  aiTelemetryEnabled: Boolean
-
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
-
-  """Whether the organization has enabled the feed feature."""
-  feedEnabled: Boolean
-
-  """The month at which the fiscal year starts."""
-  fiscalYearStartMonth: Float
-
-
-  """
-  [ALPHA] The n-weekly frequency at which to prompt for initiative updates.
-  """
-  initiativeUpdateReminderFrequencyInWeeks: Float
-
-  """[ALPHA] The day at which initiative updates are sent."""
-  initiativeUpdateRemindersDay: Day
-
-  """[ALPHA] The hour at which initiative updates are sent."""
-  initiativeUpdateRemindersHour: Float
-
-  """
-  IP restriction configurations controlling allowed access the workspace.
-  """
-  ipRestrictions: [OrganizationIpRestrictionInput!]
-
-  """The logo of the organization."""
-  logoUrl: String
 
   """The name of the organization."""
   name: String
 
   """[INTERNAL] Whether the organization has enabled the member API keys."""
   personalApiKeysEnabled: Boolean
-
-  """The n-weekly frequency at which to prompt for project updates."""
-  projectUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which project updates are sent."""
-  projectUpdateRemindersDay: Day
-
-  """The hour at which project updates are sent."""
-  projectUpdateRemindersHour: Float
-
-  """Whether agent invocation is restricted to full workspace members."""
-  restrictAgentInvocationToMembers: Boolean
 
   """Whether label creation is restricted to admins."""
   restrictLabelManagementToAdmins: Boolean
@@ -6295,17 +5974,9 @@ input OrganizationUpdateInput {
   """Whether the organization is using roadmap."""
   roadmapEnabled: Boolean
 
-  """Internal. Whether SLAs have been enabled for the organization."""
-  slaEnabled: Boolean
-
-  """[ALPHA] Theme settings for the organization."""
-  themeSettings: JSONObject
-
   """The URL key of the organization."""
   urlKey: String
 
-  """[Internal] The list of working days. Sunday is 0, Monday is 1, etc."""
-  workingDays: [Float!]
 }
 
 type PageInfo {
