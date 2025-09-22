@@ -356,9 +356,6 @@ input CreateOrganizationInput {
   """The name of the organization."""
   name: String!
 
-  """The timezone of the organization, passed in by client."""
-  timezone: String
-
   """The URL key of the organization."""
   urlKey: String!
 
@@ -1018,11 +1015,6 @@ type FetchDataPayload {
   success: Boolean!
 }
 
-type FileUploadDeletePayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
 """By which resolution is frequency defined."""
 enum FrequencyResolutionType {
   daily
@@ -1080,17 +1072,6 @@ input IDComparator {
 
   """Not-in-array constraint."""
   nin: [ID!]
-}
-
-type ImageUploadFromUrlPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-
-  """The URL containing the image."""
-  url: String
 }
 
 input InheritanceEntityMapping {
@@ -2067,8 +2048,6 @@ input InitiativeUpdatedAtSort {
 
 """An issue."""
 type Issue implements Node {
-  """[Internal] The activity summary information for this issue."""
-  activitySummary: JSONObject
 
   """The time at which the issue was added to a project."""
   addedToProjectAt: DateTime
@@ -2081,37 +2060,8 @@ type Issue implements Node {
   """
   archivedAt: DateTime
 
-  """
-  The external user who requested creation of the Asks issue on behalf of the creator.
-  """
-  asksExternalUserRequester: ExternalUser
-
-  """
-  The internal user who requested creation of the Asks issue on behalf of the creator.
-  """
-  asksRequester: User
-
   """The user to whom the issue is assigned to."""
   assignee: User
-
-  """
-  The time at which the issue was automatically archived by the auto pruning process.
-  """
-  autoArchivedAt: DateTime
-
-  """
-  The time at which the issue was automatically closed by the auto pruning process.
-  """
-  autoClosedAt: DateTime
-
-  """The order of the item in its column on the board."""
-  boardOrder: Float! @deprecated(reason: "Will be removed in near future, please use `sortOrder` instead")
-
-  """The bot that created the issue, if applicable."""
-  botActor: ActorBot
-
-  """Suggested branch name for the issue."""
-  branchName: String!
 
   """The time at which the issue was moved into canceled state."""
   canceledAt: DateTime
@@ -2191,17 +2141,8 @@ type Issue implements Node {
   """The issue's description in markdown format."""
   description: String
 
-  """[Internal] The issue's description content as YJS state."""
-  descriptionState: String
-
   """The date at which the issue is due."""
   dueDate: TimelessDate
-
-  """The estimate of the complexity of the issue.."""
-  estimate: Float
-
-  """The external user who created the issue."""
-  externalUserCreator: ExternalUser
 
   """History entries associated with the issue."""
   history(
@@ -2393,42 +2334,6 @@ type Issue implements Node {
   """
   subIssueSortOrder: Float
 
-  """Users who are subscribed to the issue."""
-  subscribers(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned subscribers."""
-    filter: UserFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """Should query return disabled/suspended users (default: false)."""
-    includeDisabled: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): UserConnection!
-
-  """The external services the issue is synced with."""
-  syncedWith: [ExternalEntityInfo!]
-
   """The team that the issue is associated with."""
   team: Team!
 
@@ -2495,12 +2400,6 @@ input IssueCollectionFilter {
   """Filters that the issues assignee must satisfy."""
   assignee: NullableUserFilter
 
-  """Comparator for the issues auto archived at date."""
-  autoArchivedAt: NullableDateComparator
-
-  """Comparator for the issues auto closed at date."""
-  autoClosedAt: NullableDateComparator
-
   """Comparator for the issues canceled at date."""
   canceledAt: NullableDateComparator
 
@@ -2528,9 +2427,6 @@ input IssueCollectionFilter {
   """Comparator for the issues due date."""
   dueDate: NullableTimelessDateComparator
 
-  """Comparator for the issues estimate."""
-  estimate: EstimateComparator
-
   """Filters that needs to be matched by all issues."""
   every: IssueFilter
 
@@ -2545,31 +2441,6 @@ input IssueCollectionFilter {
 
   """Comparator for filtering issues with relations."""
   hasRelatedRelations: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested assignees.
-  """
-  hasSuggestedAssignees: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested labels.
-  """
-  hasSuggestedLabels: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested projects.
-  """
-  hasSuggestedProjects: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested related issues.
-  """
-  hasSuggestedRelatedIssues: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested similar issues.
-  """
-  hasSuggestedSimilarIssues: RelationExistsComparator
 
   """Comparator for the identifier."""
   id: IDComparator
@@ -2604,9 +2475,6 @@ input IssueCollectionFilter {
   """Filters that the issues project milestone must satisfy."""
   projectMilestone: NullableProjectMilestoneFilter
 
-  """[Internal] Comparator for the issues content."""
-  searchableContent: ContentComparator
-
   """Comparator for the issues sla status."""
   slaStatus: SlaStatusComparator
 
@@ -2627,9 +2495,6 @@ input IssueCollectionFilter {
 
   """Filters that the issues state must satisfy."""
   state: WorkflowStateFilter
-
-  """Filters that issue subscribers must satisfy."""
-  subscribers: UserCollectionFilter
 
   """Filters that the issues team must satisfy."""
   team: TeamFilter
@@ -2681,14 +2546,6 @@ input IssueCreateInput {
   """The issue description in markdown format."""
   description: String
 
-  """[Internal] The issue description as a Prosemirror document."""
-  descriptionData: JSON
-
-  """
-  Provide an external user avatar URL. Can only be used in conjunction with the `createAsUser` options. This option is only available to OAuth applications creating comments in `actor=app` mode.
-  """
-  displayIconUrl: String
-
   """The date at which the issue is due."""
   dueDate: TimelessDate
 
@@ -2732,14 +2589,6 @@ input IssueCreateInput {
   [Internal] The timestamp at which an issue will be considered in breach of SLA.
   """
   slaBreachesAt: DateTime
-
-  """[Internal] The timestamp at which the issue's SLA was started."""
-  slaStartedAt: DateTime
-
-  """
-  The SLA day count type for the issue. Whether SLA should be business days only or calendar days (default).
-  """
-  slaType: SLADayCountType
 
   """The position of the issue related to other issues."""
   sortOrder: Float
@@ -2789,12 +2638,6 @@ input IssueFilter {
   """Filters that the issues assignee must satisfy."""
   assignee: NullableUserFilter
 
-  """Comparator for the issues auto archived at date."""
-  autoArchivedAt: NullableDateComparator
-
-  """Comparator for the issues auto closed at date."""
-  autoClosedAt: NullableDateComparator
-
   """Comparator for the issues canceled at date."""
   canceledAt: NullableDateComparator
 
@@ -2836,31 +2679,6 @@ input IssueFilter {
 
   """Comparator for filtering issues with relations."""
   hasRelatedRelations: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested assignees.
-  """
-  hasSuggestedAssignees: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested labels.
-  """
-  hasSuggestedLabels: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested projects.
-  """
-  hasSuggestedProjects: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested related issues.
-  """
-  hasSuggestedRelatedIssues: RelationExistsComparator
-
-  """
-  [Internal] Comparator for filtering issues which have suggested similar issues.
-  """
-  hasSuggestedSimilarIssues: RelationExistsComparator
 
   """Comparator for the identifier."""
   id: IDComparator
@@ -3137,9 +2955,6 @@ type IssueImport implements Node {
   """The id for the user that started the job."""
   creatorId: String
 
-  """File URL for the uploaded CSV for the import, if there is one."""
-  csvFileUrl: String
-
   """The display name of the import service."""
   displayName: String!
 
@@ -3177,62 +2992,6 @@ type IssueImport implements Node {
   updatedAt: DateTime!
 }
 
-type IssueImportCheckPayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type IssueImportDeletePayload {
-  """The import job that was deleted."""
-  issueImport: IssueImport
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-"""Whether a custom JQL query is valid or not"""
-type IssueImportJqlCheckPayload {
-  """
-  Returns an approximate number of issues matching the JQL query, if available
-  """
-  count: Float
-
-  """An error message returned by Jira when validating the JQL query."""
-  error: String
-
-  """
-  Returns true if the JQL query has been validated successfully, false otherwise
-  """
-  success: Boolean!
-}
-
-type IssueImportPayload {
-  """The import job that was created or updated."""
-  issueImport: IssueImport
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-"""Whether an issue import can be synced at the end of an import or not"""
-type IssueImportSyncCheckPayload {
-  """Returns true if the import can be synced, false otherwise"""
-  canSync: Boolean!
-
-  """An error message with a root cause of why the import cannot be synced"""
-  error: String
-}
-
-input IssueImportUpdateInput {
-  """The mapping configuration for the import."""
-  mapping: JSONObject!
-}
 
 """Labels that can be associated with issues."""
 type IssueLabel implements Node {
@@ -4317,49 +4076,6 @@ type Mutation {
     input: EntityExternalLinkUpdateInput!
   ): EntityExternalLinkPayload!
 
-  """
-  XHR request payload to upload an images, video and other attachments directly to Linear's cloud storage.
-  """
-  fileUpload(
-    """MIME type of the uploaded file."""
-    contentType: String!
-
-    """Filename of the uploaded file."""
-    filename: String!
-
-    """Should the file be made publicly accessible (default: false)."""
-    makePublic: Boolean
-
-    """Optional metadata."""
-    metaData: JSON
-
-    """File size of the uploaded file."""
-    size: Int!
-  ): UploadPayload!
-
-  """Upload an image from an URL to Linear."""
-  imageUploadFromUrl(
-    """URL of the file to be uploaded to Linear."""
-    url: String!
-  ): ImageUploadFromUrlPayload!
-
-  """
-  XHR request payload to upload a file for import, directly to Linear's cloud storage.
-  """
-  importFileUpload(
-    """MIME type of the uploaded file."""
-    contentType: String!
-
-    """Filename of the uploaded file."""
-    filename: String!
-
-    """Optional metadata."""
-    metaData: JSON
-
-    """File size of the uploaded file."""
-    size: Int!
-  ): UploadPayload!
-
   """Archives a initiative."""
   initiativeArchive(
     """The identifier of the initiative to archive."""
@@ -4980,37 +4696,6 @@ type Mutation {
     """
     mapping: InheritanceEntityMapping
   ): TeamPayload!
-
-  """Creates a new time schedule."""
-  timeScheduleCreate(
-    """The properties of the time schedule to create."""
-    input: TimeScheduleCreateInput!
-  ): TimeSchedulePayload!
-
-  """Deletes a time schedule."""
-  timeScheduleDelete(
-    """The identifier of the time schedule to delete."""
-    id: String!
-  ): DeletePayload!
-
-
-  """Updates a time schedule."""
-  timeScheduleUpdate(
-    """The identifier of the time schedule to update."""
-    id: String!
-
-    """The properties of the time schedule to update."""
-    input: TimeScheduleUpdateInput!
-  ): TimeSchedulePayload!
-
-  """Upsert an external time schedule."""
-  timeScheduleUpsertExternal(
-    """The unique identifier of the external schedule."""
-    externalId: String!
-
-    """The properties of the time schedule to insert or update."""
-    input: TimeScheduleUpdateInput!
-  ): TimeSchedulePayload!
 
   """Creates a new triage responsibility."""
   triageResponsibilityCreate(
@@ -5871,8 +5556,6 @@ input NumberComparator {
 An organization. Organizations are root-level objects that contain user accounts and teams.
 """
 type Organization implements Node {
-  """[INTERNAL] Whether the organization has enabled the AI add-on."""
-  aiAddonEnabled: Boolean!
 
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
@@ -5890,20 +5573,6 @@ type Organization implements Node {
 
   """The unique identifier of the entity."""
   id: ID!
-
-  """
-  The n-weekly frequency at which to prompt for initiative updates. When not set, reminders are off.
-  """
-  initiativeUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which to prompt for initiative updates."""
-  initiativeUpdateRemindersDay: Day!
-
-  """The hour at which to prompt for initiative updates."""
-  initiativeUpdateRemindersHour: Float!
-
-  """IP restriction configurations."""
-  ipRestrictions: [OrganizationIpRestriction!]
 
   """Labels associated with the organization."""
   labels(
@@ -5935,19 +5604,8 @@ type Organization implements Node {
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
 
-  """The organization's logo URL."""
-  logoUrl: String
-
   """The organization's name."""
   name: String!
-
-  """Rolling 30-day total upload volume for the organization, in megabytes."""
-  periodUploadVolume: Float!
-
-  """
-  Previously used URL keys for the organization (last 3 are kept and redirected).
-  """
-  previousUrlKeys: [String!]!
 
   """Project labels associated with the organization."""
   projectLabels(
@@ -5981,23 +5639,6 @@ type Organization implements Node {
 
   """The organization's project statuses."""
   projectStatuses: [ProjectStatus!]!
-
-  """
-  The n-weekly frequency at which to prompt for project updates. When not set, reminders are off.
-  """
-  projectUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which to prompt for project updates."""
-  projectUpdateRemindersDay: Day!
-
-  """The hour at which to prompt for project updates."""
-  projectUpdateRemindersHour: Float!
-
-  """[DEPRECATED] The frequency at which to prompt for project updates."""
-  projectUpdatesReminderFrequency: ProjectUpdateReminderFrequency! @deprecated(reason: "Use organization.projectUpdatesReminderFrequencyInWeeks instead")
-
-  """The feature release channel the organization belongs to."""
-  releaseChannel: ReleaseChannel!
 
   """
   Whether workspace label creation, update, and deletion is restricted to admins.
@@ -6036,13 +5677,6 @@ type Organization implements Node {
     """
     orderBy: PaginationOrderBy
   ): TeamConnection!
-
-
-  """[ALPHA] Theme settings for the organization."""
-  themeSettings: JSONObject
-
-  """The time at which the trial will end."""
-  trialEndsAt: DateTime
 
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
@@ -6263,57 +5897,9 @@ type OrganizationPayload {
   success: Boolean!
 }
 
-input OrganizationStartTrialInput {
-  """The plan type to trial."""
-  planType: String!
-}
-
-type OrganizationStartTrialPayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
 input OrganizationUpdateInput {
-  """[INTERNAL] Whether the organization has enabled the AI add-on."""
-  aiAddonEnabled: Boolean
-
-  """[INTERNAL] Whether the organization has opted in to AI telemetry."""
-  aiTelemetryEnabled: Boolean
-
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
-
-  """Allowed file upload content types."""
-  allowedFileUploadContentTypes: [String!]
-
-  """Default schedule for how often feed summaries are generated."""
-  defaultFeedSummarySchedule: FeedSummarySchedule
-
-  """Whether the organization has enabled the feed feature."""
-  feedEnabled: Boolean
-
-  """The month at which the fiscal year starts."""
-  fiscalYearStartMonth: Float
-
-
-  """
-  [ALPHA] The n-weekly frequency at which to prompt for initiative updates.
-  """
-  initiativeUpdateReminderFrequencyInWeeks: Float
-
-  """[ALPHA] The day at which initiative updates are sent."""
-  initiativeUpdateRemindersDay: Day
-
-  """[ALPHA] The hour at which initiative updates are sent."""
-  initiativeUpdateRemindersHour: Float
-
-  """
-  IP restriction configurations controlling allowed access the workspace.
-  """
-  ipRestrictions: [OrganizationIpRestrictionInput!]
-
-  """The logo of the organization."""
-  logoUrl: String
 
   """The name of the organization."""
   name: String
@@ -6321,35 +5907,15 @@ input OrganizationUpdateInput {
   """[INTERNAL] Whether the organization has enabled the member API keys."""
   personalApiKeysEnabled: Boolean
 
-  """The n-weekly frequency at which to prompt for project updates."""
-  projectUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which project updates are sent."""
-  projectUpdateRemindersDay: Day
-
-  """The hour at which project updates are sent."""
-  projectUpdateRemindersHour: Float
-
-  """Whether agent invocation is restricted to full workspace members."""
-  restrictAgentInvocationToMembers: Boolean
-
   """Whether label creation is restricted to admins."""
   restrictLabelManagementToAdmins: Boolean
 
   """Whether team creation is restricted to admins."""
   restrictTeamCreationToAdmins: Boolean
 
-  """Internal. Whether SLAs have been enabled for the organization."""
-  slaEnabled: Boolean
-
-  """[ALPHA] Theme settings for the organization."""
-  themeSettings: JSONObject
-
   """The URL key of the organization."""
   urlKey: String
 
-  """[Internal] The list of working days. Sunday is 0, Monday is 1, etc."""
-  workingDays: [Float!]
 }
 
 type PageInfo {
@@ -10033,40 +9599,6 @@ type Query {
     orderBy: PaginationOrderBy
   ): TeamConnection!
 
-
-  """A specific time schedule."""
-  timeSchedule(
-    """The identifier of the time schedule to retrieve."""
-    id: String!
-  ): TimeSchedule!
-
-  """All time schedules."""
-  timeSchedules(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): TimeScheduleConnection!
-
   """All triage responsibilities."""
   triageResponsibilities(
     """A cursor to be used with first for forward pagination"""
@@ -10672,11 +10204,6 @@ type Team implements Node {
   archivedAt: DateTime
 
   """
-  Period after which automatically closed and completed issues are automatically archived in months.
-  """
-  autoArchivePeriod: Float!
-
-  """
   Whether child issues should automatically close when their parent issue is closed
   """
   autoCloseChildIssues: Boolean
@@ -10694,13 +10221,7 @@ type Team implements Node {
   """
   The canceled workflow state which auto closed issues will be set to. Defaults to the first canceled state.
   """
-  autoCloseStateId: String
-
-  """[Internal] The team's sub-teams."""
-  children: [Team!]!
-
-  """The team's color."""
-  color: String
+  autoCloseStateId: Strings
 
   """The time at which the entity was created."""
   createdAt: DateTime!
@@ -10726,22 +10247,8 @@ type Team implements Node {
   """Whether to group recent issue history entries."""
   groupIssueHistory: Boolean!
 
-  """The icon of the team."""
-  icon: String
-
   """The unique identifier of the entity."""
   id: ID!
-
-  """
-  Whether the team should inherit its estimation settings from its parent. Only applies to sub-teams.
-  """
-  inheritIssueEstimation: Boolean!
-
-  """
-  Whether the team should inherit its workflow statuses from its parent. Only applies to sub-teams.
-  """
-  inheritWorkflowStatuses: Boolean!
-
 
   """Unique hash for the team to be used in invite URLs."""
   inviteHash: String!
@@ -10763,13 +10270,6 @@ type Team implements Node {
   """
   issueEstimationType: String!
 
-  """[DEPRECATED] Whether issues without priority should be sorted first."""
-  issueOrderingNoPriorityFirst: Boolean! @deprecated(reason: "This setting is no longer in use.")
-
-  """
-  [DEPRECATED] Whether to move issues to bottom of the column when changing state.
-  """
-  issueSortOrderDefaultToBottom: Boolean! @deprecated(reason: "Use setIssueSortOrderOnStateChange instead.")
 
   """Issues associated with the team."""
   issues(
@@ -10839,11 +10339,6 @@ type Team implements Node {
     """
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
-
-  """
-  The workflow state into which issues are moved when they are marked as a duplicate of another issue. Defaults to the first canceled state.
-  """
-  markedAsDuplicateWorkflowState: WorkflowState
 
   """Users who are members of this team."""
   members(
@@ -10922,9 +10417,6 @@ type Team implements Node {
   """[Internal] The team's parent team."""
   parent: Team
 
-  """[Internal] Posts associated with the team."""
-  posts: [Post!]!
-
   """Whether the team is private or not."""
   private: Boolean!
 
@@ -10967,12 +10459,6 @@ type Team implements Node {
     sort: [ProjectSortInput!]
   ): ProjectConnection!
 
-  """Whether an issue needs to have a priority set before leaving triage."""
-  requirePriorityToLeaveTriage: Boolean!
-
-  """Where to move issues when changing state."""
-  setIssueSortOrderOnStateChange: String!
-
   """The states that define the workflow associated with the team."""
   states(
     """A cursor to be used with first for forward pagination"""
@@ -11002,23 +10488,6 @@ type Team implements Node {
     """
     orderBy: PaginationOrderBy
   ): WorkflowStateConnection!
-
-
-  """
-  The timezone of the team. Defaults to "America/Los_Angeles"
-  """
-  timezone: String!
-
-  """Whether triage mode is enabled for the team or not."""
-  triageEnabled: Boolean!
-
-  """
-  The workflow state into which issues are set when they are opened by non-team members or integrations if triage is enabled.
-  """
-  triageIssueState: WorkflowState
-
-  """Team's triage responsibility."""
-  triageResponsibility: TriageResponsibility
 
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
@@ -11187,9 +10656,6 @@ input TeamCreateInput {
 
   """Whether to move issues to bottom of the column when changing state."""
   setIssueSortOrderOnStateChange: String
-
-  """The timezone of the team."""
-  timezone: String
 
   """Whether triage mode is enabled for the team."""
   triageEnabled: Boolean
@@ -11441,137 +10907,9 @@ input TeamUpdateInput {
   """Whether to move issues to bottom of the column when changing state."""
   setIssueSortOrderOnStateChange: String
 
-  """The timezone of the team."""
-  timezone: String
-
   """Whether triage mode is enabled for the team."""
   triageEnabled: Boolean
 
-}
-
-"""A time schedule."""
-type TimeSchedule implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The schedule entries."""
-  entries: [TimeScheduleEntry!]
-
-  """The identifier of the external schedule."""
-  externalId: String
-
-  """The URL to the external schedule."""
-  externalUrl: String
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The name of the schedule."""
-  name: String!
-
-  """The organization of the schedule."""
-  organization: Organization!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-type TimeScheduleConnection {
-  edges: [TimeScheduleEdge!]!
-  nodes: [TimeSchedule!]!
-  pageInfo: PageInfo!
-}
-
-input TimeScheduleCreateInput {
-  """The schedule entries."""
-  entries: [TimeScheduleEntryInput!]!
-
-  """The unique identifier of the external schedule."""
-  externalId: String
-
-  """The URL to the external schedule."""
-  externalUrl: String
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The name of the schedule."""
-  name: String!
-}
-
-type TimeScheduleEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: TimeSchedule!
-}
-
-type TimeScheduleEntry {
-  """The end date of the schedule in ISO 8601 date-time format."""
-  endsAt: DateTime!
-
-  """The start date of the schedule in ISO 8601 date-time format."""
-  startsAt: DateTime!
-
-  """
-  The email, name or reference to the user on schedule. This is used in case the external user could not be mapped to a Linear user id.
-  """
-  userEmail: String
-
-  """
-  The Linear user id of the user on schedule. If the user cannot be mapped to a Linear user then `userEmail` can be used as a reference.
-  """
-  userId: String
-}
-
-input TimeScheduleEntryInput {
-  """The end date of the schedule in ISO 8601 date-time format."""
-  endsAt: DateTime!
-
-  """The start date of the schedule in ISO 8601 date-time format."""
-  startsAt: DateTime!
-
-  """
-  The email, name or reference to the user on schedule. This is used in case the external user could not be mapped to a Linear user id.
-  """
-  userEmail: String
-
-  """
-  The Linear user id of the user on schedule. If the user cannot be mapped to a Linear user then `userEmail` can be used as a reference.
-  """
-  userId: String
-}
-
-type TimeSchedulePayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-  timeSchedule: TimeSchedule!
-}
-
-input TimeScheduleUpdateInput {
-  """The schedule entries."""
-  entries: [TimeScheduleEntryInput!]
-
-  """The unique identifier of the external schedule."""
-  externalId: String
-
-  """The URL to the external schedule."""
-  externalUrl: String
-
-  """The name of the schedule."""
-  name: String
 }
 
 """
@@ -11618,9 +10956,6 @@ type TriageResponsibility implements Node {
   """The team to which the triage responsibility belongs to."""
   team: Team!
 
-  """The time schedule used for scheduling."""
-  timeSchedule: TimeSchedule
-
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
@@ -11655,10 +10990,6 @@ input TriageResponsibilityCreateInput {
   """The identifier of the team associated with the triage responsibility."""
   teamId: String!
 
-  """
-  The identifier of the time schedule used for scheduling triage responsibility
-  """
-  timeScheduleId: String
 }
 
 type TriageResponsibilityEdge {
@@ -11704,10 +11035,6 @@ input TriageResponsibilityUpdateInput {
   """The manual selection of users responsible for triage."""
   manualSelection: TriageResponsibilityManualSelectionInput
 
-  """
-  The identifier of the time schedule used for scheduling triage responsibility.
-  """
-  timeScheduleId: String
 }
 
 """A universally unique identifier as specified by RFC 4122."""
@@ -11722,49 +11049,8 @@ input UpdatedAtSort {
   order: PaginationSortOrder
 }
 
-"""Object representing Google Cloud upload policy, plus additional data."""
-type UploadFile {
-  """The asset URL for the uploaded file. (assigned automatically)."""
-  assetUrl: String!
-
-  """The content type."""
-  contentType: String!
-
-  """The filename."""
-  filename: String!
-  headers: [UploadFileHeader!]!
-  metaData: JSONObject
-
-  """The size of the uploaded file."""
-  size: Int!
-
-  """The signed URL the for the uploaded file. (assigned automatically)."""
-  uploadUrl: String!
-}
-
-type UploadFileHeader {
-  """Upload file header key."""
-  key: String!
-
-  """Upload file header value."""
-  value: String!
-}
-
-type UploadPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-
-  """Object describing the file to be uploaded."""
-  uploadFile: UploadFile
-}
-
 """A user that has access to the the resources of an organization."""
 type User implements Node {
-  """Whether the user account is active or disabled (suspended)."""
-  active: Boolean!
 
   """Whether the user is an organization administrator."""
   admin: Boolean!
@@ -11885,10 +11171,6 @@ type User implements Node {
   """The unique identifier of the entity."""
   id: ID!
 
-
-  """The initials of the user."""
-  initials: String!
-
   """Whether the user is assignable."""
   isAssignable: Boolean!
 
@@ -11968,9 +11250,6 @@ type User implements Node {
     """
     orderBy: PaginationOrderBy
   ): TeamConnection!
-
-  """The local timezone of the user."""
-  timezone: String
 
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
@@ -12135,8 +11414,6 @@ type UserPayload {
 """The different permission roles available to users on an organization."""
 enum UserRoleType {
   admin
-  app
-  guest
   user
 }
 
@@ -12165,9 +11442,6 @@ input UserUpdateInput {
 
   """When the user status should be cleared."""
   statusUntilAt: DateTime
-
-  """The local timezone of the user."""
-  timezone: String
 }
 
 

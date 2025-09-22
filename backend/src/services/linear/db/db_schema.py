@@ -10,19 +10,17 @@ class LinearBase(DeclarativeBase):
 
 class Organization(LinearBase):
     __tablename__ = "organizations"
-    organization_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    url_key: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    allow_members_to_invite: Mapped[bool] = mapped_column(Boolean, default=True)
-    archived_at: Mapped[datetime | None] = mapped_column(DateTime)
-    restrict_label_management_to_admins: Mapped[bool] = mapped_column(
+    urlKey: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    allowMembersToInvite: Mapped[bool] = mapped_column(Boolean, default=True)
+    restrictLabelManagementToAdmins: Mapped[bool] = mapped_column(
         Boolean, default=False
     )
-    restrict_team_creation_to_admins: Mapped[bool] = mapped_column(
-        Boolean, default=False
-    )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    restrictTeamCreationToAdmins: Mapped[bool] = mapped_column(Boolean, default=False)
+    archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
 class Team(LinearBase):
@@ -32,11 +30,18 @@ class Team(LinearBase):
         ForeignKey("organizations.organization_id")
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    key: Mapped[str] = mapped_column(String(10), nullable=False)  # e.g., "ENG"
     description: Mapped[str | None] = mapped_column(Text)
     color: Mapped[str | None] = mapped_column(String(7))  # HEX color
     icon: Mapped[str | None] = mapped_column(String(50))
     private: Mapped[bool] = mapped_column(Boolean, default=False)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime)
+    default_issue_state_id: Mapped[int] = mapped_column(
+        ForeignKey("workflow_states.state_id")
+    )
+    invite_hash: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    key: Mapped[str] = mapped_column(String(10), nullable=False)  # e.g., "ENG"
+    join_by_default: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_private: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
@@ -49,10 +54,13 @@ class User(LinearBase):
     )
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
     display_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    avatar_url: Mapped[str | None] = mapped_column(String(255))
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
-    admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime)
+    can_access_any_public_team: Mapped[bool] = mapped_column(Boolean, default=False)
+    url: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
