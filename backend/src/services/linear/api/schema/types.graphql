@@ -11504,12 +11504,6 @@ type User implements Node {
   """Organization the user belongs to."""
   organization: Organization!
 
-  """The label of the user current status."""
-  statusLabel: String
-
-  """A date at which the user current status should be cleared."""
-  statusUntilAt: DateTime
-
   """
   Memberships associated with the user. For easier access of the same data, use `teams` query.
   """
@@ -11586,8 +11580,6 @@ type UserAdminPayload {
 
 """User filtering options."""
 input UserCollectionFilter {
-  """Comparator for the user's activity status."""
-  active: BooleanComparator
 
   """Comparator for the user's admin status."""
   admin: BooleanComparator
@@ -11754,12 +11746,6 @@ input UserUpdateInput {
 
   """The name of the user."""
   name: String
-
-  """The label part of the user status."""
-  statusLabel: String
-
-  """When the user status should be cleared."""
-  statusUntilAt: DateTime
 }
 
 
