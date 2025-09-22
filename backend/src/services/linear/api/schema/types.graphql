@@ -1015,11 +1015,6 @@ type FetchDataPayload {
   success: Boolean!
 }
 
-type FileUploadDeletePayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
 """By which resolution is frequency defined."""
 enum FrequencyResolutionType {
   daily
@@ -1077,17 +1072,6 @@ input IDComparator {
 
   """Not-in-array constraint."""
   nin: [ID!]
-}
-
-type ImageUploadFromUrlPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-
-  """The URL containing the image."""
-  url: String
 }
 
 input InheritanceEntityMapping {
@@ -3135,9 +3119,6 @@ type IssueImport implements Node {
   """The id for the user that started the job."""
   creatorId: String
 
-  """File URL for the uploaded CSV for the import, if there is one."""
-  csvFileUrl: String
-
   """The display name of the import service."""
   displayName: String!
 
@@ -4314,49 +4295,6 @@ type Mutation {
     """The entity link object to update."""
     input: EntityExternalLinkUpdateInput!
   ): EntityExternalLinkPayload!
-
-  """
-  XHR request payload to upload an images, video and other attachments directly to Linear's cloud storage.
-  """
-  fileUpload(
-    """MIME type of the uploaded file."""
-    contentType: String!
-
-    """Filename of the uploaded file."""
-    filename: String!
-
-    """Should the file be made publicly accessible (default: false)."""
-    makePublic: Boolean
-
-    """Optional metadata."""
-    metaData: JSON
-
-    """File size of the uploaded file."""
-    size: Int!
-  ): UploadPayload!
-
-  """Upload an image from an URL to Linear."""
-  imageUploadFromUrl(
-    """URL of the file to be uploaded to Linear."""
-    url: String!
-  ): ImageUploadFromUrlPayload!
-
-  """
-  XHR request payload to upload a file for import, directly to Linear's cloud storage.
-  """
-  importFileUpload(
-    """MIME type of the uploaded file."""
-    contentType: String!
-
-    """Filename of the uploaded file."""
-    filename: String!
-
-    """Optional metadata."""
-    metaData: JSON
-
-    """File size of the uploaded file."""
-    size: Int!
-  ): UploadPayload!
 
   """Archives a initiative."""
   initiativeArchive(
@@ -5964,10 +5902,7 @@ type Organization implements Node {
 
   """The organization's name."""
   name: String!
-
-  """Rolling 30-day total upload volume for the organization, in megabytes."""
-  periodUploadVolume: Float!
-
+  
   """
   Previously used URL keys for the organization (last 3 are kept and redirected).
   """
@@ -6306,9 +6241,6 @@ input OrganizationUpdateInput {
 
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
-
-  """Allowed file upload content types."""
-  allowedFileUploadContentTypes: [String!]
 
   """Whether the organization has enabled the feed feature."""
   feedEnabled: Boolean
@@ -11894,45 +11826,6 @@ input UpdatedAtSort {
 
   """The order for the individual sort"""
   order: PaginationSortOrder
-}
-
-"""Object representing Google Cloud upload policy, plus additional data."""
-type UploadFile {
-  """The asset URL for the uploaded file. (assigned automatically)."""
-  assetUrl: String!
-
-  """The content type."""
-  contentType: String!
-
-  """The filename."""
-  filename: String!
-  headers: [UploadFileHeader!]!
-  metaData: JSONObject
-
-  """The size of the uploaded file."""
-  size: Int!
-
-  """The signed URL the for the uploaded file. (assigned automatically)."""
-  uploadUrl: String!
-}
-
-type UploadFileHeader {
-  """Upload file header key."""
-  key: String!
-
-  """Upload file header value."""
-  value: String!
-}
-
-type UploadPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-
-  """Object describing the file to be uploaded."""
-  uploadFile: UploadFile
 }
 
 """A user that has access to the the resources of an organization."""
