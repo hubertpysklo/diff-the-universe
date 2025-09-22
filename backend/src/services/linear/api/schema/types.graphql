@@ -5665,11 +5665,6 @@ type Organization implements Node {
   """The organization's name."""
   name: String!
 
-  """
-  Previously used URL keys for the organization (last 3 are kept and redirected).
-  """
-  previousUrlKeys: [String!]!
-
   """Project labels associated with the organization."""
   projectLabels(
     """A cursor to be used with first for forward pagination"""

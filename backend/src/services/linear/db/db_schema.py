@@ -12,17 +12,15 @@ class Organization(LinearBase):
     __tablename__ = "organizations"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    url_key: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    allow_members_to_invite: Mapped[bool] = mapped_column(Boolean, default=True)
-    archived_at: Mapped[datetime | None] = mapped_column(DateTime)
-    restrict_label_management_to_admins: Mapped[bool] = mapped_column(
+    urlKey: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    allowMembersToInvite: Mapped[bool] = mapped_column(Boolean, default=True)
+    restrictLabelManagementToAdmins: Mapped[bool] = mapped_column(
         Boolean, default=False
     )
-    restrict_team_creation_to_admins: Mapped[bool] = mapped_column(
-        Boolean, default=False
-    )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    restrictTeamCreationToAdmins: Mapped[bool] = mapped_column(Boolean, default=False)
+    archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
 class Team(LinearBase):
