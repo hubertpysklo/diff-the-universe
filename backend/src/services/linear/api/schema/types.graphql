@@ -18,35 +18,6 @@ input BooleanComparator {
 
 """A comment associated with an issue."""
 type Comment implements Node {
-  """Agent session associated with this comment."""
-  agentSession: AgentSession
-
-  """[Internal] Agent sessions associated with this comment."""
-  agentSessions(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): AgentSessionConnection!
 
   """
   The time at which the entity was archived. Null if the entity has not been archived.
@@ -55,12 +26,6 @@ type Comment implements Node {
 
   """The comment content in markdown format."""
   body: String!
-
-  """[Internal] The comment content as a Prosemirror document."""
-  bodyData: String!
-
-  """The bot that created the comment."""
-  botActor: ActorBot
 
   """The children of the comment."""
   children(
@@ -136,12 +101,6 @@ type Comment implements Node {
   """The user that resolved the thread."""
   resolvingUser: User
 
-  """The external services the comment is synced with."""
-  syncedWith: [ExternalEntityInfo!]
-
-  """[Internal] A generated summary of the comment thread."""
-  threadSummary: JSONObject
-
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
@@ -207,28 +166,15 @@ input CommentCreateInput {
   """The comment content in markdown format."""
   body: String
 
-  """[Internal] The comment content as a Prosemirror document."""
-  bodyData: JSON
-
   """
   Create comment as a user with the provided name. This option is only available to OAuth applications creating comments in `actor=app` mode.
   """
   createAsUser: String
 
   """
-  Flag to indicate this comment should be created on the issue's synced Slack comment thread. If no synced Slack comment thread exists, the mutation will fail.
-  """
-  createOnSyncedSlackThread: Boolean
-
-  """
   The date when the comment was created (e.g. if importing from another system). Must be a date in the past. If none is provided, the backend will generate the time as now.
   """
   createdAt: DateTime
-
-  """
-  Provide an external user avatar URL. Can only be used in conjunction with the `createAsUser` options. This option is only available to OAuth applications creating comments in `actor=app` mode.
-  """
-  displayIconUrl: String
 
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
@@ -315,9 +261,6 @@ input CommentUpdateInput {
   """The comment content."""
   body: String
 
-  """[Internal] The comment content as a Prosemirror document."""
-  bodyData: JSON
-
   """
   The text that this comment references. Only defined for inline comments.
   """
@@ -342,16 +285,8 @@ input CompletedAtSort {
   order: PaginationSortOrder
 }
 
-enum ContextViewType {
-  activeIssues
-  backlog
-  triage
-}
-
 
 input CreateOrganizationInput {
-  """Whether the organization should allow email domain access."""
-  domainAccess: Boolean
 
   """The name of the organization."""
   name: String!
@@ -464,282 +399,6 @@ type DeletePayload implements ArchivePayload {
   success: Boolean!
 }
 
-"""A document that can be attached to different entities."""
-type Document implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The color of the icon."""
-  color: String
-
-  """Comments associated with the document."""
-  comments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned comments."""
-    filter: CommentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CommentConnection!
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who created the document."""
-  creator: User
-
-  """The ID of the document content associated with the document."""
-  documentContentId: String
-
-  """
-  The time at which the document was hidden. Null if the entity has not been hidden.
-  """
-  hiddenAt: DateTime
-
-  """The icon of the document."""
-  icon: String
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The initiative that the document is associated with."""
-  initiative: Initiative
-
-  """The project that the document is associated with."""
-  project: Project
-
-  """The document's unique URL slug."""
-  slugId: String!
-
-  """The order of the item in the resources list."""
-  sortOrder: Float!
-
-  """[Internal] The team that the document is associated with."""
-  team: Team
-
-  """The document title."""
-  title: String!
-
-  """A flag that indicates whether the document is in the trash bin."""
-  trashed: Boolean
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The user who last updated the document."""
-  updatedBy: User
-
-  """The canonical url for the document."""
-  url: String!
-}
-
-"""A generic payload return from entity archive mutations."""
-type DocumentArchivePayload implements ArchivePayload {
-  """The archived/unarchived entity. Null if entity was deleted."""
-  entity: Document
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type DocumentConnection {
-  edges: [DocumentEdge!]!
-  nodes: [Document!]!
-  pageInfo: PageInfo!
-}
-
-"""A document content for a project."""
-type DocumentContent implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The document content in markdown format."""
-  content: String
-
-  """The document content state as a base64 encoded string."""
-  contentState: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The document that the content is associated with."""
-  document: Document
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The initiative that the content is associated with."""
-  initiative: Initiative
-
-  """The issue that the content is associated with."""
-  issue: Issue
-
-  """The project that the content is associated with."""
-  project: Project
-
-  """The project milestone that the content is associated with."""
-  projectMilestone: ProjectMilestone
-
-  """
-  The time at which the document content was restored from a previous version.
-  """
-  restoredAt: DateTime
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-type DocumentContentHistoryPayload {
-  """The document content history entries."""
-  history: [DocumentContentHistoryType!]!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type DocumentContentHistoryType {
-  """The ID of the author of the change."""
-  actorIds: [String!]
-
-  """[Internal] The document content as Prosemirror document."""
-  contentData: JSON
-
-  """
-  The date when the document content history snapshot was taken. This can be different than createdAt since the content is captured from its state at the previously known updatedAt timestamp in the case of an update. On document create, these timestamps can be the same.
-  """
-  contentDataSnapshotAt: DateTime!
-
-  """The date when the document content history entry was created."""
-  createdAt: DateTime!
-
-  """The UUID of the document content history entry."""
-  id: String!
-}
-
-input DocumentCreateInput {
-  """The color of the icon."""
-  color: String
-
-  """The document content as markdown."""
-  content: String
-
-  """[Internal] The document content as a Prosemirror document."""
-  contentData: JSONObject @deprecated(reason: "Use content instead")
-
-  """The icon of the document."""
-  icon: String
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """[Internal] Related initiative for the document."""
-  initiativeId: String
-
-  """Related project for the document."""
-  projectId: String
-
-  """[Internal] The resource folder containing the document."""
-  resourceFolderId: String
-
-  """The order of the item in the resources list."""
-  sortOrder: Float
-
-  """[INTERNAL] The identifiers of the users subscribing to this document."""
-  subscriberIds: [String!]
-
-  """[Internal] Related team for the document."""
-  teamId: String
-
-  """The title of the document."""
-  title: String!
-}
-
-type DocumentEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Document!
-}
-
-"""Document filtering options."""
-input DocumentFilter {
-  """Compound filters, all of which need to be matched by the document."""
-  and: [DocumentFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the document's creator must satisfy."""
-  creator: UserFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Filters that the document's initiative must satisfy."""
-  initiative: InitiativeFilter
-
-  """Compound filters, one of which need to be matched by the document."""
-  or: [DocumentFilter!]
-
-  """Filters that the document's project must satisfy."""
-  project: ProjectFilter
-
-  """Comparator for the document slug ID."""
-  slugId: StringComparator
-
-  """Comparator for the document title."""
-  title: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-
-type DocumentPayload {
-  """The document that was created or updated."""
-  document: Document!
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
 """Issue due date sorting options."""
 input DueDateSort {
   """Whether nulls should be sorted first or last"""
@@ -753,78 +412,6 @@ input DueDateSort {
 Represents a duration in ISO 8601 format. Accepts ISO 8601 duration strings or integers in milliseconds.
 """
 scalar Duration
-
-
-"""A custom emoji."""
-type Emoji implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who created the emoji."""
-  creator: User
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The emoji's name."""
-  name: String!
-
-  """The organization that the emoji belongs to."""
-  organization: Organization!
-
-  """The source of the emoji."""
-  source: String!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The emoji image URL."""
-  url: String!
-}
-
-type EmojiConnection {
-  edges: [EmojiEdge!]!
-  nodes: [Emoji!]!
-  pageInfo: PageInfo!
-}
-
-input EmojiCreateInput {
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The name of the custom emoji."""
-  name: String!
-
-  """The URL for the emoji."""
-  url: String!
-}
-
-type EmojiEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Emoji!
-}
-
-type EmojiPayload {
-  """The emoji that was created."""
-  emoji: Emoji!
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
 
 """A basic entity."""
 interface Entity implements Node {
@@ -946,61 +533,6 @@ input EntityExternalLinkUpdateInput {
   url: String
 }
 
-"""Comparator for estimates."""
-input EstimateComparator {
-  """Compound filters, one of which need to be matched by the estimate."""
-  and: [NullableNumberComparator!]
-
-  """Equals constraint."""
-  eq: Float
-
-  """
-  Greater-than constraint. Matches any values that are greater than the given value.
-  """
-  gt: Float
-
-  """
-  Greater-than-or-equal constraint. Matches any values that are greater than or equal to the given value.
-  """
-  gte: Float
-
-  """In-array constraint."""
-  in: [Float!]
-
-  """
-  Less-than constraint. Matches any values that are less than the given value.
-  """
-  lt: Float
-
-  """
-  Less-than-or-equal constraint. Matches any values that are less than or equal to the given value.
-  """
-  lte: Float
-
-  """Not-equals constraint."""
-  neq: Float
-
-  """Not-in-array constraint."""
-  nin: [Float!]
-
-  """
-  Null constraint. Matches any non-null values if the given value is false, otherwise it matches null values.
-  """
-  null: Boolean
-
-  """Compound filters, all of which need to be matched by the estimate."""
-  or: [NullableNumberComparator!]
-}
-
-"""Issue estimate sorting options."""
-input EstimateSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
-}
-
 type FetchDataPayload {
   """The fetched data based on the natural language query."""
   data: JSONObject
@@ -1020,44 +552,6 @@ enum FrequencyResolutionType {
   daily
   weekly
 }
-
-input FrontSettingsInput {
-  """
-  Whether a ticket should be automatically reopened when its linked Linear issue is cancelled.
-  """
-  automateTicketReopeningOnCancellation: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when a comment is posted on its linked Linear issue
-  """
-  automateTicketReopeningOnComment: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear issue is completed.
-  """
-  automateTicketReopeningOnCompletion: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear project is cancelled.
-  """
-  automateTicketReopeningOnProjectCancellation: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear project is completed.
-  """
-  automateTicketReopeningOnProjectCompletion: Boolean
-
-  """
-  Whether an internal message should be added when someone comments on an issue.
-  """
-  sendNoteOnComment: Boolean
-
-  """
-  Whether an internal message should be added when a Linear issue changes status (for status types except completed or canceled).
-  """
-  sendNoteOnStatusChange: Boolean
-}
-
 
 """Comparator for identifiers."""
 input IDComparator {
@@ -1088,9 +582,6 @@ type Initiative implements Node {
   The time at which the entity was archived. Null if the entity has not been archived.
   """
   archivedAt: DateTime
-
-  """The initiative's color."""
-  color: String
 
   """The time at which the initiative was moved into completed status."""
   completedAt: DateTime
@@ -1142,9 +633,6 @@ type Initiative implements Node {
     """
     orderBy: PaginationOrderBy
   ): InitiativeHistoryConnection!
-
-  """The icon of the initiative."""
-  icon: String
 
   """The unique identifier of the entity."""
   id: ID!
@@ -1389,17 +877,11 @@ type InitiativeConnection {
 
 """The properties of the initiative to create."""
 input InitiativeCreateInput {
-  """The initiative's color."""
-  color: String
-
   """The initiative's content in markdown format."""
   content: String
 
   """The description of the initiative."""
   description: String
-
-  """The initiative's icon."""
-  icon: String
 
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
@@ -1780,9 +1262,6 @@ type InitiativeUpdate implements Node {
   """The update content in markdown format."""
   body: String!
 
-  """[Internal] The content of the update as a Prosemirror document."""
-  bodyData: String!
-
   """Comments associated with the initiative update."""
   comments(
     """A cursor to be used with first for forward pagination"""
@@ -1886,9 +1365,6 @@ input InitiativeUpdateCreateInput {
   """The content of the update in markdown format."""
   body: String
 
-  """[Internal] The content of the update as a Prosemirror document."""
-  bodyData: JSON
-
   """The health of the initiative at the time of the update."""
   health: InitiativeUpdateHealthType
 
@@ -1949,9 +1425,6 @@ enum InitiativeUpdateHealthType {
 
 """The properties of the initiative to update."""
 input InitiativeUpdateInput {
-  """The initiative's color."""
-  color: String
-
   """The initiative's content in markdown format."""
   content: String
 
@@ -1960,9 +1433,6 @@ input InitiativeUpdateInput {
 
   """The frequency resolution."""
   frequencyResolution: FrequencyResolutionType
-
-  """The initiative's icon."""
-  icon: String
 
   """The name of the initiative."""
   name: String
@@ -2024,9 +1494,6 @@ type InitiativeUpdateReminderPayload {
 input InitiativeUpdateUpdateInput {
   """The content of the update in markdown format."""
   body: String
-
-  """The content of the update as a Prosemirror document."""
-  bodyData: JSON
 
   """The health of the initiative at the time of the update."""
   health: InitiativeUpdateHealthType
@@ -2405,8 +1872,6 @@ input IssueCollectionFilter {
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
 
-  """Filters that the issue's delegated agent must satisfy."""
-  delegate: NullableUserFilter
 
   """Comparator for the issues description."""
   description: NullableStringComparator
@@ -2527,8 +1992,6 @@ input IssueCreateInput {
   """
   createdAt: DateTime
 
-  """The identifier of the agent user to delegate the issue to."""
-  delegateId: String
 
   """The issue description in markdown format."""
   description: String
@@ -2642,9 +2105,6 @@ input IssueFilter {
 
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
-
-  """Filters that the issue's delegated agent must satisfy."""
-  delegate: NullableUserFilter
 
   """Comparator for the issues description."""
   description: NullableStringComparator
@@ -2966,9 +2426,6 @@ type IssueLabel implements Node {
     orderBy: PaginationOrderBy
   ): IssueLabelConnection!
 
-  """The label's color as a HEX string."""
-  color: String!
-
   """The time at which the entity was created."""
   createdAt: DateTime!
 
@@ -3157,8 +2614,6 @@ type IssueLabelPayload {
 }
 
 input IssueLabelUpdateInput {
-  """The color of the label."""
-  color: String
 
   """The description of the label."""
   description: String
@@ -3765,28 +3220,6 @@ input LabelSort {
 
   """The order for the individual sort"""
   order: PaginationSortOrder
-}
-
-input LaunchDarklySettingsInput {
-  """The environment of the LaunchDarkly integration."""
-  environment: String!
-
-  """The project key of the LaunchDarkly integration."""
-  projectKey: String!
-}
-
-"""[ALPHA] Issue link count sorting options."""
-input LinkCountSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
-}
-
-type LogoutResponse {
-  """Whether the operation was successful."""
-  success: Boolean!
 }
 
 """Issue manual sorting options."""
@@ -4670,9 +4103,6 @@ input NullableCommentFilter {
   """Comparator for the created at date."""
   createdAt: DateComparator
 
-  """Filters that the comment's document content must satisfy."""
-  documentContent: NullableDocumentContentFilter
-
   """Comparator for the identifier."""
   id: IDComparator
 
@@ -4817,9 +4247,6 @@ input NullableIssueFilter {
 
   """Filters that the issues creator must satisfy."""
   creator: NullableUserFilter
-
-  """Filters that the issue's delegated agent must satisfy."""
-  delegate: NullableUserFilter
 
   """Comparator for the issues description."""
   description: NullableStringComparator
@@ -5761,9 +5188,6 @@ input OrganizationUpdateInput {
   """The name of the organization."""
   name: String
 
-  """[INTERNAL] Whether the organization has enabled the member API keys."""
-  personalApiKeysEnabled: Boolean
-
   """Whether label creation is restricted to admins."""
   restrictLabelManagementToAdmins: Boolean
 
@@ -5843,9 +5267,6 @@ type Project implements Node {
 
   """The time at which the project was moved into canceled state."""
   canceledAt: DateTime
-
-  """The project's color."""
-  color: String!
 
   """Comments associated with the project overview."""
   comments(
@@ -5970,9 +5391,6 @@ type Project implements Node {
     """
     orderBy: PaginationOrderBy
   ): ProjectHistoryConnection!
-
-  """The icon of the project."""
-  icon: String
 
   """The unique identifier of the entity."""
   id: ID!
@@ -6194,9 +5612,6 @@ type Project implements Node {
     orderBy: PaginationOrderBy
   ): ProjectMilestoneConnection!
 
-  """The time until which project update reminders are paused."""
-  projectUpdateRemindersPausedUntilAt: DateTime
-
   """Project updates associated with the project."""
   projectUpdates(
     """A cursor to be used with first for forward pagination"""
@@ -6272,9 +5687,6 @@ type Project implements Node {
   """The time at which the project was moved into started state."""
   startedAt: DateTime
 
-  """[DEPRECATED] The type of the state."""
-  state: String! @deprecated(reason: "Use project.status instead")
-
   """The status that the project is associated with."""
   status: ProjectStatus!
 
@@ -6318,22 +5730,6 @@ type Project implements Node {
   trashed: Boolean
 
   """
-  The frequency at which to prompt for updates. When not set, reminders are inherited from workspace.
-  """
-  updateReminderFrequency: Float
-
-  """
-  The n-weekly frequency at which to prompt for updates. When not set, reminders are inherited from workspace.
-  """
-  updateReminderFrequencyInWeeks: Float
-
-  """The day at which to prompt for updates."""
-  updateRemindersDay: Day
-
-  """The hour at which to prompt for updates."""
-  updateRemindersHour: Float
-
-  """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
   """
@@ -6359,11 +5755,6 @@ type ProjectArchivePayload implements ArchivePayload {
 input ProjectCollectionFilter {
   """Filters that the project's team must satisfy."""
   accessibleTeams: TeamCollectionFilter
-
-  """
-  [ALPHA] Comparator for the project activity type: buzzin, active, some, none
-  """
-  activityType: StringComparator
 
   """Compound filters, all of which need to be matched by the project."""
   and: [ProjectCollectionFilter!]
@@ -6468,9 +5859,6 @@ input ProjectCollectionFilter {
   """Comparator for the project start date."""
   startDate: NullableDateComparator
 
-  """[DEPRECATED] Comparator for the project state."""
-  state: StringComparator
-
   """Filters that the project's status must satisfy."""
   status: ProjectStatusFilter
 
@@ -6488,9 +5876,6 @@ type ProjectConnection {
 }
 
 input ProjectCreateInput {
-  """The color of the project."""
-  color: String
-
   """The project content as markdown."""
   content: String
 
@@ -6499,9 +5884,6 @@ input ProjectCreateInput {
 
   """The description for the project."""
   description: String
-
-  """The icon of the project."""
-  icon: String
 
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
@@ -6576,11 +5958,6 @@ type ProjectEdge {
 input ProjectFilter {
   """Filters that the project's team must satisfy."""
   accessibleTeams: TeamCollectionFilter
-
-  """
-  [ALPHA] Comparator for the project activity type: buzzin, active, some, none
-  """
-  activityType: StringComparator
 
   """Compound filters, all of which need to be matched by the project."""
   and: [ProjectFilter!]
@@ -6774,9 +6151,6 @@ type ProjectLabel implements Node {
     orderBy: PaginationOrderBy
   ): ProjectLabelConnection!
 
-  """The label's color as a HEX string."""
-  color: String!
-
   """The time at which the entity was created."""
   createdAt: DateTime!
 
@@ -6788,9 +6162,6 @@ type ProjectLabel implements Node {
 
   """The unique identifier of the entity."""
   id: ID!
-
-  """Whether the label is a group."""
-  isGroup: Boolean!
 
   """The date when the label was last applied to an issue or project."""
   lastAppliedAt: DateTime
@@ -6859,9 +6230,6 @@ input ProjectLabelCollectionFilter {
   """Comparator for the identifier."""
   id: IDComparator
 
-  """Comparator for whether the label is a group label."""
-  isGroup: BooleanComparator
-
   """Comparator for the collection length."""
   length: NumberComparator
 
@@ -6891,9 +6259,6 @@ type ProjectLabelConnection {
 }
 
 input ProjectLabelCreateInput {
-  """The color of the label."""
-  color: String
-
   """The description of the label."""
   description: String
 
@@ -6949,9 +6314,6 @@ input ProjectLabelFilter {
 }
 
 type ProjectLabelPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
   """The label that was created or updated."""
   projectLabel: ProjectLabel!
 
@@ -6960,14 +6322,8 @@ type ProjectLabelPayload {
 }
 
 input ProjectLabelUpdateInput {
-  """The color of the label."""
-  color: String
-
   """The description of the label."""
   description: String
-
-  """Whether the label is a group."""
-  isGroup: Boolean
 
   """The name of the label."""
   name: String
@@ -7004,14 +6360,8 @@ type ProjectMilestone implements Node {
   """The time at which the entity was created."""
   createdAt: DateTime!
 
-  """[Internal] The current progress of the project milestone."""
-  currentProgress: JSONObject!
-
   """The project milestone's description in markdown format."""
   description: String
-
-  """[Internal] The project milestone's description as YJS state."""
-  descriptionState: String
 
   """The unique identifier of the entity."""
   id: ID!
@@ -7051,9 +6401,6 @@ type ProjectMilestone implements Node {
 
   """The progress % of the project milestone."""
   progress: Float!
-
-  """[Internal] The progress history of the project milestone."""
-  progressHistory: JSONObject!
 
   """The project of the milestone."""
   project: Project!
@@ -7118,11 +6465,6 @@ type ProjectMilestoneConnection {
 input ProjectMilestoneCreateInput {
   """The description of the project milestone in markdown format."""
   description: String
-
-  """
-  [Internal] The description of the project milestone as a Prosemirror document.
-  """
-  descriptionData: JSONObject
 
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
@@ -7225,9 +6567,6 @@ input ProjectMilestoneMoveIssueToTeamInput {
 }
 
 type ProjectMilestoneMovePayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
   """
   A snapshot of the issues that were moved to new teams, if the user selected to do it, containing an array of mappings between an issue and its previous team. Store on the client to use for undoing a previous milestone move.
   """
@@ -7265,9 +6604,6 @@ input ProjectMilestoneMoveProjectTeamsInput {
 }
 
 type ProjectMilestonePayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
   """The project milestone that was created or updated."""
   projectMilestone: ProjectMilestone!
 
@@ -7286,11 +6622,6 @@ enum ProjectMilestoneStatus {
 input ProjectMilestoneUpdateInput {
   """The description of the project milestone in markdown format."""
   description: String
-
-  """
-  [Internal] The description of the project milestone as a Prosemirror document.
-  """
-  descriptionData: JSONObject
 
   """The name of the project milestone."""
   name: String
@@ -7487,9 +6818,6 @@ type ProjectSearchResult implements Node {
   """The time at which the project was moved into canceled state."""
   canceledAt: DateTime
 
-  """The project's color."""
-  color: String!
-
   """Comments associated with the project overview."""
   comments(
     """A cursor to be used with first for forward pagination"""
@@ -7532,9 +6860,6 @@ type ProjectSearchResult implements Node {
   """The project's content in markdown format."""
   content: String
 
-  """[Internal] The project's content as YJS state."""
-  contentState: String
-
   """The project was created based on this issue."""
   convertedFromIssue: Issue
 
@@ -7543,9 +6868,6 @@ type ProjectSearchResult implements Node {
 
   """The user who created the project."""
   creator: User
-
-  """[INTERNAL] The current progress of the project."""
-  currentProgress: JSONObject!
 
   """The project's description."""
   description: String!
@@ -7576,9 +6898,6 @@ type ProjectSearchResult implements Node {
     """
     orderBy: PaginationOrderBy
   ): EntityExternalLinkConnection!
-
-  """The resolution of the reminder frequency."""
-  frequencyResolution: FrequencyResolutionType!
 
   """The health of the project."""
   health: ProjectUpdateHealthType
@@ -7612,9 +6931,6 @@ type ProjectSearchResult implements Node {
     """
     orderBy: PaginationOrderBy
   ): ProjectHistoryConnection!
-
-  """The icon of the project."""
-  icon: String
 
   """The unique identifier of the entity."""
   id: ID!
@@ -7805,9 +7121,6 @@ type ProjectSearchResult implements Node {
   """
   progress: Float!
 
-  """[INTERNAL] The progress history of the project."""
-  progressHistory: JSONObject!
-
   """Milestones associated with the project."""
   projectMilestones(
     """A cursor to be used with first for forward pagination"""
@@ -7837,9 +7150,6 @@ type ProjectSearchResult implements Node {
     """
     orderBy: PaginationOrderBy
   ): ProjectMilestoneConnection!
-
-  """The time until which project update reminders are paused."""
-  projectUpdateRemindersPausedUntilAt: DateTime
 
   """Project updates associated with the project."""
   projectUpdates(
@@ -7915,9 +7225,6 @@ type ProjectSearchResult implements Node {
 
   """The time at which the project was moved into started state."""
   startedAt: DateTime
-
-  """[DEPRECATED] The type of the state."""
-  state: String! @deprecated(reason: "Use project.status instead")
 
   """The status that the project is associated with."""
   status: ProjectStatus!
@@ -8042,9 +7349,6 @@ type ProjectStatus implements Node {
   """
   archivedAt: DateTime
 
-  """The UI color of the status as a HEX string."""
-  color: String!
-
   """The time at which the entity was created."""
   createdAt: DateTime!
 
@@ -8078,9 +7382,6 @@ type ProjectStatusArchivePayload implements ArchivePayload {
   """The archived/unarchived entity. Null if entity was deleted."""
   entity: ProjectStatus
 
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
   """Whether the operation was successful."""
   success: Boolean!
 }
@@ -8107,8 +7408,6 @@ type ProjectStatusCountPayload {
 }
 
 input ProjectStatusCreateInput {
-  """The UI color of the status as a HEX string."""
-  color: String!
 
   """Description of the status."""
   description: String
@@ -8175,9 +7474,6 @@ input ProjectStatusFilter {
 }
 
 type ProjectStatusPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
   """The project status that was created or updated."""
   status: ProjectStatus!
 
@@ -8205,9 +7501,6 @@ enum ProjectStatusType {
 }
 
 input ProjectStatusUpdateInput {
-  """The UI color of the status as a HEX string."""
-  color: String
-
   """Description of the status."""
   description: String
 
@@ -8239,9 +7532,6 @@ type ProjectUpdate implements Node {
 
   """The update content in markdown format."""
   body: String!
-
-  """[Internal] The content of the update as a Prosemirror document."""
-  bodyData: String!
 
   """Comments associated with the project update."""
   comments(
@@ -8293,11 +7583,6 @@ type ProjectUpdate implements Node {
   """The unique identifier of the entity."""
   id: ID!
 
-  """
-  [Internal] Serialized JSON representing current state of the project properties when posting the project update.
-  """
-  infoSnapshot: JSONObject
-
   """Whether project update diff should be hidden."""
   isDiffHidden: Boolean!
 
@@ -8328,9 +7613,6 @@ type ProjectUpdateArchivePayload implements ArchivePayload {
   """The archived/unarchived entity. Null if entity was deleted."""
   entity: ProjectUpdate
 
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
   """Whether the operation was successful."""
   success: Boolean!
 }
@@ -8344,11 +7626,6 @@ type ProjectUpdateConnection {
 input ProjectUpdateCreateInput {
   """The content of the project update in markdown format."""
   body: String
-
-  """
-  [Internal] The content of the project update as a Prosemirror document.
-  """
-  bodyData: JSON
 
   """The health of the project at the time of the update."""
   health: ProjectUpdateHealthType
@@ -8410,9 +7687,6 @@ input ProjectUpdateInput {
   """The date when the project was canceled."""
   canceledAt: DateTime
 
-  """The color of the project."""
-  color: String
-
   """The date when the project was completed."""
   completedAt: DateTime
 
@@ -8424,12 +7698,6 @@ input ProjectUpdateInput {
 
   """The description for the project."""
   description: String
-
-  """The frequency resolution."""
-  frequencyResolution: FrequencyResolutionType
-
-  """The icon of the project."""
-  icon: String
 
   """The identifiers of the project labels associated with this project."""
   labelIds: [String!]
@@ -8466,9 +7734,6 @@ input ProjectUpdateInput {
   """The resolution of the project's start date."""
   startDateResolution: DateResolutionType
 
-  """[DEPRECATED] The state of the project."""
-  state: String @deprecated(reason: "Use statusId instead")
-
   """The ID of the project status."""
   statusId: String
 
@@ -8483,28 +7748,9 @@ input ProjectUpdateInput {
 
   """Whether the project has been trashed."""
   trashed: Boolean
-
-  """
-  The frequency at which to prompt for updates. When not set, reminders are inherited from workspace.
-  """
-  updateReminderFrequency: Float
-
-  """
-  The n-weekly frequency at which to prompt for updates. When not set, reminders are inherited from workspace.
-  """
-  updateReminderFrequencyInWeeks: Float
-
-  """The day at which to prompt for updates."""
-  updateRemindersDay: Day
-
-  """The hour at which to prompt for updates."""
-  updateRemindersHour: Int
 }
 
 type ProjectUpdatePayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
   """The project update that was created or updated."""
   projectUpdate: ProjectUpdate!
 
@@ -8521,9 +7767,6 @@ enum ProjectUpdateReminderFrequency {
 }
 
 type ProjectUpdateReminderPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
   """Whether the operation was successful."""
   success: Boolean!
 }
@@ -8531,9 +7774,6 @@ type ProjectUpdateReminderPayload {
 input ProjectUpdateUpdateInput {
   """The content of the project update in markdown format."""
   body: String
-
-  """The content of the project update as a Prosemirror document."""
-  bodyData: JSON
 
   """The health of the project at the time of the update."""
   health: ProjectUpdateHealthType
@@ -8674,12 +7914,6 @@ type Query {
     orderBy: PaginationOrderBy
   ): ApiKeyConnection!
 
-  """Get basic information for an application."""
-  applicationInfo(
-    """The client ID of the application."""
-    clientId: String!
-  ): Application!
-
   """[Internal] All archived teams of the organization."""
   archivedTeams: [Team!]!
 
@@ -8727,39 +7961,6 @@ type Query {
     """
     orderBy: PaginationOrderBy
   ): CommentConnection!
-
-  """A specific emoji."""
-  emoji(
-    """The identifier or the name of the emoji to retrieve."""
-    id: String!
-  ): Emoji!
-
-  """All custom emojis."""
-  emojis(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): EmojiConnection!
 
   """One specific entity link."""
   entityExternalLink(id: String!): EntityExternalLink!
@@ -8979,47 +8180,6 @@ type Query {
     """
     orderBy: PaginationOrderBy
   ): IssueRelationConnection!
-
-  """
-  [DEPRECATED] Search issues. This endpoint is deprecated and will be removed in the future – use `searchIssues` instead.
-  """
-  issueSearch(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned issues."""
-    filter: IssueFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-
-    """[Deprecated] Search string to look for."""
-    query: String
-  ): IssueConnection!
-
-  """Find issue based on the VCS branch name."""
-  issueVcsBranchSearch(
-    """The VCS branch name to search for."""
-    branchName: String!
-  ): Issue
 
   """All issues."""
   issues(
@@ -9302,64 +8462,6 @@ type Query {
   """The status of the rate limiter."""
   rateLimitStatus: RateLimitPayload!
 
-  """One specific roadmap."""
-  roadmap(id: String!): Roadmap! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """One specific roadmapToProject."""
-  roadmapToProject(id: String!): RoadmapToProject! @deprecated(reason: "RoadmapToProject is deprecated, use InitiativeToProject instead.")
-  roadmapToProjects(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): RoadmapToProjectConnection! @deprecated(reason: "RoadmapToProject is deprecated, use InitiativeToProject instead.")
-
-  """All roadmaps in the workspace."""
-  roadmaps(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): RoadmapConnection! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
   """Search issues."""
   searchIssues(
     """A cursor to be used with first for forward pagination"""
@@ -9459,22 +8561,6 @@ type Query {
     types: [SemanticSearchResultType!]
   ): SemanticSearchPayload!
 
-  """Fetch SSO login URL for the email provided."""
-  ssoUrlFromEmail(
-    """Email to query the SSO login URL by."""
-    email: String!
-
-    """Whether the client is the desktop app."""
-    isDesktop: Boolean
-  ): SsoUrlFromEmailResponse!
-
-  """
-  [Internal] AI summary of the latest project updates for the given projects
-  """
-  summarizeProjectUpdates(
-    """The identifiers of the projects to summarize."""
-    ids: [String!]!
-  ): SummaryPayload!
 
   """One specific team."""
   team(id: String!): Team!
@@ -9621,49 +8707,8 @@ type Query {
     sort: [UserSortInput!]
   ): UserConnection!
 
-  """
-  Verify that we received the correct response from the GitHub Enterprise Server.
-  """
-  verifyGitHubEnterpriseServerInstallation(
-    """The integration ID."""
-    integrationId: String!
-  ): GitHubEnterpriseServerInstallVerificationPayload!
-
   """The currently authenticated user."""
   viewer: User!
-
-  """A specific webhook."""
-  webhook(
-    """The identifier of the webhook to retrieve."""
-    id: String!
-  ): Webhook!
-
-  """All webhooks."""
-  webhooks(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): WebhookConnection!
 
   """One specific state."""
   workflowState(id: String!): WorkflowState!
@@ -9741,274 +8786,6 @@ input RelationExistsComparator {
   neq: Boolean
 }
 
-"""Features release channel."""
-enum ReleaseChannel {
-  beta
-  development
-  internal
-  preRelease
-  public
-}
-
-"""[Deprecated] A roadmap for projects."""
-type Roadmap implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The roadmap's color."""
-  color: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who created the roadmap."""
-  creator: User!
-
-  """The description of the roadmap."""
-  description: String
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The name of the roadmap."""
-  name: String!
-
-  """The organization of the roadmap."""
-  organization: Organization!
-
-  """The user who owns the roadmap."""
-  owner: User
-
-  """Projects associated with the roadmap."""
-  projects(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned projects."""
-    filter: ProjectFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): ProjectConnection!
-
-  """The roadmap's unique URL slug."""
-  slugId: String!
-
-  """The sort order of the roadmap within the organization."""
-  sortOrder: Float!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The canonical url for the roadmap."""
-  url: String!
-}
-
-"""A generic payload return from entity archive mutations."""
-type RoadmapArchivePayload implements ArchivePayload {
-  """The archived/unarchived entity. Null if entity was deleted."""
-  entity: Roadmap
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-"""Roadmap collection filtering options."""
-input RoadmapCollectionFilter {
-  """Compound filters, all of which need to be matched by the roadmap."""
-  and: [RoadmapCollectionFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the roadmap creator must satisfy."""
-  creator: UserFilter
-
-  """Filters that needs to be matched by all roadmaps."""
-  every: RoadmapFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the collection length."""
-  length: NumberComparator
-
-  """Comparator for the roadmap name."""
-  name: StringComparator
-
-  """Compound filters, one of which need to be matched by the roadmap."""
-  or: [RoadmapCollectionFilter!]
-
-  """Comparator for the roadmap slug ID."""
-  slugId: StringComparator
-
-  """Filters that needs to be matched by some roadmaps."""
-  some: RoadmapFilter
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-type RoadmapConnection {
-  edges: [RoadmapEdge!]!
-  nodes: [Roadmap!]!
-  pageInfo: PageInfo!
-}
-
-input RoadmapCreateInput {
-  """The roadmap's color."""
-  color: String
-
-  """The description of the roadmap."""
-  description: String
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The name of the roadmap."""
-  name: String!
-
-  """The owner of the roadmap."""
-  ownerId: String
-
-  """The sort order of the roadmap within the organization."""
-  sortOrder: Float
-}
-
-type RoadmapEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Roadmap!
-}
-
-"""Roadmap filtering options."""
-input RoadmapFilter {
-  """Compound filters, all of which need to be matched by the roadmap."""
-  and: [RoadmapFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the roadmap creator must satisfy."""
-  creator: UserFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Comparator for the roadmap name."""
-  name: StringComparator
-
-  """Compound filters, one of which need to be matched by the roadmap."""
-  or: [RoadmapFilter!]
-
-  """Comparator for the roadmap slug ID."""
-  slugId: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-type RoadmapPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """The roadmap that was created or updated."""
-  roadmap: Roadmap!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-
-type RoadmapToProjectConnection {
-  edges: [RoadmapToProjectEdge!]!
-  nodes: [RoadmapToProject!]!
-  pageInfo: PageInfo!
-}
-
-input RoadmapToProjectCreateInput {
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The identifier of the project."""
-  projectId: String!
-
-  """The identifier of the roadmap."""
-  roadmapId: String!
-
-  """The sort order for the project within its organization."""
-  sortOrder: Float
-}
-
-type RoadmapToProjectEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: RoadmapToProject!
-}
-
-type RoadmapToProjectPayload {
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """The roadmapToProject that was created or updated."""
-  roadmapToProject: RoadmapToProject!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-input RoadmapToProjectUpdateInput {
-  """The sort order for the project within its organization."""
-  sortOrder: Float
-}
-
-input RoadmapUpdateInput {
-  """The roadmap's color."""
-  color: String
-
-  """The description of the roadmap."""
-  description: String
-
-  """The name of the roadmap."""
-  name: String
-
-  """The owner of the roadmap."""
-  ownerId: String
-
-  """The sort order of the roadmap within the organization."""
-  sortOrder: Float
-}
-
 """Issue root-issue sorting options."""
 input RootIssueSort {
   """Whether nulls should be sorted first or last"""
@@ -10019,11 +8796,6 @@ input RootIssueSort {
 
   """The sort to apply to the root issues"""
   sort: IssueSortInput!
-}
-
-enum SLADayCountType {
-  all
-  onlyBusinessDays
 }
 
 
@@ -10048,8 +8820,6 @@ type SemanticSearchPayload {
 
 """A semantic search result reference."""
 type SemanticSearchResult implements Node {
-  """The document related to the semantic search result."""
-  document: Document
 
   """The unique identifier of the entity."""
   id: ID!
@@ -10073,28 +8843,6 @@ enum SemanticSearchResultType {
   issue
   project
 }
-
-enum SendStrategy {
-  desktop
-  desktopAndPush
-  desktopThenPush
-  push
-}
-
-input SentrySettingsInput {
-  """The ID of the Sentry organization being connected."""
-  organizationId: ID!
-
-  """The slug of the Sentry organization being connected."""
-  organizationSlug: String!
-
-  """Whether Sentry issues resolving completes Linear issues."""
-  resolvingCompletesIssues: Boolean!
-
-  """Whether Sentry issues unresolving reopens Linear issues."""
-  unresolvingReopensIssues: Boolean!
-}
-
 
 enum SlaStatus {
   Breached
@@ -10925,76 +9673,12 @@ input TeamSort {
 }
 
 input TeamUpdateInput {
-  """Whether to enable resolved thread AI summaries."""
-  aiThreadSummariesEnabled: Boolean
-
-  """
-  Period after which closed and completed issues are automatically archived, in months.
-  """
-  autoArchivePeriod: Float
-
-  """
-  [INTERNAL] Whether to automatically close all sub-issues when a parent issue in this team is closed.
-  """
-  autoCloseChildIssues: Boolean
-
-  """
-  [INTERNAL] Whether to automatically close a parent issue in this team if all its sub-issues are closed.
-  """
-  autoCloseParentIssues: Boolean
-
-  """Period after which issues are automatically closed, in months."""
-  autoClosePeriod: Float
-
-  """The canceled workflow state which auto closed issues will be set to."""
-  autoCloseStateId: String
-
-  """The color of the team."""
-  color: String
-
-  """What to use as an default estimate for unestimated issues."""
-  defaultIssueEstimate: Float
 
   """Default status for newly created issues."""
   defaultIssueStateId: String
 
   """The description of the team."""
   description: String
-
-  """Whether to group recent issue history entries."""
-  groupIssueHistory: Boolean
-
-  """The icon of the team."""
-  icon: String
-
-  """
-  Whether the team should inherit estimation settings from its parent. Only applies to sub-teams.
-  """
-  inheritIssueEstimation: Boolean
-
-  """
-  [Internal] Whether the team should inherit its product intelligence scope from its parent. Only applies to sub-teams.
-  """
-  inheritProductIntelligenceScope: Boolean
-
-  """
-  [Internal] Whether the team should inherit workflow statuses from its parent.
-  """
-  inheritWorkflowStatuses: Boolean
-
-  """Whether to allow zeros in issues estimates."""
-  issueEstimationAllowZero: Boolean
-
-  """Whether to add additional points to the estimate scale."""
-  issueEstimationExtended: Boolean
-
-  """
-  The issue estimation type to use. Must be one of "notUsed", "exponential", "fibonacci", "linear", "tShirt".
-  """
-  issueEstimationType: String
-
-  """[DEPRECATED] Whether issues without priority should be sorted first."""
-  issueOrderingNoPriorityFirst: Boolean @deprecated(reason: "This setting is no longer in use.")
 
   """
   Whether new users should join this team by default. Mutation restricted to workspace admins!
@@ -11555,9 +10239,6 @@ type WorkflowState implements Node {
   """
   archivedAt: DateTime
 
-  """The state's UI color as a HEX string."""
-  color: String!
-
   """The time at which the entity was created."""
   createdAt: DateTime!
 
@@ -11640,9 +10321,6 @@ type WorkflowStateConnection {
 }
 
 input WorkflowStateCreateInput {
-  """The color of the state."""
-  color: String!
-
   """The description of the state."""
   description: String
 
@@ -11736,9 +10414,6 @@ input WorkflowStateSort {
 }
 
 input WorkflowStateUpdateInput {
-  """The color of the state."""
-  color: String
-
   """The description of the state."""
   description: String
 
