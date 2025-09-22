@@ -60,15 +60,6 @@ type Comment implements Node {
   """The time at which the entity was created."""
   createdAt: DateTime!
 
-  """The time user edited the comment."""
-  editedAt: DateTime
-
-  """The external thread that the comment is synced with."""
-  externalThread: SyncedExternalThread
-
-  """The external user who wrote the comment."""
-  externalUser: ExternalUser
-
   """The unique identifier of the entity."""
   id: ID!
 
@@ -81,25 +72,8 @@ type Comment implements Node {
   """The parent comment under which the current comment is nested."""
   parent: Comment
 
-  """The post that the comment is associated with."""
-  post: Post
-
   """The project update that the comment is associated with."""
   projectUpdate: ProjectUpdate
-
-  """
-  The text that this comment references. Only defined for inline comments.
-  """
-  quotedText: String
-
-  """The time the resolvingUser resolved the thread."""
-  resolvedAt: DateTime
-
-  """The comment that resolved the thread."""
-  resolvingComment: Comment
-
-  """The user that resolved the thread."""
-  resolvingUser: User
 
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
@@ -190,21 +164,8 @@ input CommentCreateInput {
   """The parent comment under which to nest a current comment."""
   parentId: String
 
-  """The post to associate the comment with."""
-  postId: String
-
   """The project update to associate the comment with."""
   projectUpdateId: String
-
-  """
-  The text that this comment references. Only defined for inline comments.
-  """
-  quotedText: String
-
-  """
-  [INTERNAL] The identifiers of the users subscribing to this comment thread.
-  """
-  subscriberIds: [String!]
 }
 
 type CommentEdge {
@@ -260,20 +221,6 @@ type CommentPayload {
 input CommentUpdateInput {
   """The comment content."""
   body: String
-
-  """
-  The text that this comment references. Only defined for inline comments.
-  """
-  quotedText: String
-
-  """[INTERNAL] The child comment that resolves this thread."""
-  resolvingCommentId: String
-
-  """[INTERNAL] The user who resolved this thread."""
-  resolvingUserId: String
-
-  """[INTERNAL] The identifiers of the users subscribing to this comment."""
-  subscriberIds: [String!]
 }
 
 """Issue completion date sorting options."""
@@ -433,106 +380,6 @@ interface Entity implements Node {
   updatedAt: DateTime!
 }
 
-"""An external link for an entity like initiative, etc..."""
-type EntityExternalLink implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who created the link."""
-  creator: User!
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The initiative that the link is associated with."""
-  initiative: Initiative
-
-  """The link's label."""
-  label: String!
-
-  """The order of the item in the resources list."""
-  sortOrder: Float!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The link's URL."""
-  url: String!
-}
-
-type EntityExternalLinkConnection {
-  edges: [EntityExternalLinkEdge!]!
-  nodes: [EntityExternalLink!]!
-  pageInfo: PageInfo!
-}
-
-input EntityExternalLinkCreateInput {
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The initiative associated with the link."""
-  initiativeId: String
-
-  """The label for the link."""
-  label: String!
-
-  """The project associated with the link."""
-  projectId: String
-
-  """[Internal] The resource folder containing the link."""
-  resourceFolderId: String
-
-  """The order of the item in the entities resources list."""
-  sortOrder: Float
-
-  """[Internal] The team associated with the link."""
-  teamId: String
-
-  """The URL of the link."""
-  url: String!
-}
-
-type EntityExternalLinkEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: EntityExternalLink!
-}
-
-type EntityExternalLinkPayload {
-  """The link that was created or updated."""
-  entityExternalLink: EntityExternalLink!
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-input EntityExternalLinkUpdateInput {
-  """The label for the link."""
-  label: String
-
-  """[Internal] The resource folder containing the link."""
-  resourceFolderId: String
-
-  """The order of the item in the entities resources list."""
-  sortOrder: Float
-
-  """The URL of the link."""
-  url: String
-}
-
 type FetchDataPayload {
   """The fetched data based on the natural language query."""
   data: JSONObject
@@ -598,15 +445,6 @@ type Initiative implements Node {
   """The description of the initiative."""
   description: String
 
-  """The resolution of the reminder frequency."""
-  frequencyResolution: FrequencyResolutionType!
-
-  """The health of the initiative."""
-  health: InitiativeUpdateHealthType
-
-  """The time at which the initiative health was updated."""
-  healthUpdatedAt: DateTime
-
   """History entries associated with the initiative."""
   history(
     """A cursor to be used with first for forward pagination"""
@@ -639,33 +477,6 @@ type Initiative implements Node {
 
   """The last initiative update posted for this initiative."""
   lastUpdate: InitiativeUpdate
-
-  """Links associated with the initiative."""
-  links(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): EntityExternalLinkConnection!
 
   """The name of the initiative."""
   name: String!
@@ -827,14 +638,6 @@ input InitiativeCollectionFilter {
   """Filters that needs to be matched by all initiatives."""
   every: InitiativeFilter
 
-  """Comparator for the initiative health: onTrack, atRisk, offTrack"""
-  health: StringComparator
-
-  """
-  Comparator for the initiative health (with age): onTrack, atRisk, offTrack, outdated, noUpdate
-  """
-  healthWithAge: StringComparator
-
   """Comparator for the identifier."""
   id: IDComparator
 
@@ -939,14 +742,6 @@ input InitiativeFilter {
   """Filters that the initiative creator must satisfy."""
   creator: NullableUserFilter
 
-  """Comparator for the initiative health: onTrack, atRisk, offTrack"""
-  health: StringComparator
-
-  """
-  Comparator for the initiative health (with age): onTrack, atRisk, offTrack, outdated, noUpdate
-  """
-  healthWithAge: StringComparator
-
   """Comparator for the identifier."""
   id: IDComparator
 
@@ -973,24 +768,6 @@ input InitiativeFilter {
 
   """Comparator for the updated at date."""
   updatedAt: DateComparator
-}
-
-"""Initiative health sorting options."""
-input InitiativeHealthSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
-}
-
-"""Initiative health update date sorting options."""
-input InitiativeHealthUpdatedAtSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
 }
 
 """A initiative history containing relevant change events."""
@@ -1131,12 +908,6 @@ input InitiativeRelationUpdateInput {
 input InitiativeSortInput {
   """Sort by initiative creation date."""
   createdAt: InitiativeCreatedAtSort
-
-  """Sort by initiative health status."""
-  health: InitiativeHealthSort
-
-  """Sort by initiative health update date."""
-  healthUpdatedAt: InitiativeHealthUpdatedAtSort
 
   """Sort by manual order."""
   manual: InitiativeManualSort
@@ -1306,9 +1077,6 @@ type InitiativeUpdate implements Node {
   """The time the update was edited."""
   editedAt: DateTime
 
-  """The health at the time of the update."""
-  health: InitiativeUpdateHealthType!
-
   """The unique identifier of the entity."""
   id: ID!
 
@@ -1365,9 +1133,6 @@ input InitiativeUpdateCreateInput {
   """The content of the update in markdown format."""
   body: String
 
-  """The health of the initiative at the time of the update."""
-  health: InitiativeUpdateHealthType
-
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
   """
@@ -1414,13 +1179,6 @@ input InitiativeUpdateFilter {
 
   """Filters that the initiative update creator must satisfy."""
   user: UserFilter
-}
-
-"""The health type when the update is created."""
-enum InitiativeUpdateHealthType {
-  atRisk
-  offTrack
-  onTrack
 }
 
 """The properties of the initiative to update."""
@@ -1494,9 +1252,6 @@ type InitiativeUpdateReminderPayload {
 input InitiativeUpdateUpdateInput {
   """The content of the update in markdown format."""
   body: String
-
-  """The health of the initiative at the time of the update."""
-  health: InitiativeUpdateHealthType
 
   """
   Whether the diff between the current update and the previous one should be hidden.
@@ -2474,12 +2229,8 @@ type IssueLabel implements Node {
     orderBy: PaginationOrderBy
   ): IssueConnection!
 
-  """The date when the label was last applied to an issue or project."""
-  lastAppliedAt: DateTime
-
   """The label's name."""
   name: String!
-  organization: Organization! @deprecated(reason: "Workspace labels are identified by their team being null.")
 
   """The parent label."""
   parent: IssueLabel
@@ -3275,39 +3026,6 @@ type Mutation {
     """A partial comment object to update the comment with."""
     input: CommentUpdateInput!
   ): CommentPayload!
-
-  """Creates a custom emoji."""
-  emojiCreate(
-    """The emoji object to create."""
-    input: EmojiCreateInput!
-  ): EmojiPayload!
-
-  """Deletes an emoji."""
-  emojiDelete(
-    """The identifier of the emoji to delete."""
-    id: String!
-  ): DeletePayload!
-
-  """Creates a new entity link."""
-  entityExternalLinkCreate(
-    """The entity link object to create."""
-    input: EntityExternalLinkCreateInput!
-  ): EntityExternalLinkPayload!
-
-  """Deletes an entity link."""
-  entityExternalLinkDelete(
-    """The identifier of the entity link to delete."""
-    id: String!
-  ): DeletePayload!
-
-  """Updates an entity link."""
-  entityExternalLinkUpdate(
-    """The identifier of the entity link to update."""
-    id: String!
-
-    """The entity link object to update."""
-    input: EntityExternalLinkUpdateInput!
-  ): EntityExternalLinkPayload!
 
   """Archives a initiative."""
   initiativeArchive(
@@ -4455,13 +4173,6 @@ input NullableProjectFilter {
   """Comparator for filtering projects with violated dependencies."""
   hasViolatedRelations: RelationExistsComparator
 
-  """Comparator for the project health: onTrack, atRisk, offTrack"""
-  health: StringComparator
-
-  """
-  Comparator for the project health (with age): onTrack, atRisk, offTrack, outdated, noUpdate
-  """
-  healthWithAge: StringComparator
 
   """Comparator for the identifier."""
   id: IDComparator
@@ -5260,11 +4971,6 @@ type Project implements Node {
   """
   archivedAt: DateTime
 
-  """
-  The time at which the project was automatically archived by the auto pruning process.
-  """
-  autoArchivedAt: DateTime
-
   """The time at which the project was moved into canceled state."""
   canceledAt: DateTime
 
@@ -5304,14 +5010,8 @@ type Project implements Node {
   """The number of completed issues in the project after each week."""
   completedIssueCountHistory: [Float!]!
 
-  """The number of completed estimation points after each week."""
-  completedScopeHistory: [Float!]!
-
   """The project's content in markdown format."""
   content: String
-
-  """[Internal] The project's content as YJS state."""
-  contentState: String
 
   """The project was created based on this issue."""
   convertedFromIssue: Issue
@@ -5322,48 +5022,8 @@ type Project implements Node {
   """The user who created the project."""
   creator: User
 
-  """[INTERNAL] The current progress of the project."""
-  currentProgress: JSONObject!
-
   """The project's description."""
   description: String!
-
-  """External links associated with the project."""
-  externalLinks(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): EntityExternalLinkConnection!
-
-
-  """The resolution of the reminder frequency."""
-  frequencyResolution: FrequencyResolutionType!
-
-  """The health of the project."""
-  health: ProjectUpdateHealthType
-
-  """The time at which the project health was updated."""
-  healthUpdatedAt: DateTime
 
   """History entries associated with the project."""
   history(
@@ -5394,9 +5054,6 @@ type Project implements Node {
 
   """The unique identifier of the entity."""
   id: ID!
-
-  """The number of in progress estimation points after each week."""
-  inProgressScopeHistory: [Float!]!
 
   """Initiatives that this project belongs to."""
   initiatives(
@@ -5574,13 +5231,6 @@ type Project implements Node {
   """
   prioritySortOrder: Float!
 
-  """
-  The overall progress of the project. This is the (completed estimate points + 0.25 * in progress estimate points) / total estimate points.
-  """
-  progress: Float!
-
-  """[INTERNAL] The progress history of the project."""
-  progressHistory: JSONObject!
 
   """Milestones associated with the project."""
   projectMilestones(
@@ -5666,23 +5316,12 @@ type Project implements Node {
     orderBy: PaginationOrderBy
   ): ProjectRelationConnection!
 
-  """The overall scope (total estimate points) of the project."""
-  scope: Float!
-
-  """The total number of estimation points after each week."""
-  scopeHistory: [Float!]!
 
   """The project's unique URL slug."""
   slugId: String!
 
-  """The sort order for the project within the organization."""
-  sortOrder: Float!
-
   """The estimated start date of the project."""
   startDate: TimelessDate
-
-  """The resolution of the project's start date."""
-  startDateResolution: DateResolutionType
 
   """The time at which the project was moved into started state."""
   startedAt: DateTime
@@ -5692,9 +5331,6 @@ type Project implements Node {
 
   """The estimated completion date of the project."""
   targetDate: TimelessDate
-
-  """The resolution of the project's estimated completion date."""
-  targetDateResolution: DateResolutionType
 
   """Teams associated with this project."""
   teams(
@@ -5796,14 +5432,6 @@ input ProjectCollectionFilter {
 
   """Comparator for filtering projects with violated dependencies."""
   hasViolatedRelations: RelationExistsComparator
-
-  """Comparator for the project health: onTrack, atRisk, offTrack"""
-  health: StringComparator
-
-  """
-  Comparator for the project health (with age): onTrack, atRisk, offTrack, outdated, noUpdate
-  """
-  healthWithAge: StringComparator
 
   """Comparator for the identifier."""
   id: IDComparator
@@ -5997,14 +5625,6 @@ input ProjectFilter {
   """Comparator for filtering projects with violated dependencies."""
   hasViolatedRelations: RelationExistsComparator
 
-  """Comparator for the project health: onTrack, atRisk, offTrack"""
-  health: StringComparator
-
-  """
-  Comparator for the project health (with age): onTrack, atRisk, offTrack, outdated, noUpdate
-  """
-  healthWithAge: StringComparator
-
   """Comparator for the identifier."""
   id: IDComparator
 
@@ -6066,15 +5686,6 @@ input ProjectFilter {
   updatedAt: DateComparator
 }
 
-
-"""Project health sorting options."""
-input ProjectHealthSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
-}
 
 """An history associated with a project."""
 type ProjectHistory implements Node {
@@ -6872,39 +6483,6 @@ type ProjectSearchResult implements Node {
   """The project's description."""
   description: String!
 
-  """External links associated with the project."""
-  externalLinks(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): EntityExternalLinkConnection!
-
-  """The health of the project."""
-  health: ProjectUpdateHealthType
-
-  """The time at which the project health was updated."""
-  healthUpdatedAt: DateTime
-
   """History entries associated with the project."""
   history(
     """A cursor to be used with first for forward pagination"""
@@ -7314,9 +6892,6 @@ input ProjectSortInput {
   """Sort by project creation date"""
   createdAt: ProjectCreatedAtSort
 
-  """Sort by project health status."""
-  health: ProjectHealthSort
-
   """Sort by project lead name."""
   lead: ProjectLeadSort
 
@@ -7577,9 +7152,6 @@ type ProjectUpdate implements Node {
   """The time the update was edited."""
   editedAt: DateTime
 
-  """The health of the project at the time of the update."""
-  health: ProjectUpdateHealthType!
-
   """The unique identifier of the entity."""
   id: ID!
 
@@ -7627,9 +7199,6 @@ input ProjectUpdateCreateInput {
   """The content of the project update in markdown format."""
   body: String
 
-  """The health of the project at the time of the update."""
-  health: ProjectUpdateHealthType
-
   """The identifier. If none is provided, the backend will generate one."""
   id: String
 
@@ -7674,13 +7243,6 @@ input ProjectUpdateFilter {
 
   """Filters that the project update creator must satisfy."""
   user: UserFilter
-}
-
-"""The health type when the project update is created."""
-enum ProjectUpdateHealthType {
-  atRisk
-  offTrack
-  onTrack
 }
 
 input ProjectUpdateInput {
@@ -7775,9 +7337,6 @@ input ProjectUpdateUpdateInput {
   """The content of the project update in markdown format."""
   body: String
 
-  """The health of the project at the time of the update."""
-  health: ProjectUpdateHealthType
-
   """
   Whether the diff between the current update and the previous one should be hidden.
   """
@@ -7808,9 +7367,6 @@ input ProjectUpdatesCollectionFilter {
   """Filters that needs to be matched by all updates."""
   every: ProjectUpdatesFilter
 
-  """Comparator for the project update health."""
-  health: StringComparator
-
   """Comparator for the identifier."""
   id: IDComparator
 
@@ -7836,9 +7392,6 @@ input ProjectUpdatesFilter {
 
   """Comparator for the created at date."""
   createdAt: DateComparator
-
-  """Comparator for the project update health."""
-  health: StringComparator
 
   """Comparator for the identifier."""
   id: IDComparator
@@ -7961,9 +7514,6 @@ type Query {
     """
     orderBy: PaginationOrderBy
   ): CommentConnection!
-
-  """One specific entity link."""
-  entityExternalLink(id: String!): EntityExternalLink!
 
   """
   [Internal] Fetch an arbitrary set of data using natural language query. Be specific about what you want including properties for each entity, sort order, filters, limit and properties.
