@@ -3581,60 +3581,6 @@ type Mutation {
     email: String!
   ): DeletePayload!
 
-  """Archives a roadmap."""
-  roadmapArchive(
-    """The identifier of the roadmap to archive."""
-    id: String!
-  ): RoadmapArchivePayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """Creates a new roadmap."""
-  roadmapCreate(
-    """The properties of the roadmap to create."""
-    input: RoadmapCreateInput!
-  ): RoadmapPayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """Deletes a roadmap."""
-  roadmapDelete(
-    """The identifier of the roadmap to delete."""
-    id: String!
-  ): DeletePayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """Creates a new roadmapToProject join."""
-  roadmapToProjectCreate(
-    """The properties of the roadmapToProject to create."""
-    input: RoadmapToProjectCreateInput!
-  ): RoadmapToProjectPayload!
-
-  """Deletes a roadmapToProject."""
-  roadmapToProjectDelete(
-    """The identifier of the roadmapToProject to delete."""
-    id: String!
-  ): DeletePayload!
-
-  """Updates a roadmapToProject."""
-  roadmapToProjectUpdate(
-    """The identifier of the roadmapToProject to update."""
-    id: String!
-
-    """The properties of the roadmapToProject to update."""
-    input: RoadmapToProjectUpdateInput!
-  ): RoadmapToProjectPayload!
-
-  """Unarchives a roadmap."""
-  roadmapUnarchive(
-    """The identifier of the roadmap to unarchive."""
-    id: String!
-  ): RoadmapArchivePayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
-  """Updates a roadmap."""
-  roadmapUpdate(
-    """The identifier of the roadmap to update."""
-    id: String!
-
-    """The properties of the roadmap to update."""
-    input: RoadmapUpdateInput!
-  ): RoadmapPayload! @deprecated(reason: "Roadmaps are deprecated, use initiatives instead.")
-
   """
   Creates a new team. The user who creates the team will automatically be added as a member to the newly created team.
   """
@@ -4212,9 +4158,6 @@ input NullableProjectFilter {
 
   """Comparator for the project updates."""
   projectUpdates: ProjectUpdatesCollectionFilter
-
-  """Filters that the projects roadmaps must satisfy."""
-  roadmaps: RoadmapCollectionFilter
 
   """[Internal] Comparator for the project's content."""
   searchableContent: ContentComparator
@@ -8347,7 +8290,6 @@ input RootIssueSort {
   """The sort to apply to the root issues"""
   sort: IssueSortInput!
 }
-
 
 """Filters for semantic search results."""
 input SemanticSearchFilters {
