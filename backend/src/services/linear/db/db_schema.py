@@ -10,7 +10,7 @@ class LinearBase(DeclarativeBase):
 
 class Organization(LinearBase):
     __tablename__ = "organizations"
-    organization_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     url_key: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     allow_members_to_invite: Mapped[bool] = mapped_column(Boolean, default=True)
