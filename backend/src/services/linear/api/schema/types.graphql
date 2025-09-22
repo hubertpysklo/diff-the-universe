@@ -5960,69 +5960,15 @@ type OrganizationPayload {
   success: Boolean!
 }
 
-input OrganizationStartTrialInput {
-  """The plan type to trial."""
-  planType: String!
-}
-
-type OrganizationStartTrialPayload {
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
 input OrganizationUpdateInput {
-  """[INTERNAL] Whether the organization has enabled the AI add-on."""
-  aiAddonEnabled: Boolean
-
-  """[INTERNAL] Whether the organization has opted in to AI telemetry."""
-  aiTelemetryEnabled: Boolean
-
   """Whether member users are allowed to send invites."""
   allowMembersToInvite: Boolean
-
-  """Whether the organization has enabled the feed feature."""
-  feedEnabled: Boolean
-
-  """The month at which the fiscal year starts."""
-  fiscalYearStartMonth: Float
-
-
-  """
-  [ALPHA] The n-weekly frequency at which to prompt for initiative updates.
-  """
-  initiativeUpdateReminderFrequencyInWeeks: Float
-
-  """[ALPHA] The day at which initiative updates are sent."""
-  initiativeUpdateRemindersDay: Day
-
-  """[ALPHA] The hour at which initiative updates are sent."""
-  initiativeUpdateRemindersHour: Float
-
-  """
-  IP restriction configurations controlling allowed access the workspace.
-  """
-  ipRestrictions: [OrganizationIpRestrictionInput!]
-
-  """The logo of the organization."""
-  logoUrl: String
 
   """The name of the organization."""
   name: String
 
   """[INTERNAL] Whether the organization has enabled the member API keys."""
   personalApiKeysEnabled: Boolean
-
-  """The n-weekly frequency at which to prompt for project updates."""
-  projectUpdateReminderFrequencyInWeeks: Float
-
-  """The day at which project updates are sent."""
-  projectUpdateRemindersDay: Day
-
-  """The hour at which project updates are sent."""
-  projectUpdateRemindersHour: Float
-
-  """Whether agent invocation is restricted to full workspace members."""
-  restrictAgentInvocationToMembers: Boolean
 
   """Whether label creation is restricted to admins."""
   restrictLabelManagementToAdmins: Boolean
@@ -6033,17 +5979,9 @@ input OrganizationUpdateInput {
   """Whether the organization is using roadmap."""
   roadmapEnabled: Boolean
 
-  """Internal. Whether SLAs have been enabled for the organization."""
-  slaEnabled: Boolean
-
-  """[ALPHA] Theme settings for the organization."""
-  themeSettings: JSONObject
-
   """The URL key of the organization."""
   urlKey: String
 
-  """[Internal] The list of working days. Sunday is 0, Monday is 1, etc."""
-  workingDays: [Float!]
 }
 
 type PageInfo {
