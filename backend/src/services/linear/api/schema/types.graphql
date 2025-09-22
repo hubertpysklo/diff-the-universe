@@ -27,12 +27,6 @@ type Comment implements Node {
   """The comment content in markdown format."""
   body: String!
 
-  """[Internal] The comment content as a Prosemirror document."""
-  bodyData: String!
-
-  """The bot that created the comment."""
-  botActor: ActorBot
-
   """The children of the comment."""
   children(
     """A cursor to be used with first for forward pagination"""
@@ -107,12 +101,6 @@ type Comment implements Node {
   """The user that resolved the thread."""
   resolvingUser: User
 
-  """The external services the comment is synced with."""
-  syncedWith: [ExternalEntityInfo!]
-
-  """[Internal] A generated summary of the comment thread."""
-  threadSummary: JSONObject
-
   """
   The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
       been updated after creation.
@@ -178,28 +166,15 @@ input CommentCreateInput {
   """The comment content in markdown format."""
   body: String
 
-  """[Internal] The comment content as a Prosemirror document."""
-  bodyData: JSON
-
   """
   Create comment as a user with the provided name. This option is only available to OAuth applications creating comments in `actor=app` mode.
   """
   createAsUser: String
 
   """
-  Flag to indicate this comment should be created on the issue's synced Slack comment thread. If no synced Slack comment thread exists, the mutation will fail.
-  """
-  createOnSyncedSlackThread: Boolean
-
-  """
   The date when the comment was created (e.g. if importing from another system). Must be a date in the past. If none is provided, the backend will generate the time as now.
   """
   createdAt: DateTime
-
-  """
-  Provide an external user avatar URL. Can only be used in conjunction with the `createAsUser` options. This option is only available to OAuth applications creating comments in `actor=app` mode.
-  """
-  displayIconUrl: String
 
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
@@ -286,9 +261,6 @@ input CommentUpdateInput {
   """The comment content."""
   body: String
 
-  """[Internal] The comment content as a Prosemirror document."""
-  bodyData: JSON
-
   """
   The text that this comment references. Only defined for inline comments.
   """
@@ -313,16 +285,8 @@ input CompletedAtSort {
   order: PaginationSortOrder
 }
 
-enum ContextViewType {
-  activeIssues
-  backlog
-  triage
-}
-
 
 input CreateOrganizationInput {
-  """Whether the organization should allow email domain access."""
-  domainAccess: Boolean
 
   """The name of the organization."""
   name: String!
@@ -435,276 +399,6 @@ type DeletePayload implements ArchivePayload {
   success: Boolean!
 }
 
-"""A document that can be attached to different entities."""
-type Document implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """Comments associated with the document."""
-  comments(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned comments."""
-    filter: CommentFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): CommentConnection!
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who created the document."""
-  creator: User
-
-  """The ID of the document content associated with the document."""
-  documentContentId: String
-
-  """
-  The time at which the document was hidden. Null if the entity has not been hidden.
-  """
-  hiddenAt: DateTime
-
-  """The icon of the document."""
-  icon: String
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The initiative that the document is associated with."""
-  initiative: Initiative
-
-  """The project that the document is associated with."""
-  project: Project
-
-  """The document's unique URL slug."""
-  slugId: String!
-
-  """The order of the item in the resources list."""
-  sortOrder: Float!
-
-  """[Internal] The team that the document is associated with."""
-  team: Team
-
-  """The document title."""
-  title: String!
-
-  """A flag that indicates whether the document is in the trash bin."""
-  trashed: Boolean
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The user who last updated the document."""
-  updatedBy: User
-
-  """The canonical url for the document."""
-  url: String!
-}
-
-"""A generic payload return from entity archive mutations."""
-type DocumentArchivePayload implements ArchivePayload {
-  """The archived/unarchived entity. Null if entity was deleted."""
-  entity: Document
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type DocumentConnection {
-  edges: [DocumentEdge!]!
-  nodes: [Document!]!
-  pageInfo: PageInfo!
-}
-
-"""A document content for a project."""
-type DocumentContent implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The document content in markdown format."""
-  content: String
-
-  """The document content state as a base64 encoded string."""
-  contentState: String
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The document that the content is associated with."""
-  document: Document
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The initiative that the content is associated with."""
-  initiative: Initiative
-
-  """The issue that the content is associated with."""
-  issue: Issue
-
-  """The project that the content is associated with."""
-  project: Project
-
-  """The project milestone that the content is associated with."""
-  projectMilestone: ProjectMilestone
-
-  """
-  The time at which the document content was restored from a previous version.
-  """
-  restoredAt: DateTime
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-type DocumentContentHistoryPayload {
-  """The document content history entries."""
-  history: [DocumentContentHistoryType!]!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
-type DocumentContentHistoryType {
-  """The ID of the author of the change."""
-  actorIds: [String!]
-
-  """[Internal] The document content as Prosemirror document."""
-  contentData: JSON
-
-  """
-  The date when the document content history snapshot was taken. This can be different than createdAt since the content is captured from its state at the previously known updatedAt timestamp in the case of an update. On document create, these timestamps can be the same.
-  """
-  contentDataSnapshotAt: DateTime!
-
-  """The date when the document content history entry was created."""
-  createdAt: DateTime!
-
-  """The UUID of the document content history entry."""
-  id: String!
-}
-
-input DocumentCreateInput {
-  """The document content as markdown."""
-  content: String
-
-  """[Internal] The document content as a Prosemirror document."""
-  contentData: JSONObject @deprecated(reason: "Use content instead")
-
-  """The icon of the document."""
-  icon: String
-
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """[Internal] Related initiative for the document."""
-  initiativeId: String
-
-  """Related project for the document."""
-  projectId: String
-
-  """[Internal] The resource folder containing the document."""
-  resourceFolderId: String
-
-  """The order of the item in the resources list."""
-  sortOrder: Float
-
-  """[INTERNAL] The identifiers of the users subscribing to this document."""
-  subscriberIds: [String!]
-
-  """[Internal] Related team for the document."""
-  teamId: String
-
-  """The title of the document."""
-  title: String!
-}
-
-type DocumentEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Document!
-}
-
-"""Document filtering options."""
-input DocumentFilter {
-  """Compound filters, all of which need to be matched by the document."""
-  and: [DocumentFilter!]
-
-  """Comparator for the created at date."""
-  createdAt: DateComparator
-
-  """Filters that the document's creator must satisfy."""
-  creator: UserFilter
-
-  """Comparator for the identifier."""
-  id: IDComparator
-
-  """Filters that the document's initiative must satisfy."""
-  initiative: InitiativeFilter
-
-  """Compound filters, one of which need to be matched by the document."""
-  or: [DocumentFilter!]
-
-  """Filters that the document's project must satisfy."""
-  project: ProjectFilter
-
-  """Comparator for the document slug ID."""
-  slugId: StringComparator
-
-  """Comparator for the document title."""
-  title: StringComparator
-
-  """Comparator for the updated at date."""
-  updatedAt: DateComparator
-}
-
-
-type DocumentPayload {
-  """The document that was created or updated."""
-  document: Document!
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
-
 """Issue due date sorting options."""
 input DueDateSort {
   """Whether nulls should be sorted first or last"""
@@ -718,78 +412,6 @@ input DueDateSort {
 Represents a duration in ISO 8601 format. Accepts ISO 8601 duration strings or integers in milliseconds.
 """
 scalar Duration
-
-
-"""A custom emoji."""
-type Emoji implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The user who created the emoji."""
-  creator: User
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The emoji's name."""
-  name: String!
-
-  """The organization that the emoji belongs to."""
-  organization: Organization!
-
-  """The source of the emoji."""
-  source: String!
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-
-  """The emoji image URL."""
-  url: String!
-}
-
-type EmojiConnection {
-  edges: [EmojiEdge!]!
-  nodes: [Emoji!]!
-  pageInfo: PageInfo!
-}
-
-input EmojiCreateInput {
-  """
-  The identifier in UUID v4 format. If none is provided, the backend will generate one.
-  """
-  id: String
-
-  """The name of the custom emoji."""
-  name: String!
-
-  """The URL for the emoji."""
-  url: String!
-}
-
-type EmojiEdge {
-  """Used in `before` and `after` args"""
-  cursor: String!
-  node: Emoji!
-}
-
-type EmojiPayload {
-  """The emoji that was created."""
-  emoji: Emoji!
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
-  """Whether the operation was successful."""
-  success: Boolean!
-}
 
 """A basic entity."""
 interface Entity implements Node {
@@ -911,61 +533,6 @@ input EntityExternalLinkUpdateInput {
   url: String
 }
 
-"""Comparator for estimates."""
-input EstimateComparator {
-  """Compound filters, one of which need to be matched by the estimate."""
-  and: [NullableNumberComparator!]
-
-  """Equals constraint."""
-  eq: Float
-
-  """
-  Greater-than constraint. Matches any values that are greater than the given value.
-  """
-  gt: Float
-
-  """
-  Greater-than-or-equal constraint. Matches any values that are greater than or equal to the given value.
-  """
-  gte: Float
-
-  """In-array constraint."""
-  in: [Float!]
-
-  """
-  Less-than constraint. Matches any values that are less than the given value.
-  """
-  lt: Float
-
-  """
-  Less-than-or-equal constraint. Matches any values that are less than or equal to the given value.
-  """
-  lte: Float
-
-  """Not-equals constraint."""
-  neq: Float
-
-  """Not-in-array constraint."""
-  nin: [Float!]
-
-  """
-  Null constraint. Matches any non-null values if the given value is false, otherwise it matches null values.
-  """
-  null: Boolean
-
-  """Compound filters, all of which need to be matched by the estimate."""
-  or: [NullableNumberComparator!]
-}
-
-"""Issue estimate sorting options."""
-input EstimateSort {
-  """Whether nulls should be sorted first or last"""
-  nulls: PaginationNulls = last
-
-  """The order for the individual sort"""
-  order: PaginationSortOrder
-}
-
 type FetchDataPayload {
   """The fetched data based on the natural language query."""
   data: JSONObject
@@ -985,44 +552,6 @@ enum FrequencyResolutionType {
   daily
   weekly
 }
-
-input FrontSettingsInput {
-  """
-  Whether a ticket should be automatically reopened when its linked Linear issue is cancelled.
-  """
-  automateTicketReopeningOnCancellation: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when a comment is posted on its linked Linear issue
-  """
-  automateTicketReopeningOnComment: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear issue is completed.
-  """
-  automateTicketReopeningOnCompletion: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear project is cancelled.
-  """
-  automateTicketReopeningOnProjectCancellation: Boolean
-
-  """
-  Whether a ticket should be automatically reopened when its linked Linear project is completed.
-  """
-  automateTicketReopeningOnProjectCompletion: Boolean
-
-  """
-  Whether an internal message should be added when someone comments on an issue.
-  """
-  sendNoteOnComment: Boolean
-
-  """
-  Whether an internal message should be added when a Linear issue changes status (for status types except completed or canceled).
-  """
-  sendNoteOnStatusChange: Boolean
-}
-
 
 """Comparator for identifiers."""
 input IDComparator {
@@ -1739,9 +1268,6 @@ type InitiativeUpdate implements Node {
   """The update content in markdown format."""
   body: String!
 
-  """[Internal] The content of the update as a Prosemirror document."""
-  bodyData: String!
-
   """Comments associated with the initiative update."""
   comments(
     """A cursor to be used with first for forward pagination"""
@@ -1844,9 +1370,6 @@ type InitiativeUpdateConnection {
 input InitiativeUpdateCreateInput {
   """The content of the update in markdown format."""
   body: String
-
-  """[Internal] The content of the update as a Prosemirror document."""
-  bodyData: JSON
 
   """The health of the initiative at the time of the update."""
   health: InitiativeUpdateHealthType
@@ -1980,9 +1503,6 @@ type InitiativeUpdateReminderPayload {
 input InitiativeUpdateUpdateInput {
   """The content of the update in markdown format."""
   body: String
-
-  """The content of the update as a Prosemirror document."""
-  bodyData: JSON
 
   """The health of the initiative at the time of the update."""
   health: InitiativeUpdateHealthType
@@ -8030,9 +7550,6 @@ type ProjectUpdate implements Node {
 
   """The update content in markdown format."""
   body: String!
-
-  """[Internal] The content of the update as a Prosemirror document."""
-  bodyData: String!
 
   """Comments associated with the project update."""
   comments(
