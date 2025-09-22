@@ -1,7 +1,17 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, DateTime, ForeignKey, Boolean, Text
+from sqlalchemy import (
+    Integer,
+    String,
+    DateTime,
+    ForeignKey,
+    Boolean,
+    Text,
+    Float,
+    Date,
+)
 from datetime import datetime
 from datetime import date
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 class LinearBase(DeclarativeBase):
@@ -77,29 +87,37 @@ class User(LinearBase):
 
 class Issue(LinearBase):
     __tablename__ = "issues"
-    issue_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    team_id: Mapped[int] = mapped_column(ForeignKey("teams.team_id"))
-    creator_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"))
-    assignee_id: Mapped[int | None] = mapped_column(ForeignKey("users.user_id"))
-    project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.project_id"))
-    state_id: Mapped[int] = mapped_column(ForeignKey("workflow_states.state_id"))
-
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    teamId: Mapped[int] = mapped_column(
+        ForeignKey("teams.team_id")
+    )  # Used ID instead of name for foreign key
+    creatorId: Mapped[int] = mapped_column(ForeignKey("users.user_id"))
+    assigneeId: Mapped[int | None] = mapped_column(ForeignKey("users.user_id"))
+    projectId: Mapped[int | None] = mapped_column(ForeignKey("projects.project_id"))
+    projectMilestoneId: Mapped[int | None] = mapped_column(
+        ForeignKey("project_milestones.project_milestone_id")
+    )
+    stateId: Mapped[int] = mapped_column(ForeignKey("workflow_states.state_id"))
     identifier: Mapped[str] = mapped_column(
         String(20), unique=True, nullable=False
-    )  # e.g., "ENG-123"
-    number: Mapped[int] = mapped_column(Integer, nullable=False)
+    )  # e.g., "ENG-123" The issue's unique identifier.
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     priority: Mapped[int] = mapped_column(
         Integer, default=0
     )  # 0=None, 1=Urgent, 2=High, 3=Normal, 4=Low
-    estimate: Mapped[float | None] = mapped_column(Float)
-
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime)
-    canceled_at: Mapped[datetime | None] = mapped_column(DateTime)
-    due_date: Mapped[date | None] = mapped_column(Date)
+    parentId: Mapped[int | None] = mapped_column(
+        ForeignKey("issues.issue_id")
+    )  # ID of the parrent issue if the issue is a sub-issue
+    number: Mapped[float] = mapped_column(Float, nullable=False)
+    labelIds: Mapped[list[str]] = mapped_column(
+        JSONB
+    )  # This is a list of label IDs. If we want to check lebels for the issue, we need to use the ids and get the labels from the labels table.
+    dueDate: Mapped[date | None] = mapped_column(Date)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    completedAt: Mapped[datetime | None] = mapped_column(DateTime)
+    canceledAt: Mapped[datetime | None] = mapped_column(DateTime)
 
 
 class Project(LinearBase):

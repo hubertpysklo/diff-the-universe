@@ -2136,9 +2136,6 @@ type Issue implements Node {
   """The user who created the issue."""
   creator: User
 
-  """The agent user that is delegated to work on this issue."""
-  delegate: User
-
   """The issue's description in markdown format."""
   description: String
 
@@ -2255,11 +2252,6 @@ type Issue implements Node {
   """Label for the priority."""
   priorityLabel: String!
 
-  """
-  The order of the item in relation to other items in the organization, when ordered by priority.
-  """
-  prioritySortOrder: Float!
-
   """The project that the issue is associated with."""
   project: Project
 
@@ -2308,12 +2300,6 @@ type Issue implements Node {
 
   """The type of SLA set on the issue. Calendar days or business days."""
   slaType: String
-
-  """The user who snoozed the issue."""
-  snoozedBy: User
-
-  """The time until an issue will be snoozed in Triage view."""
-  snoozedUntilAt: DateTime
 
   """The order of the item in relation to other items in the organization."""
   sortOrder: Float!
@@ -2943,57 +2929,6 @@ type IssueHistoryEdge {
   node: IssueHistory!
 }
 
-"""An import job for data from an external service."""
-type IssueImport implements Node {
-  """
-  The time at which the entity was archived. Null if the entity has not been archived.
-  """
-  archivedAt: DateTime
-
-  """The time at which the entity was created."""
-  createdAt: DateTime!
-
-  """The id for the user that started the job."""
-  creatorId: String
-
-  """The display name of the import service."""
-  displayName: String!
-
-  """User readable error message, if one has occurred during the import."""
-  error: String
-
-  """Error code and metadata, if one has occurred during the import."""
-  errorMetadata: JSONObject
-
-  """The unique identifier of the entity."""
-  id: ID!
-
-  """The data mapping configuration for the import job."""
-  mapping: JSONObject
-
-  """Current step progress in % (0-100)."""
-  progress: Float
-
-  """The service from which data will be imported."""
-  service: String!
-
-  """Metadata related to import service."""
-  serviceMetadata: JSONObject
-
-  """The status for the import job."""
-  status: String!
-
-  """New team's name in cases when teamId not set."""
-  teamName: String
-
-  """
-  The last time at which the entity was meaningfully updated. This is the same as the creation time if the entity hasn't
-      been updated after creation.
-  """
-  updatedAt: DateTime!
-}
-
-
 """Labels that can be associated with issues."""
 type IssueLabel implements Node {
   """
@@ -3156,8 +3091,6 @@ type IssueLabelConnection {
 }
 
 input IssueLabelCreateInput {
-  """The color of the label."""
-  color: String
 
   """The description of the label."""
   description: String
@@ -3166,9 +3099,6 @@ input IssueLabelCreateInput {
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
   """
   id: String
-
-  """Whether the label is a group."""
-  isGroup: Boolean
 
   """The name of the label."""
   name: String!
@@ -3202,9 +3132,6 @@ input IssueLabelFilter {
   """Comparator for the identifier."""
   id: IDComparator
 
-  """Comparator for whether the label is a group label."""
-  isGroup: BooleanComparator
-
   """Comparator for the name."""
   name: StringComparator
 
@@ -3225,9 +3152,6 @@ type IssueLabelPayload {
   """The label that was created or updated."""
   issueLabel: IssueLabel!
 
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
-
   """Whether the operation was successful."""
   success: Boolean!
 }
@@ -3239,9 +3163,6 @@ input IssueLabelUpdateInput {
   """The description of the label."""
   description: String
 
-  """Whether the label is a group."""
-  isGroup: Boolean
-
   """The name of the label."""
   name: String
 
@@ -3252,9 +3173,6 @@ input IssueLabelUpdateInput {
 type IssuePayload {
   """The issue that was created or updated."""
   issue: Issue
-
-  """The identifier of the last sync operation."""
-  lastSyncId: Float!
 
   """Whether the operation was successful."""
   success: Boolean!
@@ -3378,9 +3296,6 @@ type IssueSearchPayload {
 }
 
 type IssueSearchResult implements Node {
-  """[Internal] The activity summary information for this issue."""
-  activitySummary: JSONObject
-
   """The time at which the issue was added to a project."""
   addedToProjectAt: DateTime
 
@@ -3392,37 +3307,8 @@ type IssueSearchResult implements Node {
   """
   archivedAt: DateTime
 
-  """
-  The external user who requested creation of the Asks issue on behalf of the creator.
-  """
-  asksExternalUserRequester: ExternalUser
-
-  """
-  The internal user who requested creation of the Asks issue on behalf of the creator.
-  """
-  asksRequester: User
-
   """The user to whom the issue is assigned to."""
   assignee: User
-
-  """
-  The time at which the issue was automatically archived by the auto pruning process.
-  """
-  autoArchivedAt: DateTime
-
-  """
-  The time at which the issue was automatically closed by the auto pruning process.
-  """
-  autoClosedAt: DateTime
-
-  """The order of the item in its column on the board."""
-  boardOrder: Float! @deprecated(reason: "Will be removed in near future, please use `sortOrder` instead")
-
-  """The bot that created the issue, if applicable."""
-  botActor: ActorBot
-
-  """Suggested branch name for the issue."""
-  branchName: String!
 
   """The time at which the issue was moved into canceled state."""
   canceledAt: DateTime
@@ -3496,23 +3382,11 @@ type IssueSearchResult implements Node {
   """The user who created the issue."""
   creator: User
 
-  """The agent user that is delegated to work on this issue."""
-  delegate: User
-
   """The issue's description in markdown format."""
   description: String
 
-  """[Internal] The issue's description content as YJS state."""
-  descriptionState: String
-
   """The date at which the issue is due."""
   dueDate: TimelessDate
-
-  """The estimate of the complexity of the issue.."""
-  estimate: Float
-
-  """The external user who created the issue."""
-  externalUserCreator: ExternalUser
 
   """History entries associated with the issue."""
   history(
@@ -3680,12 +3554,6 @@ type IssueSearchResult implements Node {
   """The type of SLA set on the issue. Calendar days or business days."""
   slaType: String
 
-  """The user who snoozed the issue."""
-  snoozedBy: User
-
-  """The time until an issue will be snoozed in Triage view."""
-  snoozedUntilAt: DateTime
-
   """The order of the item in relation to other items in the organization."""
   sortOrder: Float!
 
@@ -3705,43 +3573,6 @@ type IssueSearchResult implements Node {
   The order of the item in the sub-issue list. Only set if the issue has a parent.
   """
   subIssueSortOrder: Float
-
-  """Users who are subscribed to the issue."""
-  subscribers(
-    """A cursor to be used with first for forward pagination"""
-    after: String
-
-    """A cursor to be used with last for backward pagination."""
-    before: String
-
-    """Filter returned subscribers."""
-    filter: UserFilter
-
-    """
-    The number of items to forward paginate (used with after). Defaults to 50.
-    """
-    first: Int
-
-    """Should archived resources be included (default: false)"""
-    includeArchived: Boolean
-
-    """Should query return disabled/suspended users (default: false)."""
-    includeDisabled: Boolean
-
-    """
-    The number of items to backward paginate (used with before). Defaults to 50.
-    """
-    last: Int
-
-    """
-    By which field should the pagination order by. Available options are createdAt (default) and updatedAt.
-    """
-    orderBy: PaginationOrderBy
-  ): UserConnection!
-
-
-  """The external services the issue is synced with."""
-  syncedWith: [ExternalEntityInfo!]
 
   """The team that the issue is associated with."""
   team: Team!
@@ -3797,9 +3628,6 @@ input IssueSortInput {
   """Sort by label group"""
   labelGroup: LabelGroupSort
 
-  """[ALPHA] Sort by number of links associated with the issue"""
-  linkCount: LinkCountSort
-
   """Sort by manual order"""
   manual: ManualSort
 
@@ -3839,28 +3667,11 @@ input IssueUpdateInput {
   """The identifier of the user to assign the issue to."""
   assigneeId: String
 
-  """
-  Whether the issue was automatically closed because its parent issue was closed.
-  """
-  autoClosedByParentClosing: Boolean
-
-  """The position of the issue in its column on the board view."""
-  boardOrder: Float @deprecated(reason: "Will be removed in near future, please use `sortOrder` instead")
-
-  """The identifier of the agent user to delegate the issue to."""
-  delegateId: String
-
   """The issue description in markdown format."""
   description: String
 
-  """[Internal] The issue description as a Prosemirror document."""
-  descriptionData: JSON
-
   """The date at which the issue is due."""
   dueDate: TimelessDate
-
-  """The estimated complexity of the issue."""
-  estimate: Int
 
   """The identifiers of the issue labels associated with this ticket."""
   labelIds: [String!]
@@ -3892,19 +3703,10 @@ input IssueUpdateInput {
   """
   slaBreachesAt: DateTime
 
-  """[Internal] The timestamp at which the issue's SLA was started."""
-  slaStartedAt: DateTime
-
   """
   The SLA day count type for the issue. Whether SLA should be business days only or calendar days (default).
   """
   slaType: SLADayCountType
-
-  """The identifier of the user who snoozed the issue."""
-  snoozedById: String
-
-  """The time until an issue will be snoozed in Triage view."""
-  snoozedUntilAt: DateTime
 
   """The position of the issue related to other issues."""
   sortOrder: Float
@@ -3914,9 +3716,6 @@ input IssueUpdateInput {
 
   """The position of the issue in parent's sub-issue list."""
   subIssueSortOrder: Float
-
-  """The identifiers of the users subscribing to this ticket."""
-  subscriberIds: [String!]
 
   """The identifier of the team associated with the issue."""
   teamId: String
