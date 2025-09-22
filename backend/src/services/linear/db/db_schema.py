@@ -57,6 +57,13 @@ class Team(LinearBase):
     updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
+class TeamMembership(LinearBase):
+    __tablename__ = "team_memberships"
+    userId: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    teamId: Mapped[int] = mapped_column(ForeignKey("teams.id"), primary_key=True)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
 class User(LinearBase):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -141,6 +148,13 @@ class Project(LinearBase):
     updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
+class ProjectMember(LinearBase):
+    __tablename__ = "project_members"
+    userId: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    projectId: Mapped[int] = mapped_column(ForeignKey("projects.id"), primary_key=True)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
 class Comment(LinearBase):
     __tablename__ = "comments"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -163,6 +177,7 @@ class Comment(LinearBase):
 class Label(LinearBase):
     __tablename__ = "labels"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organizationId: Mapped[int] = mapped_column(ForeignKey("organizations.id"))
     teamId: Mapped[int | None] = mapped_column(
         ForeignKey("teams.id")
     )  # Null for workspace labels
