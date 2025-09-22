@@ -634,9 +634,6 @@ type Initiative implements Node {
     orderBy: PaginationOrderBy
   ): InitiativeHistoryConnection!
 
-  """The icon of the initiative."""
-  icon: String
-
   """The unique identifier of the entity."""
   id: ID!
 
@@ -885,9 +882,6 @@ input InitiativeCreateInput {
 
   """The description of the initiative."""
   description: String
-
-  """The initiative's icon."""
-  icon: String
 
   """
   The identifier in UUID v4 format. If none is provided, the backend will generate one.
@@ -1439,9 +1433,6 @@ input InitiativeUpdateInput {
 
   """The frequency resolution."""
   frequencyResolution: FrequencyResolutionType
-
-  """The initiative's icon."""
-  icon: String
 
   """The name of the initiative."""
   name: String
@@ -4112,9 +4103,6 @@ input NullableCommentFilter {
   """Comparator for the created at date."""
   createdAt: DateComparator
 
-  """Filters that the comment's document content must satisfy."""
-  documentContent: NullableDocumentContentFilter
-
   """Comparator for the identifier."""
   id: IDComparator
 
@@ -5403,9 +5391,6 @@ type Project implements Node {
     """
     orderBy: PaginationOrderBy
   ): ProjectHistoryConnection!
-
-  """The icon of the project."""
-  icon: String
 
   """The unique identifier of the entity."""
   id: ID!
@@ -6947,9 +6932,6 @@ type ProjectSearchResult implements Node {
     orderBy: PaginationOrderBy
   ): ProjectHistoryConnection!
 
-  """The icon of the project."""
-  icon: String
-
   """The unique identifier of the entity."""
   id: ID!
 
@@ -7716,9 +7698,6 @@ input ProjectUpdateInput {
 
   """The description for the project."""
   description: String
-
-  """The icon of the project."""
-  icon: String
 
   """The identifiers of the project labels associated with this project."""
   labelIds: [String!]
@@ -8841,8 +8820,6 @@ type SemanticSearchPayload {
 
 """A semantic search result reference."""
 type SemanticSearchResult implements Node {
-  """The document related to the semantic search result."""
-  document: Document
 
   """The unique identifier of the entity."""
   id: ID!
