@@ -53,3 +53,18 @@ class environment(PlatformBase):
     updatedAt: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, nullable=False
     )
+
+
+class User(PlatformBase):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, nullable=False
+    )
+    updatedAt: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, nullable=False
+    )

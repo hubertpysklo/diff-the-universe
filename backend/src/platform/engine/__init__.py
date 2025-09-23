@@ -1,22 +1,10 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Iterator
-from uuid import uuid4
-
-import base64
-import hashlib
-import hmac
-import json
-from sqlalchemy import text
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session, sessionmaker
+from datetime import datetime
 
 
 @dataclass
 class InitEnvRequest:
-    template_schema: str
+    environment_schema: str
     impersonate_user_id: int | None = None
     impersonate_email: str | None = None
     ttl_seconds: int | None = None
@@ -31,6 +19,9 @@ class InitEnvResult:
     schema: str
     run_id: str | None
     expires_at: datetime | None
+    token: str | None = (
+        None  # This is a JWT token for the client to access the correct environment state
+    )
 
 
 @dataclass
