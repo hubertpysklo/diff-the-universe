@@ -1,5 +1,5 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String, DateTime, Enum, UniqueConstraint
+from sqlalchemy import String, DateTime, Enum, UniqueConstraint, Integer, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 from uuid import uuid4
@@ -9,8 +9,8 @@ class PlatformBase(DeclarativeBase):
     pass
 
 
-class Template(PlatformBase):
-    __tablename__ = "templates"
+class environment(PlatformBase):
+    __tablename__ = "environments"
     __table_args__ = (
         UniqueConstraint(
             "service",
@@ -19,7 +19,7 @@ class Template(PlatformBase):
             "ownerUserId",
             "name",
             "version",
-            name="uq_templates_identity",
+            name="uq_environments_identity",
         ),
         {"schema": "meta"},  # keep control-plane out of state routing
     )
@@ -47,6 +47,48 @@ class Template(PlatformBase):
     location: Mapped[str] = mapped_column(
         String(512), nullable=False
     )  # schema_name or s3://… URI
+    createdAt: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, nullable=False
+    )
+    updatedAt: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, nullable=False
+    )
+
+
+class TestState(PlatformBase):
+    __tablename__ = "test_states"
+    __table_args__ = (
+        UniqueConstraint("schema", name="uq_test_states_schema"),
+        {"schema": "meta"},
+    )
+
+    id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid4
+    )
+    environmentId: Mapped[UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True
+    )
+    templateId: Mapped[UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+
+    # the actual per-run schema name, e.g. state_<uuidhex>
+    schema: Mapped[str] = mapped_column(String(128), nullable=False)
+
+    # lifecycle/policy
+    status: Mapped[str] = mapped_column(
+        Enum(
+            "initializing",
+            "ready",
+            "expired",
+            "deleted",
+            name="test_state_status",
+        ),
+        nullable=False,
+        default="initializing",
+    )
+    permanent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    expiresAt: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    maxIdleSeconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    lastUsedAt: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     createdAt: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, nullable=False
     )
