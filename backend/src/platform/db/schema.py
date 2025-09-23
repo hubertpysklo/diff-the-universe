@@ -1,6 +1,7 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import String, DateTime, Enum, UniqueConstraint, Integer, Boolean
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import ForeignKey
 from datetime import datetime
 from uuid import uuid4
 
@@ -9,7 +10,46 @@ class PlatformBase(DeclarativeBase):
     pass
 
 
-class environment(PlatformBase):
+class Organization(PlatformBase):
+    __tablename__ = "organizations"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, nullable=False
+    )
+    updatedAt: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, nullable=False
+    )
+
+
+class User(PlatformBase):
+    __tablename__ = "users"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    isPlatformAdmin: Mapped[bool] = mapped_column(Boolean, default=False)
+    isOrganizationAdmin: Mapped[bool] = mapped_column(Boolean, default=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, nullable=False
+    )
+    updatedAt: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.now, nullable=False
+    )
+
+
+class OrganizationMembership(PlatformBase):
+    __tablename__ = "organization_memberships"
+    userId: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    organizationId: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), primary_key=True
+    )
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+class TemplateEnvironment(PlatformBase):
     __tablename__ = "environments"
     __table_args__ = (
         UniqueConstraint(
@@ -55,25 +95,10 @@ class environment(PlatformBase):
     )
 
 
-class User(PlatformBase):
-    __tablename__ = "users"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    username: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(String(255), nullable=False)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
-    createdAt: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.now, nullable=False
-    )
-    updatedAt: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.now, nullable=False
-    )
-
-
-class TestState(PlatformBase):
-    __tablename__ = "test_states"
+class RunTimeEnvironment(PlatformBase):
+    __tablename__ = "run_time_environments"
     __table_args__ = (
-        UniqueConstraint("schema", name="uq_test_states_schema"),
+        UniqueConstraint("schema", name="uq_run_time_environments_schema"),
         {"schema": "meta"},
     )
 
