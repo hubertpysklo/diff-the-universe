@@ -28,6 +28,6 @@ class InitEnvResult:
 class InitTokenRequest:
     state_id: str
     user_id: int
-    run_id: str | None = None
+    otel_trace_id: str | None = None  # Optional for linking with OTLP traces
     token_ttl_seconds: int = 1800
     scopes: list[str] | None = None
