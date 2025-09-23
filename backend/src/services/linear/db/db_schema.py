@@ -33,6 +33,16 @@ class Organization(LinearBase):
     updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
+class OrganizationMembership(LinearBase):
+    __tablename__ = "organization_memberships"
+    userId: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    organizationId: Mapped[int] = mapped_column(
+        ForeignKey("organizations.id"), primary_key=True
+    )
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
 class Team(LinearBase):
     __tablename__ = "teams"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
