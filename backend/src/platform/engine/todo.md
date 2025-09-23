@@ -38,7 +38,7 @@
 - [ ] Attach `state_id/run_id` to request context + trace attrs
 - [ ] Reject any schema not matching `^state_[a-f0-9]+$`
 
-## Phase 5 — Save-as-template API (researcher UX)
+## Phase 5 — Save-as-template API (UX)
 - [ ] `POST /templates/save { state_id, name, visibility[global|org|user], version_note?, redact? }`
 - [ ] Flow:
   - [ ] Validate state schema; (optional) redact
@@ -46,35 +46,19 @@
   - [ ] Copy rows FK-safe from state → template; reset sequences
   - [ ] Insert `meta.templates` pointer (owner_scope, schema_name, seed_hash)
 
-## Phase 6 — Observability
-- [ ] OpenTelemetry for HTTP + SQL; attrs: `state_id`, `run_id`, `operation_name`
-- [ ] Interceptor logs each request into `meta.agent_actions` (duration, status, hashes or redacted bodies, trace_id)
-- [ ] Correlate traces via `trace_id`
 
-## Phase 7 — Snapshot & diff
+## Phase 6 — Snapshot & diff
 - [ ] Snapshotter (Linear): deterministic, minimal JSON for core tables
 - [ ] `POST /finalize_run { run_id }`:
   - [ ] Take final snapshot
   - [ ] Compute diff (added/updated/deleted per table, field-wise)
   - [ ] Store in `meta.snapshots` and `meta.diffs`
 
-## Phase 8 — Evaluation & rewards
+## Phase 7 — Evaluation & rewards
 - [ ] Coded assertions: expected/forbidden/invariants over snapshot+diff
 - [ ] Optional LLM judge on compact “case file” (strict JSON output; store model/version/prompt hash)
 - [ ] Compute reward; insert `meta.evaluations`
 - [ ] Return reward + evaluation to caller
-
-## Phase 9 — Security & policy
-- [ ] DB roles:
-  - [ ] `engine_role`: access to `template_*`, can `CREATE SCHEMA`, migrations, cloning
-  - [ ] `app_role`: access to `state_*` only; no `template_*`
-- [ ] Short‑lived tokens; server-side policy in `meta.test_states`
-- [ ] Redaction utilities for “save as template” and logs
-
-## Phase 10 — Performance & pooling
-- [ ] DB pool tuning (e.g., `pool_size`, `max_overflow`, pre_ping)
-- [ ] Optional prewarmed state pool per popular template (checkout/refill)
-- [ ] Concurrency test: 100 parallel init/run/finalize cycles
 
 ## CLI/SDK
 - [ ] CLI: `init-state`, `finalize-run`, `save-template`, `list-templates`
