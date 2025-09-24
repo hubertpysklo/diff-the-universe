@@ -1,4 +1,4 @@
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import (
     Integer,
     String,
@@ -30,6 +30,11 @@ class Organization(LinearBase):
     archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
     createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    users: Mapped[list["User"]] = relationship(
+        "User",
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
 
 
 class OrganizationMembership(LinearBase):
@@ -70,13 +75,14 @@ class Team(LinearBase):
 
 class TeamMembership(LinearBase):
     __tablename__ = "team_memberships"
-    userId: Mapped[str] = mapped_column(
-        String(64), ForeignKey("users.id"), primary_key=True
-    )
-    teamId: Mapped[str] = mapped_column(
-        String(64), ForeignKey("teams.id"), primary_key=True
-    )
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    teamId: Mapped[str] = mapped_column(String(64), ForeignKey("teams.id"))
+    userId: Mapped[str] = mapped_column(String(64), ForeignKey("users.id"))
+    owner: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    sortOrder: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
     createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
 class User(LinearBase):
@@ -98,6 +104,10 @@ class User(LinearBase):
     archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
     createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    organization: Mapped["Organization"] = relationship(
+        "Organization",
+        back_populates="users",
+    )
 
 
 class Issue(LinearBase):

@@ -209,3 +209,4 @@ marimo/_lsp/
 __marimo__/
 
 opencode.json
+.DS_Store

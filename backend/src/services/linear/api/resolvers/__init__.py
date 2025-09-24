@@ -1,9 +1,10 @@
 # Linear GraphQL resolvers - TODO: implement
 
 from ariadne import QueryType
+from graphql import GraphQLError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from db_schema import SessionLocal, Organization, Team, User
+from db_schema import SessionLocal, Organization, Team, TeamMembership, User
 
 
 # Query reoslvers
@@ -65,7 +66,7 @@ def resolve_archivedTeams(_parent, info):
     if org_id is None:
         return []
 
-    stmt = select(Team).where(Team.organizationId == org_id, Team.archivedAt.is_not(None))
+    stmt = select(Team).where(Team.organizationId == org_id, Team.archivedAt.isnot(None))
 
     try:
         return session.scalars(stmt).all()
@@ -82,29 +83,53 @@ def resolve_archivedTeams(_parent, info):
 
 @Query.field("team")
 def resolve_team(_parent, info, id: str):
-    with session_provider.get_session(authorization) as session:
-        team = session.execute(
-            select(Team)
-            .where(Team.slugId == id)
-            .limit(1)
-        ).scalars().first()
+    session = info.context.state.db_session
+    stmt = select(Team).where(Team.id == id).limit(1)
+    team = session.execute(stmt).scalars().first()
 
-        if not team:
-            raise GraphQLError("Team not found")  # Team! must not be null
+    if team is None:
+        raise GraphQLError("Team not found")  # Team! must not be null
 
-        return team
+    return team
     
 @Query.field("teamMembership")
-def resolve_teamMembership(_parent, _info, teamId: str):
-    with session_provider.get_session(authorization) as session:
-        tm = session.get(TeamMembership, teamId) # May need to change that
-        if not tm:
-            raise GraphQLError("TeamMembership not found")
-        return tm
+def resolve_teamMembership(_parent, info, id: str):
+    session = info.context.state.db_session
+    stmt = select(TeamMembership).where(TeamMembership.id == id).limit(1)
+    membership = session.execute(stmt).scalars().first()
 
-# Still need to add teamMemberships
+    if membership is None:
+        raise GraphQLError("TeamMembership not found")
+
+    return membership
 
 # Queries User
+
+
+@Query.field("organization")
+def resolve_organization(_parent, info):
+    session = info.context.state.db_session
+
+    org_id = getattr(info.context.state, "org_id", None)
+    if org_id is None:
+        user_id = getattr(info.context.state, "user_id", None)
+        if user_id is None:
+            raise GraphQLError("Not authenticated")
+
+        org_id_stmt = select(User.organizationId).where(User.id == user_id).limit(1)
+        org_id = session.execute(org_id_stmt).scalar_one_or_none()
+        if org_id is None:
+            raise GraphQLError("Organization not found")
+
+    org_stmt = select(Organization).where(Organization.id == org_id).limit(1)
+    organization = session.execute(org_stmt).scalars().first()
+
+    if organization is None:
+        raise GraphQLError("Organization not found")
+
+    return organization
+
+# Still need to add teamMemberships
 
 # Not included:
 #   - apiKeys
@@ -115,7 +140,6 @@ def resolve_teamMembership(_parent, _info, teamId: str):
 #   - externalUser
 #   - externalUsers
 #   - notificationSubscriptions
-#   - organization
 def resolve 
 
 
