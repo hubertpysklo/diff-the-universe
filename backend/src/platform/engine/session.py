@@ -1,23 +1,36 @@
 from __future__ import annotations
-
-from contextlib import contextmanager
 from datetime import datetime
-from typing import Iterator
-
-import jwt
-from sqlalchemy import cast, String
-from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
-
+from backend.src.platform.engine.auth import TokenHandler
+from sqlalchemy import Engine
 from backend.src.platform.db.schema import RunTimeEnvironment
+from contextlib import contextmanager
 
 
 class SessionManager:
-    def __init__(self, base_engine: Engine):
+    def __init__(
+        self,
+        base_engine: Engine,
+        token_handler: TokenHandler,
+    ):
         self.base_engine = base_engine
+        self.token_handler = token_handler
 
     def get_meta_session(self) -> Session:
-        return sessionmaker(bind=self.base_engine)()
+        return sessionmaker(bind=self.base_engine)(expire_on_commit=False)
+
+    def lookup_environment(self, env_id: str):
+        with Session(bind=self.base_engine) as s:
+            env = (
+                s.query(RunTimeEnvironment)
+                .filter(RunTimeEnvironment.id == env_id)
+                .one_or_none()
+            )
+            if env is None or env.status != "ready":
+                raise PermissionError("environment not available")
+            env.lastUsedAt = datetime.now()
+            s.commit()
+            return env.schema, env.lastUsedAt
 
     def get_session_for_schema(self, schema: str) -> Session:
         translated_engine = self.base_engine.execution_options(
@@ -27,35 +40,22 @@ class SessionManager:
         )
         return sessionmaker(bind=translated_engine)()
 
-    def decode_token(self, token: str, *, secret: str, audience: str = "dtu") -> dict:
-        return jwt.decode(
-            token,
-            secret,
-            algorithms=["HS256"],
-            audience=audience,
-            options={"require": ["exp", "iat", "aud"]},
+    def get_session_for_token(self, token: str) -> Session:
+        claims = self.token_handler.decode_token(token)
+        schema, _ = self.lookup_environment(claims["environment_id"])
+        translated = self.base_engine.execution_options(
+            schema_translate_map={None: schema}
         )
+        return Session(bind=translated, expire_on_commit=False)
 
-    def get_session_for_token(
-        self, token: str, *, secret: str, audience: str = "dtu"
-    ) -> Session:
-        claims = self.decode_token(token, secret=secret, audience=audience)
-        environmentId = claims["environmentId"]
-        meta_session = self.get_meta_session()
+    @contextmanager
+    def with_session(self, token: str):
+        sess = self.get_session_for_token(token)
         try:
-            environment = (
-                meta_session.query(RunTimeEnvironment)
-                .filter(RunTimeEnvironment.id == environmentId)
-                .one_or_none()
-            )
-
-            if environment is None:
-                raise PermissionError("environment not found")
-
-            environment.lastUsedAt = datetime.now()
-            meta_session.commit()
-
+            yield sess
+            sess.commit()
+        except:
+            sess.rollback()
+            raise
         finally:
-            meta_session.close()
-
-        return self.get_session_for_schema(environment.schema)
+            sess.close()

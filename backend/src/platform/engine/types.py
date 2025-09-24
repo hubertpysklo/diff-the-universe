@@ -15,7 +15,7 @@ class InitEnvRequest:
 
 @dataclass
 class InitEnvResult:
-    state_id: str
+    environment_id: str
     schema: str
     expires_at: datetime | None
     token: str | None = (
