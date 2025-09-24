@@ -1,106 +1,132 @@
 # Linear GraphQL resolvers - TODO: implement
 
-from datetime import datetime
-from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-from sqlalchemy import Integer, String, Boolean, DateTime
+from ariadne import QueryType
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from db_schema import SessionLocal, Organization, Team, User
 
-class OrganizationOps:
-    def OrganizationUpdateInput(
-    self,
-    session,
-    org_id: int,
-    *,
-    allowMembersToInvite: bool | None = None,
-    name: str | None = None,
-    personalApiKeysEnabled: bool | None = None,
-    restrictLabelManagementToAdmins: bool | None = None,
-    restrictTeamCreationToAdmins: bool | None = None,
-    urlKey: str | None = None,
-):
+
+# Query reoslvers
+Query = QueryType()
+
+# Skipped Querry:
+# - organizationDomainClaimRequest
+# - externalUsers
+
+
+# Probably need to include?
+# - organizationInvite
+# - organizationInviteDetails?
+# - organizationInvites
+# - projectStatusProjectCount (am not sure whether in organizations)
+
+# @Query.field("organization")
+# def resolve_organization(_, info):
+#     user_email = select(User.email)
+
+
+# platform/graphql.py
+from ariadne.asgi import GraphQL
+
+class GraphQLWithSession(GraphQL):
+    async def handle_request(self, request):
+        token = (request.headers.get("Authorization") or "").removeprefix("Bearer ").strip()
+        session = None
         try:
-            org = session.get(Organization, org_id)
-            if org is None: return None
-
-            # urlKey uniqueness: skip change if conflict
-            if urlKey is not None and urlKey != org.urlKey:
-                conflict = session.scalar(select(Organization.id).where(Organization.urlKey == urlKey))
-                if not conflict: org.urlKey = urlKey  # only update when unique
-
-            if allowMembersToInvite is not None:
-                org.allowMembersToInvite = allowMembersToInvite
-            if name is not None:
-                org.name = name
-            if restrictLabelManagementToAdmins is not None:
-                org.restrictLabelManagementToAdmins = restrictLabelManagementToAdmins
-            if restrictTeamCreationToAdmins is not None:
-                org.restrictTeamCreationToAdmins = restrictTeamCreationToAdmins
-
-            # handle out-of-model flag silently if hook exists
-            if personalApiKeysEnabled is not None:
-                set_flag = getattr(self, "set_org_flag", None)
-                if callable(set_flag):
-                    try:
-                        set_flag(session, org_id, "personalApiKeysEnabled", personalApiKeysEnabled)
-                    except Exception:
-                        pass  # fail silently
-
-            org.updatedAt = datetime.now()
-            session.add(org)
-
-            try:
-                session.commit()
-            except Exception:
-                session.rollback()
-                return None  # fail silently
-
-            try:
-                session.refresh(org)
-            except Exception:
-                pass  # ignore refresh errors
-
-            return org
+            session = session_provider.create_session_for_token(token)
+            request.state.db_session = session
+            result = await super().handle_request(request)
+            session.commit()
+            return result
         except Exception:
-            try:
+            if session:
                 session.rollback()
-            except Exception:
-                pass
-            return None  # fail silently
-        
+            raise
+        finally:
+            if session:
+                session.close()
+
     
-    def organizationExists():
-        
-    def organizationInvite():
-        
-    def organizationInviteDetails():
-        
-    def organizationInvites():
-    
-    def organizationsMeta():
-        
-    def leaveOrganization():
-        
-    def organizationCancelDelete():
-        
-    def organizationDelete():
-    
-    def organizationInviteCreate():
-    
-    
-    def organizationInviteDelete():
-    
-    
-    def organizationInviteUpdate():
-    
-    
-    def organizationUpdate():
-    
-    def resendOrganizationInvite():
-    
-    def resendOrganizationInviteByEmail():
+@Query.field("organizationExists")
+def resolve_organizationExists(_parent, info, urlKey: str):
+    session = info.context.state.db_session
+    stmt = select(Organization.id).where(Organization.urlKey == urlKey).limit(1)
+    try:
+        exists_ = session.execute(stmt).scalar_one_or_none() is not None
+        return {"exists": exists_, "success": True}
+    except Exception:
+        return {"exists": False, "success": False}
+            
+            
+@Query.field("archivedTeams")
+def resolve_archivedTeams(_parent, info):
+    session = info.context.state.db_session
+    org_id = getattr(info.context.state, "org_id", None) # Will have to handle this later
+    if org_id is None:
+        return []
+
+    stmt = select(Team).where(Team.organizationId == org_id, Team.archivedAt.is_not(None))
+
+    try:
+        return session.scalars(stmt).all()
+    except Exception:
+        return []
+
     
     
     
+# Querries Teams
+
+
+# Querries Users:
+# Need to implmenet:
+#   - administableTeams
+#   - teams    
+
+@Query.field("team")
+def resolve_team(_parent, info, id: str):
+    with session_provider.get_session(authorization) as session:
+        team = session.execute(
+            select(Team)
+            .where(Team.slugId == id)
+            .limit(1)
+        ).scalars().first()
+
+        if not team:
+            raise GraphQLError("Team not found")  # Team! must not be null
+
+        return team
     
+@Query.field("teamMembership")
+def resolve_teamMembership(_parent, _info, teamId: str):
+    with session_provider.get_session(authorization) as session:
+        tm = session.get(TeamMembership, teamId) # May need to change that
+        if not tm:
+            raise GraphQLError("TeamMembership not found")
+        return tm
+
+# Still need to add teamMemberships
+
+# Queries User
+
+# Not included:
+#   - apiKeys
+#   - applicationWithAuthorization
+#   - availableUsers
+#   - customViewHasSubscribers
+#   - customViews
+#   - externalUser
+#   - externalUsers
+#   - notificationSubscriptions
+#   - organization
+def resolve 
+
+
+
+
+
+
+
         
         
     
