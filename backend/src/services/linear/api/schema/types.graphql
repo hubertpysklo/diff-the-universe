@@ -3321,13 +3321,6 @@ type Mutation {
     input: IssueUpdateInput!
   ): IssuePayload!
 
-
-  """Leave an organization."""
-  leaveOrganization(
-    """ID of the organization to leave."""
-    organizationId: String!
-  ): CreateOrJoinOrganizationResponse!
-
   """
   Cancels the deletion of an organization. Administrator privileges required.
   """
