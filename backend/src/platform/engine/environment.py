@@ -3,7 +3,7 @@ from typing import Iterable
 from os import environ
 from sqlalchemy import text, MetaData, create_engine
 from sqlalchemy.orm import Session, sessionmaker
-from backend.src.platform.engine.interface import InitEnvRequest, InitEnvResult
+from backend.src.platform.engine.types import InitEnvRequest, InitEnvResult
 from backend.src.platform.engine.auth import TokenHandler
 
 
