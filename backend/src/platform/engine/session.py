@@ -2,8 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 from sqlalchemy.orm import Session, sessionmaker
 from backend.src.platform.engine.auth import TokenHandler
-from sqlalchemy import create_engine, Engine
-from os import environ
+from sqlalchemy import Engine
 from backend.src.platform.db.schema import RunTimeEnvironment
 from contextlib import contextmanager
 
@@ -14,7 +13,7 @@ class SessionManager:
         base_engine: Engine,
         token_handler: TokenHandler,
     ):
-        self.base_engine = create_engine(environ["DATABASE_URL"], echo=True)
+        self.base_engine = base_engine
         self.token_handler = token_handler
 
     def get_meta_session(self) -> Session:

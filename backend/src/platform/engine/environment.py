@@ -1,16 +1,15 @@
 from datetime import datetime, timedelta
 from typing import Iterable
-from os import environ
-from sqlalchemy import text, MetaData, create_engine
+from sqlalchemy import text, MetaData, Engine
 from sqlalchemy.orm import Session, sessionmaker
 from backend.src.platform.engine.types import InitEnvRequest, InitEnvResult
 from backend.src.platform.engine.auth import TokenHandler
 
 
 class EnvironmentHandler:
-    def __init__(self):
-        self.engine = create_engine(environ["DATABASE_URL"], echo=True)
-        self.token_handler = TokenHandler()
+    def __init__(self, token_handler: TokenHandler, base_engine: Engine):
+        self.engine = base_engine
+        self.token_handler = token_handler
 
     def create_schema(self, schema: str) -> None:
         with self.engine.begin() as conn:
