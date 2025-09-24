@@ -78,18 +78,20 @@ class EnvironmentHandler:
             self._reset_sequences(conn, state_schema, ordered + trailing)
 
     def init_env(self, request: InitEnvRequest) -> InitEnvResult:
-        state_id = datetime.now().strftime("%Y%m%d%H%M%S%f")
-        state_schema = f"state_{state_id}"
-        self.create_schema(state_schema)
-        self.migrate_schema(state_schema)
-        self.clone_from_template(request.environment_schema, state_schema)
+        environment_id = datetime.now().strftime("%Y%m%d%H%M%S%f")
+        environment_schema = f"state_{environment_id}"
+        self.create_schema(environment_schema)
+        self.migrate_schema(environment_schema)
+        self.clone_from_template(request.environment_schema, environment_schema)
         expires_at = (
             datetime.now() + timedelta(seconds=request.ttl_seconds)
             if request.ttl_seconds
             else None
         )
         return InitEnvResult(
-            state_id=state_id, schema=state_schema, expires_at=expires_at
+            environment_id=environment_id,
+            schema=environment_schema,
+            expires_at=expires_at,
         )
 
     def init_env_and_issue_token(
@@ -102,7 +104,7 @@ class EnvironmentHandler:
     ) -> InitEnvResult:
         res = self.init_env(request)
         res.token = self.token_handler.issue_token(
-            environment_id=res.state_id,
+            environment_id=res.environment_id,
             user_id=user_id,
             impersonate_user_id=request.impersonate_user_id,
             token_ttl_seconds=token_ttl_seconds,
