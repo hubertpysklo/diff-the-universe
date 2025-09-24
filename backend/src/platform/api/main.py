@@ -14,12 +14,11 @@ def create_app():
 
     platform_engine = create_engine(db_url, pool_pre_ping=True)
     token = TokenHandler(secret=secret)
-    envs = EnvironmentHandler()
     sessions = SessionManager(
         platform_engine, token
     )  # constructor takes engine + token
 
-    core = Core(token=token, envs=envs, sessions=sessions)
+    core = Core(token=token, sessions=sessions)
 
     app.state.core = core
     app.state.sessions = sessions
