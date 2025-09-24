@@ -17,10 +17,9 @@ from sqlalchemy.dialects.postgresql import JSONB
 class LinearBase(DeclarativeBase):
     pass
 
-
 class Organization(LinearBase):
     __tablename__ = "organizations"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     urlKey: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     allowMembersToInvite: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -35,9 +34,11 @@ class Organization(LinearBase):
 
 class OrganizationMembership(LinearBase):
     __tablename__ = "organization_memberships"
-    userId: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    organizationId: Mapped[int] = mapped_column(
-        ForeignKey("organizations.id"), primary_key=True
+    userId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("users.id"), primary_key=True
+    )
+    organizationId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("organizations.id"), primary_key=True
     )
     createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
@@ -45,15 +46,15 @@ class OrganizationMembership(LinearBase):
 
 class Team(LinearBase):
     __tablename__ = "teams"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    organizationId: Mapped[int] = mapped_column(
-        ForeignKey("organizations.id")
-    )  # Used ID instead of name for foreign key
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    organizationId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("organizations.id")
+    )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     displayName: Mapped[str] = mapped_column(String(100), nullable=False)
-    defaultIssueStateId: Mapped[int] = mapped_column(
-        ForeignKey("workflow_states.id")  # Used ID instead of name for foreign key
+    defaultIssueStateId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("workflow_states.id")
     )
     inviteHash: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     key: Mapped[str] = mapped_column(
@@ -61,7 +62,7 @@ class Team(LinearBase):
     )  # e.g., "ENG" The team's unique key. The key is used in URLs.
 
     joinByDefault: Mapped[bool] = mapped_column(Boolean, default=True)
-    isPrivate: Mapped[bool] = mapped_column(Boolean, default=False)
+    private: Mapped[bool] = mapped_column(Boolean, default=False)
     archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
     createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
@@ -69,24 +70,26 @@ class Team(LinearBase):
 
 class TeamMembership(LinearBase):
     __tablename__ = "team_memberships"
-    userId: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    teamId: Mapped[int] = mapped_column(ForeignKey("teams.id"), primary_key=True)
+    userId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("users.id"), primary_key=True
+    )
+    teamId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("teams.id"), primary_key=True
+    )
     createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
 class User(LinearBase):
     __tablename__ = "users"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    organizationId: Mapped[int] = mapped_column(
-        ForeignKey("organizations.id")  # Used ID instead of name for foreign key
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    organizationId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("organizations.id")
     )
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     displayName: Mapped[str] = mapped_column(String(100), nullable=False)
-    isAdmin: Mapped[bool] = mapped_column(
-        Boolean, default=False
-    )  # used isAdmin instead of admin
+    admin: Mapped[bool] = mapped_column(Boolean, default=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     canAccessAnyPublicTeam: Mapped[bool] = mapped_column(Boolean, default=False)
     isAssignable: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -99,17 +102,17 @@ class User(LinearBase):
 
 class Issue(LinearBase):
     __tablename__ = "issues"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    teamId: Mapped[int] = mapped_column(
-        ForeignKey("teams.id")
-    )  # Used ID instead of name for foreign key
-    creatorId: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    assigneeId: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
-    projectId: Mapped[int | None] = mapped_column(ForeignKey("projects.id"))
-    projectMilestoneId: Mapped[int | None] = mapped_column(
-        ForeignKey("project_milestones.id")
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    teamId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("teams.id")
     )
-    stateId: Mapped[int] = mapped_column(ForeignKey("workflow_states.id"))
+    creatorId: Mapped[str] = mapped_column(String(64), ForeignKey("users.id"))
+    assigneeId: Mapped[str | None] = mapped_column(String(64), ForeignKey("users.id"))
+    projectId: Mapped[str | None] = mapped_column(String(64), ForeignKey("projects.id"))
+    projectMilestoneId: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("project_milestones.id")
+    )
+    stateId: Mapped[str] = mapped_column(String(64), ForeignKey("workflow_states.id"))
     identifier: Mapped[str] = mapped_column(
         String(20), unique=True, nullable=False
     )  # e.g., "ENG-123" The issue's unique identifier.
@@ -118,9 +121,9 @@ class Issue(LinearBase):
     priority: Mapped[int] = mapped_column(
         Integer, default=0
     )  # 0=None, 1=Urgent, 2=High, 3=Normal, 4=Low
-    parentId: Mapped[int | None] = mapped_column(
-        ForeignKey("issues.issue_id")
-    )  # ID of the parrent issue if the issue is a sub-issue
+    parentId: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("issues.id")
+    )  # ID of the parent issue if the issue is a sub-issue
     number: Mapped[float] = mapped_column(Float, nullable=False)
     labelIds: Mapped[list[str]] = mapped_column(
         JSONB
@@ -134,19 +137,23 @@ class Issue(LinearBase):
 
 class Project(LinearBase):
     __tablename__ = "projects"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    organizationId: Mapped[int] = mapped_column(ForeignKey("organizations.id"))
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    organizationId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("organizations.id")
+    )
     url: Mapped[str] = mapped_column(String(255), nullable=False)
-    creatorId: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    leadId: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    creatorId: Mapped[str] = mapped_column(String(64), ForeignKey("users.id"))
+    leadId: Mapped[str | None] = mapped_column(String(64), ForeignKey("users.id"))
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     priority: Mapped[int] = mapped_column(Integer, default=0)
     labelIds: Mapped[list[str]] = mapped_column(JSONB)
     slugId: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    convertedFromIssueId: Mapped[int | None] = mapped_column(ForeignKey("issues.id"))
-    statusId: Mapped[int] = mapped_column(ForeignKey("project_statuses.id"))
+    convertedFromIssueId: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("issues.id")
+    )
+    statusId: Mapped[str] = mapped_column(String(64), ForeignKey("project_statuses.id"))
     completedAt: Mapped[datetime | None] = mapped_column(DateTime)
     startDate: Mapped[date | None] = mapped_column(Date)
     startedAt: Mapped[datetime | None] = mapped_column(DateTime)
@@ -160,23 +167,27 @@ class Project(LinearBase):
 
 class ProjectMember(LinearBase):
     __tablename__ = "project_members"
-    userId: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    projectId: Mapped[int] = mapped_column(ForeignKey("projects.id"), primary_key=True)
+    userId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("users.id"), primary_key=True
+    )
+    projectId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("projects.id"), primary_key=True
+    )
     createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
 class Comment(LinearBase):
     __tablename__ = "comments"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    issueId: Mapped[int | None] = mapped_column(ForeignKey("issues.id"))
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    issueId: Mapped[str | None] = mapped_column(String(64), ForeignKey("issues.id"))
     url: Mapped[str] = mapped_column(String(255), nullable=False)
-    userId: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    parentId: Mapped[int | None] = mapped_column(ForeignKey("comments.id"))
-    projectUpdateId: Mapped[int | None] = mapped_column(
-        ForeignKey("project_updates.id")
+    userId: Mapped[str] = mapped_column(String(64), ForeignKey("users.id"))
+    parentId: Mapped[str | None] = mapped_column(String(64), ForeignKey("comments.id"))
+    projectUpdateId: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("project_updates.id")
     )
-    initiativeUpdateId: Mapped[int | None] = mapped_column(
-        ForeignKey("initiative_updates.id")
+    initiativeUpdateId: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("initiative_updates.id")
     )
     body: Mapped[str] = mapped_column(Text, nullable=False)
     createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
@@ -186,13 +197,15 @@ class Comment(LinearBase):
 
 class Label(LinearBase):
     __tablename__ = "labels"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    organizationId: Mapped[int] = mapped_column(ForeignKey("organizations.id"))
-    teamId: Mapped[int | None] = mapped_column(
-        ForeignKey("teams.id")
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    organizationId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("organizations.id")
+    )
+    teamId: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("teams.id")
     )  # Null for workspace labels
-    creatorId: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    parentId: Mapped[int | None] = mapped_column(ForeignKey("labels.id"))
+    creatorId: Mapped[str] = mapped_column(String(64), ForeignKey("users.id"))
+    parentId: Mapped[str | None] = mapped_column(String(64), ForeignKey("labels.id"))
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
@@ -202,10 +215,10 @@ class Label(LinearBase):
 
 class WorkflowState(LinearBase):
     __tablename__ = "workflow_states"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    teamId: Mapped[int] = mapped_column(ForeignKey("teams.id"))
-    inheritedFromId: Mapped[int | None] = mapped_column(
-        ForeignKey("workflow_states.id")
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    teamId: Mapped[str] = mapped_column(String(64), ForeignKey("teams.id"))
+    inheritedFromId: Mapped[str | None] = mapped_column(
+        String(64), ForeignKey("workflow_states.id")
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)

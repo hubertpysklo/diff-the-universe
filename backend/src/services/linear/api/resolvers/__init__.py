@@ -71,9 +71,6 @@ def resolve_archivedTeams(_parent, info):
         return session.scalars(stmt).all()
     except Exception:
         return []
-
-    
-    
     
 # Querries Teams
 
