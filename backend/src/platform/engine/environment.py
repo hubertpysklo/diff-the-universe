@@ -1,39 +1,14 @@
 from datetime import datetime, timedelta
 from typing import Iterable
-from uuid import uuid4
-import jwt
-from sqlalchemy import text, MetaData
-from sqlalchemy.engine import Engine
+from os import environ
+from sqlalchemy import text, MetaData, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from backend.src.platform.engine.interface import InitEnvRequest, InitEnvResult
 
 
 class EnvironmentHandler:
-    def __init__(self, engine: Engine):
-        self.engine = engine
-
-    def issue_token(
-        self,
-        *,
-        secret: str,
-        state_id: str,
-        user_id: int,
-        token_ttl_seconds: int = 1800,
-        run_id: str | None = None,
-        scopes: list[str] | None = None,
-    ) -> str:
-        now = datetime.now()
-        payload = {
-            "sub": str(user_id),
-            "state_id": state_id,
-            "run_id": run_id,
-            "scopes": scopes or ["linear:*"],
-            "iat": now,
-            "exp": now + timedelta(seconds=token_ttl_seconds),
-            "jti": uuid4().hex,
-            "aud": "dtu",
-        }
-        return jwt.encode(payload, secret, algorithm="HS256")
+    def __init__(self):
+        self.engine = create_engine(environ["DATABASE_URL"], echo=True)
 
     def create_schema(self, schema: str) -> None:
         with self.engine.begin() as conn:

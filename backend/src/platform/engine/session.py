@@ -1,20 +1,16 @@
 from __future__ import annotations
-
-from contextlib import contextmanager
 from datetime import datetime
-from typing import Iterator
-
-import jwt
-from sqlalchemy import cast, String
-from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
-
+from backend.src.platform.engine.auth import TokenHandler
+from sqlalchemy import create_engine
+from os import environ
 from backend.src.platform.db.schema import RunTimeEnvironment
 
 
 class SessionManager:
-    def __init__(self, base_engine: Engine):
-        self.base_engine = base_engine
+    def __init__(self):
+        self.base_engine = create_engine(environ["DATABASE_URL"], echo=True)
+        self.token_handler = TokenHandler()
 
     def get_meta_session(self) -> Session:
         return sessionmaker(bind=self.base_engine)()
@@ -27,19 +23,8 @@ class SessionManager:
         )
         return sessionmaker(bind=translated_engine)()
 
-    def decode_token(self, token: str, *, secret: str, audience: str = "dtu") -> dict:
-        return jwt.decode(
-            token,
-            secret,
-            algorithms=["HS256"],
-            audience=audience,
-            options={"require": ["exp", "iat", "aud"]},
-        )
-
-    def get_session_for_token(
-        self, token: str, *, secret: str, audience: str = "dtu"
-    ) -> Session:
-        claims = self.decode_token(token, secret=secret, audience=audience)
+    def get_session_for_token(self, token: str) -> Session:
+        claims = self.token_handler.decode_token(token)
         environmentId = claims["environmentId"]
         meta_session = self.get_meta_session()
         try:
