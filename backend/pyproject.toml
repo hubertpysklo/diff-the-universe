@@ -10,4 +10,5 @@ dependencies = [
     "pyjwt>=2.10.1",
     "python-dotenv>=1.1.1",
     "sqlalchemy>=2.0.43",
+    "starlette>=0.48.0",
 ]

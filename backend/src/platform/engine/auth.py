@@ -2,55 +2,41 @@ from jwt import decode, encode
 from os import environ
 from datetime import datetime, timedelta
 from uuid import uuid4
-from backend.src.platform.engine.session import SessionManager
-from sqlalchemy.orm import Session
-from backend.src.platform.db.schema import User
 
 
 class TokenHandler:
-    def __init__(self, secret: str = environ["SECRET_KEY"]):
+    def __init__(self, secret: str = environ["SECRET_KEY"], audience: str = "dtu"):
         self.secret = secret
+        self.audience = audience
 
     def decode_token(self, token: str) -> dict:
-        return decode(token, self.secret, algorithms=["HS256"])
+        return decode(
+            token,
+            self.secret,
+            algorithms=["HS256"],
+            audience=self.audience,
+            options={"require": ["exp", "iat", "aud"]},
+        )
 
     def encode_token(self, payload: dict) -> str:
         return encode(payload, self.secret, algorithm="HS256")
-
-    def get_and_validate_impersonate_user_id(self, impersonateUser: int | str) -> int:
-        if isinstance(impersonateUser, int):
-            impersonateUserInstance = self.platform_session.get(User, impersonateUser)
-            if impersonateUserInstance is None:
-                raise ValueError("User not found")
-            return impersonateUserInstance.id
-        elif isinstance(impersonateUser, str):
-            impersonateUserInstance = (
-                self.platform_session.query(User)
-                .filter(User.email == impersonateUser)
-                .one_or_none()
-            )
-            if impersonateUserInstance is None:
-                raise ValueError("User not found")
-            return impersonateUserInstance.id
 
     def issue_token(
         self,
         *,
         environment_id: str,
         user_id: int,
-        impersonateUser: int | str,
+        impersonate_user_id: int | None = None,
         token_ttl_seconds: int = 1800,
     ) -> str:
         now = datetime.now()
         payload = {
             "sub": str(user_id),
             "environment_id": environment_id,
-            "impersonate_user_id": self.get_and_validate_impersonate_user_id(
-                impersonateUser, session
-            ),
+            "impersonate_user_id": impersonate_user_id,
             "iat": now,
             "exp": now + timedelta(seconds=token_ttl_seconds),
             "jti": uuid4().hex,
-            "aud": "dtu",
+            "aud": self.audience,
         }
         return self.encode_token(payload)

@@ -4,11 +4,13 @@ from os import environ
 from sqlalchemy import text, MetaData, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from backend.src.platform.engine.interface import InitEnvRequest, InitEnvResult
+from backend.src.platform.engine.auth import TokenHandler
 
 
 class EnvironmentHandler:
     def __init__(self):
         self.engine = create_engine(environ["DATABASE_URL"], echo=True)
+        self.token_handler = TokenHandler()
 
     def create_schema(self, schema: str) -> None:
         with self.engine.begin() as conn:
@@ -100,12 +102,11 @@ class EnvironmentHandler:
         token_ttl_seconds: int = 1800,
     ) -> InitEnvResult:
         res = self.init_env(request)
-        res.token = self.issue_token(
-            secret=secret,
-            state_id=res.state_id,
+        res.token = self.token_handler.issue_token(
+            environment_id=res.state_id,
             user_id=user_id,
+            impersonate_user_id=request.impersonate_user_id,
             token_ttl_seconds=token_ttl_seconds,
-            run_id=request.run_id,
         )
         return res
 
