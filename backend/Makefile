@@ -14,6 +14,3 @@ migration:
 
 migrate:
 	cd backend && uv run alembic upgrade head
-
-backend-dev: up
-	cd backend && uv run main.py

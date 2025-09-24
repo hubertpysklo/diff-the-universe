@@ -8,9 +8,7 @@ class GraphQLWithSession(GraphQL):
 
     async def context_value(self, request):
         token = request.headers.get("Authorization")
-        session = (
-            self.session_provider.create_session_for_token(token) if token else None
-        )
+        session = self.session_provider.get_session_for_token(token) if token else None
         request.state.db_session = session
         return {"request": request, "session": session}
 
