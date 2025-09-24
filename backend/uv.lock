@@ -30,11 +30,26 @@ wheels = [
 ]
 
 [[package]]
+name = "ariadne"
+version = "0.26.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "graphql-core" },
+    { name = "starlette" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bb/e5/86f530bb26105520ada238f734abfea2257b754ff08055eb7d542c657e74/ariadne-0.26.2.tar.gz", hash = "sha256:607617f82760c039b2137b7c1200b475ea90ccf4ca42c0994926c0d8fdede908", size = 81919, upload-time = "2025-04-18T08:28:10.176Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/d2/fc23a8678c5d528d3f7202a749a7b7f1c0b7315b853143f3b3cf438d78a6/ariadne-0.26.2-py3-none-any.whl", hash = "sha256:8d272c73a751d30a1c9c367318a317483588a51c335351d7342f23f109816a92", size = 116792, upload-time = "2025-04-18T08:28:08.746Z" },
+]
+
+[[package]]
 name = "diff-the-universe"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "alembic" },
+    { name = "ariadne" },
     { name = "psycopg2-binary" },
     { name = "pyjwt" },
     { name = "python-dotenv" },
@@ -45,11 +60,21 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "alembic", specifier = ">=1.16.5" },
+    { name = "ariadne", specifier = ">=0.26.2" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "pyjwt", specifier = ">=2.10.1" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "sqlalchemy", specifier = ">=2.0.43" },
     { name = "starlette", specifier = ">=0.48.0" },
+]
+
+[[package]]
+name = "graphql-core"
+version = "3.2.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/2e/b5/ebc6fe3852e2d2fdaf682dddfc366934f3d2c9ef9b6d1b0e6ca348d936ba/graphql_core-3.2.5.tar.gz", hash = "sha256:e671b90ed653c808715645e3998b7ab67d382d55467b7e2978549111bbabf8d5", size = 504664, upload-time = "2024-10-13T18:24:32.134Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e3/dc/078bd6b304de790618ebb95e2aedaadb78f4527ac43a9ad8815f006636b6/graphql_core-3.2.5-py3-none-any.whl", hash = "sha256:2f150d5096448aa4f8ab26268567bbfeef823769893b39c1a2e1409590939c8a", size = 203189, upload-time = "2024-10-13T18:24:30.384Z" },
 ]
 
 [[package]]

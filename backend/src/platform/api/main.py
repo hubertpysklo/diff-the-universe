@@ -1,7 +1,6 @@
 from sqlalchemy import create_engine
 from backend.src.platform.engine.auth import TokenHandler
 from backend.src.platform.engine.session import SessionManager
-from backend.src.platform.engine.environment import EnvironmentHandler
 from starlette.applications import Starlette
 from os import environ
 from backend.src.platform.engine.core import Core
@@ -14,9 +13,7 @@ def create_app():
 
     platform_engine = create_engine(db_url, pool_pre_ping=True)
     token = TokenHandler(secret=secret)
-    sessions = SessionManager(
-        platform_engine, token
-    )  # constructor takes engine + token
+    sessions = SessionManager(platform_engine, token)
 
     core = Core(token=token, sessions=sessions)
 
