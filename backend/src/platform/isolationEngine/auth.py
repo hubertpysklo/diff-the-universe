@@ -25,13 +25,11 @@ class TokenHandler:
         self,
         *,
         environment_id: str,
-        user_id: int,
-        impersonate_user_id: int | None = None,
+        impersonate_user_id: str | None,
         token_ttl_seconds: int = 1800,
-    ) -> str:
+    ) -> tuple[str, dict]:
         now = datetime.now()
         payload = {
-            "sub": str(user_id),
             "environment_id": environment_id,
             "impersonate_user_id": impersonate_user_id,
             "iat": now,
@@ -39,4 +37,4 @@ class TokenHandler:
             "jti": uuid4().hex,
             "aud": self.audience,
         }
-        return self.encode_token(payload)
+        return self.encode_token(payload), payload

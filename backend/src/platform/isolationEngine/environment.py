@@ -58,62 +58,24 @@ class EnvironmentHandler:
                 {"seq": seq_name_row[0]},
             )
 
-    def clone_from_template(
+    def seed_data_from_template(
         self,
         template_schema: str,
-        state_schema: str,
+        target_schema: str,
         tables_order: list[str] | None = None,
     ) -> None:
         engine = self.session_manager.base_engine
         with engine.begin() as conn:
-            conn.execute(text(f'SET LOCAL search_path TO "{state_schema}", public'))
-            existing = set(self._list_tables(conn, template_schema))
-            if tables_order:
-                ordered = [t for t in tables_order if t in existing]
-            else:
-                meta = MetaData()
-                meta.reflect(bind=engine, schema=template_schema)
-                ordered = [t.name for t in meta.sorted_tables if t.name in existing]
-            trailing = [t for t in existing if t not in ordered]
-            for tbl in ordered + trailing:
+            meta = MetaData()
+            meta.reflect(bind=engine, schema=template_schema)
+            ordered = [t.name for t in meta.sorted_tables]
+            for tbl in ordered:
                 conn.execute(
                     text(
-                        f'INSERT INTO "{state_schema}".{tbl} SELECT * FROM "{template_schema}".{tbl}'
+                        f'INSERT INTO "{target_schema}".{tbl} SELECT * FROM "{template_schema}".{tbl}'
                     )
                 )
-            self._reset_sequences(conn, state_schema, ordered + trailing)
-
-    def init_env(self, request: InitEnvRequest) -> InitEnvResult:
-        env_uuid = uuid4()
-        environment_id = env_uuid.hex
-        environment_schema = f"state_{environment_id}"
-        self.create_schema(environment_schema)
-        self.migrate_schema(request.environment_schema, environment_schema)
-        self.clone_from_template(request.environment_schema, environment_schema)
-        expires_at = (
-            datetime.now() + timedelta(seconds=request.ttl_seconds)
-            if request.ttl_seconds
-            else None
-        )
-        session = self.session_manager.get_meta_session()
-        try:
-            session.add(
-                RunTimeEnvironment(
-                    id=env_uuid,
-                    schema=environment_schema,
-                    status="ready",
-                    expiresAt=expires_at,
-                    lastUsedAt=datetime.now(),
-                )
-            )
-            session.commit()
-        finally:
-            session.close()
-        return InitEnvResult(
-            environment_id=environment_id,
-            schema=environment_schema,
-            expires_at=expires_at,
-        )
+            self._reset_sequences(conn, target_schema, ordered)
 
     def init_env_and_issue_token(
         self,
