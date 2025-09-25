@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from sqlalchemy.orm import Session, sessionmaker
-from backend.src.platform.engine.auth import TokenHandler
+from .auth import TokenHandler
 from sqlalchemy import Engine
 from backend.src.platform.db.schema import RunTimeEnvironment
 from contextlib import contextmanager

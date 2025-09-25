@@ -1,5 +1,5 @@
-from backend.src.platform.engine.auth import TokenHandler
-from backend.src.platform.engine.session import SessionManager
+from .auth import TokenHandler
+from .session import SessionManager
 from contextlib import contextmanager
 
 
