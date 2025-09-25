@@ -4,8 +4,7 @@ from backend.src.platform.api.auth import validate_api_key
 
 
 class PlatformGraphQL(ariadne.asgi.GraphQL):
-    def __init__(self, schema, session_manager: SessionManager):
-        super().__init__(schema)
+    def __init__(self, session_manager: SessionManager):
         self.session_manager = session_manager
 
     async def context_value(self, request):

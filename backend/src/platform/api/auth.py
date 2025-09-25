@@ -42,7 +42,6 @@ class KeyHandler:
         is_platform_admin: bool = False,
         is_organization_admin: bool = False,
     ) -> Dict[str, object]:
-        """Create a new API key and return token + metadata. Token is shown once."""
         key_uuid = uuid4()
         key_id = key_uuid.hex
         secret = secrets.token_urlsafe(32)
