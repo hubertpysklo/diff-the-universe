@@ -4,7 +4,6 @@ from sqlalchemy import text, MetaData
 from sqlalchemy.orm import Session
 from uuid import uuid4
 from backend.src.platform.db.schema import RunTimeEnvironment
-from .types import InitEnvRequest, InitEnvResult
 from .auth import TokenHandler
 from .session import SessionManager
 
@@ -77,22 +76,21 @@ class EnvironmentHandler:
                 )
             self._reset_sequences(conn, target_schema, ordered)
 
-    def init_env_and_issue_token(
+    def set_runtime_environment(
         self,
-        request: InitEnvRequest,
-        *,
-        secret: str,
-        user_id: int,
-        token_ttl_seconds: int = 1800,
-    ) -> InitEnvResult:
-        res = self.init_env(request)
-        res.token = self.token_handler.issue_token(
-            environment_id=res.environment_id,
-            user_id=user_id,
-            impersonate_user_id=request.impersonate_user_id,
-            token_ttl_seconds=token_ttl_seconds,
-        )
-        return res
-
-    def session_for_schema(self, schema: str) -> Session:
-        return self.session_manager.get_session_for_schema(schema)
+        environment_id: str,
+        schema: str,
+        expires_at: datetime | None,
+        last_used_at: datetime,
+    ) -> None:
+        with self.session_manager.get_meta_session() as s:
+            s.add(
+                RunTimeEnvironment(
+                    id=environment_id,
+                    schema=schema,
+                    status="ready",
+                    expiresAt=expires_at,
+                    lastUsedAt=last_used_at,
+                )
+            )
+            s.commit()

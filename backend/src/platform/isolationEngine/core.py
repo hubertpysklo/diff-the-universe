@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from .environment import EnvironmentHandler
 from uuid import uuid4
 from .types import InitEnvRequest, InitEnvResult
+from datetime import datetime, timedelta
 
 
 class Core:
@@ -40,14 +41,22 @@ class Core:
         self.environment_handler.seed_data_from_template(
             request.environment_schema, environment_schema
         )
+        self.environment_handler.set_runtime_environment(
+            environment_id=environment_id,
+            schema=environment_schema,
+            expires_at=datetime.now() + timedelta(seconds=request.ttl_seconds),
+            last_used_at=datetime.now(),
+        )
         token = self.token.issue_token(
             environment_id=environment_id,
+            user_id=request.user_id,
             impersonate_user_id=request.impersonate_user_id,
             token_ttl_seconds=request.ttl_seconds,
         )
         return InitEnvResult(
-            environment_id=token[1]["environment_id"],
-            impersonate_user_id=token[1]["impersonate_user_id"],
-            expires_at=token[1]["exp"],
-            token=token[0],
+            environment_id=environment_id,
+            impersonate_user_id=request.impersonate_user_id,
+            user_id=request.user_id,
+            expires_at=datetime.now() + timedelta(seconds=request.ttl_seconds),
+            token=token,
         )
