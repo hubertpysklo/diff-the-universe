@@ -1,8 +1,9 @@
 from ariadne.asgi import GraphQL
+from backend.src.platform.isolationEngine.core import Core
 
 
 class GraphQLWithSession(GraphQL):
-    def __init__(self, schema, session_provider):
+    def __init__(self, schema, session_provider: Core):
         super().__init__(schema)
         self.session_provider = session_provider
 
