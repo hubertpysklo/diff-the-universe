@@ -1,25 +1,31 @@
 from datetime import datetime, timedelta
 from typing import Iterable
-from sqlalchemy import text, MetaData, Engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import text, MetaData
+from sqlalchemy.orm import Session
+from uuid import uuid4
+from backend.src.platform.db.schema import RunTimeEnvironment
 from .types import InitEnvRequest, InitEnvResult
 from .auth import TokenHandler
+from .session import SessionManager
 
 
 class EnvironmentHandler:
-    def __init__(self, token_handler: TokenHandler, base_engine: Engine):
-        self.engine = base_engine
+    def __init__(self, token_handler: TokenHandler, session_manager: SessionManager):
         self.token_handler = token_handler
+        self.session_manager = session_manager
 
     def create_schema(self, schema: str) -> None:
-        with self.engine.begin() as conn:
+        with self.session_manager.get_meta_session() as conn:
             conn.execute(text(f'CREATE SCHEMA "{schema}"'))
 
-    def migrate_schema(self, schema: str) -> None:
-        # TODO: Migrations for this connection with search_path set
-        # To do add search_path
-        with self.engine.begin() as conn:
-            conn.execute(text(f'SET LOCAL search_path TO "{schema}", public'))
+    def migrate_schema(self, template_schema: str, target_schema: str) -> None:
+        engine = self.session_manager.base_engine
+        meta = MetaData()
+        meta.reflect(bind=engine, schema=template_schema)
+        translated = engine.execution_options(
+            schema_translate_map={template_schema: target_schema}
+        )
+        meta.create_all(translated)
 
     def _list_tables(self, conn, schema: str) -> list[str]:
         rows = conn.execute(
@@ -58,15 +64,15 @@ class EnvironmentHandler:
         state_schema: str,
         tables_order: list[str] | None = None,
     ) -> None:
-        with self.engine.begin() as conn:
+        engine = self.session_manager.base_engine
+        with engine.begin() as conn:
             conn.execute(text(f'SET LOCAL search_path TO "{state_schema}", public'))
             existing = set(self._list_tables(conn, template_schema))
             if tables_order:
                 ordered = [t for t in tables_order if t in existing]
             else:
-                # Use SQLAlchemy reflection to get FK-safe order
                 meta = MetaData()
-                meta.reflect(bind=self.engine, schema=template_schema)
+                meta.reflect(bind=engine, schema=template_schema)
                 ordered = [t.name for t in meta.sorted_tables if t.name in existing]
             trailing = [t for t in existing if t not in ordered]
             for tbl in ordered + trailing:
@@ -78,16 +84,31 @@ class EnvironmentHandler:
             self._reset_sequences(conn, state_schema, ordered + trailing)
 
     def init_env(self, request: InitEnvRequest) -> InitEnvResult:
-        environment_id = datetime.now().strftime("%Y%m%d%H%M%S%f")
+        env_uuid = uuid4()
+        environment_id = env_uuid.hex
         environment_schema = f"state_{environment_id}"
         self.create_schema(environment_schema)
-        self.migrate_schema(environment_schema)
+        self.migrate_schema(request.environment_schema, environment_schema)
         self.clone_from_template(request.environment_schema, environment_schema)
         expires_at = (
             datetime.now() + timedelta(seconds=request.ttl_seconds)
             if request.ttl_seconds
             else None
         )
+        session = self.session_manager.get_meta_session()
+        try:
+            session.add(
+                RunTimeEnvironment(
+                    id=env_uuid,
+                    schema=environment_schema,
+                    status="ready",
+                    expiresAt=expires_at,
+                    lastUsedAt=datetime.now(),
+                )
+            )
+            session.commit()
+        finally:
+            session.close()
         return InitEnvResult(
             environment_id=environment_id,
             schema=environment_schema,
@@ -112,9 +133,4 @@ class EnvironmentHandler:
         return res
 
     def session_for_schema(self, schema: str) -> Session:
-        conn = self.engine.connect()
-        conn.execute(text(f'SET LOCAL search_path TO "{schema}", public'))
-        SessionLocal = sessionmaker(
-            bind=conn, autoflush=False, expire_on_commit=False, future=True
-        )
-        return SessionLocal()
+        return self.session_manager.get_session_for_schema(schema)
