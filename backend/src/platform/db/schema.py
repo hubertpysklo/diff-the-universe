@@ -125,3 +125,18 @@ class RunTimeEnvironment(PlatformBase):
     updatedAt: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.now, nullable=False
     )
+
+
+class ApiKey(PlatformBase):
+    __tablename__ = "api_keys"
+    id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid4
+    )
+    keyHash: Mapped[str] = mapped_column(String(255), nullable=False)
+    keySalt: Mapped[str] = mapped_column(String(255), nullable=False)
+    expiresAt: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    revokedAt: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    userId: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    lastUsedAt: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)

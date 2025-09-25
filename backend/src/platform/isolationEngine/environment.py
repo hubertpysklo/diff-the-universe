@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from typing import Iterable
 from sqlalchemy import text, MetaData, Engine
 from sqlalchemy.orm import Session, sessionmaker
-from backend.src.platform.engine.types import InitEnvRequest, InitEnvResult
-from backend.src.platform.engine.auth import TokenHandler
+from .types import InitEnvRequest, InitEnvResult
+from .auth import TokenHandler
 
 
 class EnvironmentHandler:
