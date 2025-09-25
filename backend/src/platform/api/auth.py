@@ -12,7 +12,7 @@ from uuid import UUID, uuid4
 from sqlalchemy.orm import Session
 
 from backend.src.platform.isolationEngine.session import SessionManager
-from backend.src.platform.db.schema import ApiKey, OrganizationMembership
+from backend.src.platform.db.schema import ApiKey, OrganizationMembership, User
 
 
 def _pbkdf2_hash(secret: str, *, salt_bytes: bytes) -> bytes:
@@ -111,10 +111,19 @@ def validate_api_key(header: Optional[str], session: Session) -> Dict[str, objec
         raise PermissionError("invalid api key")
 
     key.lastUsedAt = datetime.now()
-    session.commit()
-
+    user: Optional[User] = (
+        session.query(User).filter(User.id == key.userId).one_or_none()
+    )
+    is_platform_admin = bool(user.isPlatformAdmin) if user else False
+    is_organization_admin = bool(user.isOrganizationAdmin) if user else False
     org_ids: List[int] = [
         m.organizationId
         for m in session.query(OrganizationMembership).filter_by(userId=key.userId)
     ]
-    return {"user_id": key.userId, "org_ids": org_ids}
+    session.commit()
+    return {
+        "user_id": key.userId,
+        "org_ids": org_ids,
+        "is_platform_admin": is_platform_admin,
+        "is_organization_admin": is_organization_admin,
+    }
