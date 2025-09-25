@@ -110,24 +110,15 @@ def resolve_teamMembership(_parent, info, id: str):
 def resolve_organization(_parent, info):
     session = info.context.state.db_session
 
-    org_id = getattr(info.context.state, "org_id", None)
-    if org_id is None:
-        user_id = getattr(info.context.state, "user_id", None)
-        if user_id is None:
-            raise GraphQLError("Not authenticated")
+    user_id = getattr(info.context.state, "user_id", None)
+    if user_id is None:
+        raise GraphQLError("Not authenticated")
 
-        org_id_stmt = select(User.organizationId).where(User.id == user_id).limit(1)
-        org_id = session.execute(org_id_stmt).scalar_one_or_none()
-        if org_id is None:
-            raise GraphQLError("Organization not found")
-
-    org_stmt = select(Organization).where(Organization.id == org_id).limit(1)
-    organization = session.execute(org_stmt).scalars().first()
-
-    if organization is None:
+    user = session.get(User, user_id)
+    if user is None or user.organization is None:
         raise GraphQLError("Organization not found")
 
-    return organization
+    return user.organization
 
 # Still need to add teamMemberships
 
