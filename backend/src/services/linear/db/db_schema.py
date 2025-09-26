@@ -8,6 +8,7 @@ from sqlalchemy import (
     Text,
     Float,
     Date,
+    UniqueConstraint,
 )
 from datetime import datetime
 from datetime import date
@@ -35,6 +36,41 @@ class Organization(LinearBase):
         back_populates="organization",
         cascade="all, delete-orphan",
     )
+    domains: Mapped[list["OrganizationDomain"]] = relationship(
+        "OrganizationDomain",
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+
+
+class OrganizationDomain(LinearBase):
+    __tablename__ = "organization_domains"
+    __table_args__ = (
+        UniqueConstraint("organizationId", "name", name="uq_org_domain_org_name"),
+    )
+
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    organizationId: Mapped[str] = mapped_column(
+        String(64), ForeignKey("organizations.id"), nullable=False
+    )
+    creatorId: Mapped[str | None] = mapped_column(String(64), ForeignKey("users.id"))
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    authType: Mapped[str] = mapped_column(String(32), default="general", nullable=False)
+    claimed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    disableOrganizationCreation: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
+    verificationEmail: Mapped[str | None] = mapped_column(String(255))
+    verificationString: Mapped[str | None] = mapped_column(String(255))
+    archivedAt: Mapped[datetime | None] = mapped_column(DateTime)
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+    organization: Mapped["Organization"] = relationship(
+        "Organization", back_populates="domains"
+    )
+    creator: Mapped["User" | None] = relationship("User")
 
 
 class OrganizationMembership(LinearBase):

@@ -1,10 +1,19 @@
 # Linear GraphQL resolvers - TODO: implement
 
+import secrets
+
 from ariadne import QueryType
 from graphql import GraphQLError
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
-from db_schema import SessionLocal, Organization, Team, TeamMembership, User
+from db_schema import (
+    SessionLocal,
+    Organization,
+    OrganizationDomain,
+    Team,
+    TeamMembership,
+    User,
+)
 
 
 # Query reoslvers
@@ -50,13 +59,27 @@ class GraphQLWithSession(GraphQL):
     
 @Query.field("organizationExists")
 def resolve_organizationExists(_parent, info, urlKey: str):
-    session = info.context.state.db_session
-    stmt = select(Organization.id).where(Organization.urlKey == urlKey).limit(1)
+    session = getattr(info.context.state, "db_session", None)
+    created_session = False
+    if session is None:
+        session = SessionLocal()
+        created_session = True
+
     try:
+        stmt = (
+            select(Organization.id)
+            .where(func.lower(Organization.urlKey) == urlKey.lower())
+            .limit(1)
+        )
         exists_ = session.execute(stmt).scalar_one_or_none() is not None
         return {"exists": exists_, "success": True}
     except Exception:
+        if created_session:
+            session.rollback()
         return {"exists": False, "success": False}
+    finally:
+        if created_session:
+            session.close()
             
             
 @Query.field("archivedTeams")
@@ -119,6 +142,29 @@ def resolve_organization(_parent, info):
         raise GraphQLError("Organization not found")
 
     return user.organization
+
+@Query.field("organizationDomainClaimRequest")
+def resolve_organizationDomainClaimRequest(_parent, info, id: str):
+    session = info.context.state.db_session
+    stmt = select(OrganizationDomain).where(OrganizationDomain.id == id).limit(1)
+    domain = session.execute(stmt).scalars().first()
+
+    if domain is None:
+        raise GraphQLError("Organization domain not found")
+
+    org_id = getattr(info.context.state, "org_id", None)
+    if org_id is not None and domain.organizationId != org_id:
+        raise GraphQLError("Access denied")
+
+    if domain.claimed or domain.verified:
+        raise GraphQLError("Domain already claimed")
+
+    if not domain.verificationString:
+        domain.verificationString = secrets.token_urlsafe(16)
+        session.add(domain)
+        session.flush()
+
+    return {"verificationString": domain.verificationString}
 
 # Still need to add teamMemberships
 
